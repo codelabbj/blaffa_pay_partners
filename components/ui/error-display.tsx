@@ -82,27 +82,134 @@ export function ErrorDisplay({
 
   if (variant === "full") {
     return (
-      <div className={`flex flex-col items-center justify-center min-h-[400px] space-y-4 ${className}`}>
-        <div className="flex flex-col items-center space-y-4 text-center">
-          <div className="bg-red-100 dark:bg-red-900/20 p-4 rounded-full">
-            <AlertTriangle className="h-8 w-8 text-red-600 dark:text-red-400" />
+      <div className={`flex flex-col items-center justify-center min-h-[400px] space-y-6 ${className}`}>
+        <div className="flex flex-col items-center space-y-6 text-center">
+          <div className="bg-red-100/80 dark:bg-red-900/20 p-6 rounded-3xl backdrop-blur-xl border border-red-200/50 dark:border-red-800/50 shadow-xl">
+            <AlertTriangle className="h-10 w-10 text-red-600 dark:text-red-400" />
           </div>
-          <div className="space-y-2">
-            <h3 className="text-lg font-semibold text-red-600 dark:text-red-400">
+          <div className="space-y-3">
+            <h3 className="text-xl font-semibold text-red-600 dark:text-red-400">
               {t("common.errorOccurred")}
             </h3>
-            <p className="text-sm text-muted-foreground max-w-md">
+            <p className="text-base text-gray-600 dark:text-gray-400 max-w-md leading-relaxed">
               {errorMessage}
             </p>
           </div>
         </div>
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-4">
           {showRetry && onRetry && (
             <Button
               onClick={handleRetry}
               disabled={isRetrying}
               variant="outline"
-              className="border-red-200 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
+              className="border-red-200/50 dark:border-red-800/50 text-red-600 dark:text-red-400 hover:bg-red-50/80 dark:hover:bg-red-900/20 backdrop-blur-sm rounded-2xl shadow-lg transition-all duration-300"
+            >
+              {isRetrying ? (
+                <>
+                  <RefreshCw className="h-5 w-5 mr-3 animate-spin" />
+                  {t("common.retrying")}
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="h-5 w-5 mr-3" />
+                  {t("common.retry")}
+                </>
+              )}
+            </Button>
+          )}
+          {showDismiss && onDismiss && (
+            <Button
+              onClick={onDismiss}
+              variant="ghost"
+              className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100/80 dark:hover:bg-gray-800/50 backdrop-blur-sm rounded-2xl transition-all duration-300"
+            >
+              {t("common.dismiss")}
+            </Button>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  if (variant === "modal") {
+    return (
+      <div className={`fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center z-50 transition-all duration-300 ${className}`}>
+        <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-white/30 dark:border-gray-700/50 rounded-3xl p-8 max-w-md mx-4 shadow-2xl">
+          <div className="flex items-start space-x-4">
+            <div className="bg-red-100/80 dark:bg-red-900/20 p-3 rounded-2xl backdrop-blur-sm border border-red-200/50 dark:border-red-800/50 flex-shrink-0 shadow-lg">
+              <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
+            </div>
+            <div className="flex-1 space-y-3">
+              <h3 className="font-semibold text-red-600 dark:text-red-400 text-lg">
+                {t("common.errorOccurred")}
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                {errorMessage}
+              </p>
+              <div className="flex items-center space-x-3 pt-3">
+                {showRetry && onRetry && (
+                  <Button
+                    onClick={handleRetry}
+                    disabled={isRetrying}
+                    size="sm"
+                    variant="outline"
+                    className="border-red-200/50 dark:border-red-800/50 text-red-600 dark:text-red-400 hover:bg-red-50/80 dark:hover:bg-red-900/20 backdrop-blur-sm rounded-2xl transition-all duration-300"
+                  >
+                    {isRetrying ? (
+                      <>
+                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                        {t("common.retrying")}
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                        {t("common.retry")}
+                      </>
+                    )}
+                  </Button>
+                )}
+                {showDismiss && onDismiss && (
+                  <Button
+                    onClick={onDismiss}
+                    size="sm"
+                    variant="ghost"
+                    className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100/80 dark:hover:bg-gray-800/50 backdrop-blur-sm rounded-2xl transition-all duration-300"
+                  >
+                    {t("common.dismiss")}
+                  </Button>
+                )}
+              </div>
+            </div>
+            {showDismiss && onDismiss && (
+              <Button
+                onClick={onDismiss}
+                size="sm"
+                variant="ghost"
+                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100/80 dark:hover:bg-gray-800/50 backdrop-blur-sm rounded-2xl p-2 h-auto transition-all duration-300"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Default inline variant
+  return (
+    <Alert variant="destructive" className={className}>
+      <AlertTriangle className="h-5 w-5" />
+      <AlertDescription className="flex items-center justify-between">
+        <span className="flex-1">{errorMessage}</span>
+        <div className="flex items-center space-x-3 ml-6">
+          {showRetry && onRetry && (
+            <Button
+              onClick={handleRetry}
+              disabled={isRetrying}
+              size="sm"
+              variant="outline"
+              className="border-red-200/50 dark:border-red-800/50 text-red-600 dark:text-red-400 hover:bg-red-50/80 dark:hover:bg-red-900/20 backdrop-blur-sm rounded-2xl h-8 px-3 transition-all duration-300"
             >
               {isRetrying ? (
                 <>
@@ -120,118 +227,11 @@ export function ErrorDisplay({
           {showDismiss && onDismiss && (
             <Button
               onClick={onDismiss}
-              variant="ghost"
-              className="text-muted-foreground hover:text-foreground"
-            >
-              {t("common.dismiss")}
-            </Button>
-          )}
-        </div>
-      </div>
-    )
-  }
-
-  if (variant === "modal") {
-    return (
-      <div className={`fixed inset-0 bg-black/50 flex items-center justify-center z-50 ${className}`}>
-        <div className="bg-background border rounded-lg p-6 max-w-md mx-4 shadow-lg">
-          <div className="flex items-start space-x-3">
-            <div className="bg-red-100 dark:bg-red-900/20 p-2 rounded-full flex-shrink-0">
-              <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
-            </div>
-            <div className="flex-1 space-y-2">
-              <h3 className="font-semibold text-red-600 dark:text-red-400">
-                {t("common.errorOccurred")}
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                {errorMessage}
-              </p>
-              <div className="flex items-center space-x-2 pt-2">
-                {showRetry && onRetry && (
-                  <Button
-                    onClick={handleRetry}
-                    disabled={isRetrying}
-                    size="sm"
-                    variant="outline"
-                    className="border-red-200 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
-                  >
-                    {isRetrying ? (
-                      <>
-                        <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
-                        {t("common.retrying")}
-                      </>
-                    ) : (
-                      <>
-                        <RefreshCw className="h-3 w-3 mr-1" />
-                        {t("common.retry")}
-                      </>
-                    )}
-                  </Button>
-                )}
-                {showDismiss && onDismiss && (
-                  <Button
-                    onClick={onDismiss}
-                    size="sm"
-                    variant="ghost"
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    {t("common.dismiss")}
-                  </Button>
-                )}
-              </div>
-            </div>
-            {showDismiss && onDismiss && (
-              <Button
-                onClick={onDismiss}
-                size="sm"
-                variant="ghost"
-                className="text-muted-foreground hover:text-foreground p-1 h-auto"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  // Default inline variant
-  return (
-    <Alert variant="destructive" className={className}>
-      <AlertTriangle className="h-4 w-4" />
-      <AlertDescription className="flex items-center justify-between">
-        <span className="flex-1">{errorMessage}</span>
-        <div className="flex items-center space-x-2 ml-4">
-          {showRetry && onRetry && (
-            <Button
-              onClick={handleRetry}
-              disabled={isRetrying}
-              size="sm"
-              variant="outline"
-              className="border-red-200 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20 h-7 px-2"
-            >
-              {isRetrying ? (
-                <>
-                  <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
-                  {t("common.retrying")}
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="h-3 w-3 mr-1" />
-                  {t("common.retry")}
-                </>
-              )}
-            </Button>
-          )}
-          {showDismiss && onDismiss && (
-            <Button
-              onClick={onDismiss}
               size="sm"
               variant="ghost"
-              className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20 h-7 px-2"
+              className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50/80 dark:hover:bg-red-900/20 backdrop-blur-sm rounded-2xl h-8 px-3 transition-all duration-300"
             >
-              <X className="h-3 w-3" />
+              <X className="h-4 w-4" />
             </Button>
           )}
         </div>

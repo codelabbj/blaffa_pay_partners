@@ -448,6 +448,7 @@ const translations = {
     "topup.createNew": "Create New Top Up",
     "topup.proofImage": "Proof Image",
     "topup.proofDescription": "Proof Description",
+    "topup.requestHistory": "Request History",
 
 
     "topup.amount": "Amount",
@@ -1149,6 +1150,7 @@ const translations = {
     "topup.createNew": "Créer une nouvelle recharge",
     "topup.proofImage": "Image de preuve",
     "topup.proofDescription": "Description de la preuve",
+    "topup.requestHistory": "Historique des recharges",
 
     "topup.amount": "Montant",
     "topup.user": "Utilisateur",

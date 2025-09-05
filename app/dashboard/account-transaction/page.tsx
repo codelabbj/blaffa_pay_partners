@@ -7,13 +7,14 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useLanguage } from "@/components/providers/language-provider"
-import { Search, ChevronLeft, ChevronRight, ArrowUpDown, Copy, Plus, TrendingUp, TrendingDown, Wallet, RefreshCw } from "lucide-react"
+import { Search, ChevronLeft, ChevronRight, ArrowUpDown, Copy, Plus, TrendingUp, TrendingDown, Wallet, RefreshCw, Activity, CreditCard } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog"
 import { ErrorDisplay, extractErrorMessages } from "@/components/ui/error-display"
 import { useApi } from "@/lib/useApi"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export default function UserPaymentPage() {
 	// Account data state
@@ -101,113 +102,30 @@ export default function UserPaymentPage() {
 		} catch (err: any) {
 			const errorMessage = extractErrorMessages(err)
 			setError(errorMessage)
-			setTransactions([])
-			setTotalCount(0)
-			setTotalPages(1)
 			toast({ title: t("payment.failedToLoadTransactions"), description: errorMessage, variant: "destructive" })
 		} finally {
 			setLoading(false)
 		}
 	}
 
+	// Fetch networks
+	const fetchNetworks = async () => {
+		setNetworksLoading(true)
+		try {
+			const endpoint = `${baseUrl.replace(/\/$/, "")}/api/payments/networks/`
+			const data = await apiFetch(endpoint)
+			setNetworks(data.results || [])
+		} catch (err: any) {
+			console.error("Failed to fetch networks:", err)
+		} finally {
+			setNetworksLoading(false)
+		}
+	}
+
 	useEffect(() => {
 		fetchTransactions()
-	}, [searchTerm, currentPage, itemsPerPage, baseUrl, typeFilter, sortField, sortDirection, t, toast, apiFetch])
-
-	// Fetch networks when create modal opens
-	useEffect(() => {
-		const fetchNetworks = async () => {
-			if (!createModalOpen) return
-			setNetworksLoading(true)
-			try {
-				const endpoint = `${baseUrl.replace(/\/$/, "")}/api/payments/networks/`
-				const data = await apiFetch(endpoint)
-				setNetworks(data.results || [])
-			} catch (err: any) {
-				const errorMessage = extractErrorMessages(err)
-				toast({ title: t("payment.failedToLoadNetworks"), description: errorMessage, variant: "destructive" })
-			} finally {
-				setNetworksLoading(false)
-			}
-		}
 		fetchNetworks()
-	}, [createModalOpen, baseUrl, apiFetch, t, toast])
-
-	const startIndex = (currentPage - 1) * itemsPerPage
-
-	const handleSort = (field: "amount" | "created_at" | "type") => {
-		if (sortField === field) {
-			setSortDirection(sortDirection === "asc" ? "desc" : "asc")
-		} else {
-			setSortField(field)
-			setSortDirection("desc")
-		}
-	}
-
-	const handleCreateTransaction = async () => {
-		setCreateLoading(true)
-		setCreateError("")
-		try {
-			const payload = {
-				type: transactionForm.type,
-				amount: parseFloat(transactionForm.amount),
-				recipient_phone: transactionForm.recipient_phone,
-				network: transactionForm.network,
-				objet: transactionForm.objet
-			}
-
-			const endpoint = `${baseUrl.replace(/\/$/, "")}/api/payments/user/transactions/`
-			await apiFetch(endpoint, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json"
-				},
-				body: JSON.stringify(payload)
-			})
-			
-			toast({ 
-				title: t("payment.success"), 
-				description: t(`payment.${transactionForm.type}CreatedSuccessfully`) || `${transactionForm.type} created successfully!`
-			})
-			setCreateModalOpen(false)
-			setTransactionForm({
-				type: "deposit",
-				amount: "",
-				recipient_phone: "",
-				network: "",
-				objet: ""
-			})
-			// Refresh data
-			setCurrentPage(1)
-		} catch (err: any) {
-			const errorMessage = extractErrorMessages(err)
-			setCreateError(errorMessage)
-			toast({ title: t("payment.createFailed"), description: errorMessage, variant: "destructive" })
-		} finally {
-			setCreateLoading(false)
-		}
-	}
-
-	const getTransactionIcon = (type: string, isCredit: boolean) => {
-		if (isCredit) {
-			return <TrendingUp className="h-4 w-4 text-green-600" />
-		} else {
-			return <TrendingDown className="h-4 w-4 text-red-600" />
-		}
-	}
-
-	const getTransactionBadgeVariant = (type: string) => {
-		switch (type) {
-			case "deposit":
-				return "default"
-			case "withdraw":
-				return "secondary"
-			case "recharge":
-				return "outline"
-			default:
-				return "secondary"
-		}
-	}
+	}, [currentPage, searchTerm, typeFilter, sortField, sortDirection])
 
 	const refreshAccountData = async () => {
 		setAccountLoading(true)
@@ -224,33 +142,118 @@ export default function UserPaymentPage() {
 		}
 	}
 
-	const refreshTransactions = async () => {
-		await fetchTransactions()
-		toast({ 
-			title: t("payment.transactionsRefreshed") || "Transactions Refreshed", 
-			description: t("payment.transactionDataUpdated") || "Transaction data has been updated"
-		})
+	const handleSort = (field: "amount" | "created_at" | "type") => {
+		if (sortField === field) {
+			setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+		} else {
+			setSortField(field)
+			setSortDirection("desc")
+		}
 	}
 
+	const handleCreateTransaction = async () => {
+		setCreateLoading(true)
+		setCreateError("")
+		try {
+			const endpoint = `${baseUrl.replace(/\/$/, "")}/api/payments/user/account/transactions/`
+			const payload = {
+				type: transactionForm.type,
+				amount: parseFloat(transactionForm.amount),
+				recipient_phone: transactionForm.recipient_phone,
+				network: transactionForm.network,
+				objet: transactionForm.objet
+			}
+			await apiFetch(endpoint, {
+				method: "POST",
+				body: JSON.stringify(payload)
+			})
+			toast({ title: t("payment.transactionCreated"), description: t("payment.transactionCreatedSuccessfully") })
+			setCreateModalOpen(false)
+			setTransactionForm({
+				type: "deposit",
+				amount: "",
+				recipient_phone: "",
+				network: "",
+				objet: ""
+			})
+			fetchTransactions()
+			refreshAccountData()
+		} catch (err: any) {
+			const errorMessage = extractErrorMessages(err)
+			setCreateError(errorMessage)
+			toast({ title: t("payment.failedToCreateTransaction"), description: errorMessage, variant: "destructive" })
+		} finally {
+			setCreateLoading(false)
+		}
+	}
+
+	const copyToClipboard = (text: string) => {
+		navigator.clipboard.writeText(text)
+		toast({ title: t("common.copied"), description: t("common.copiedToClipboard") })
+	}
+
+	const startIndex = (currentPage - 1) * itemsPerPage
+
 	return (
-		<div className="container mx-auto p-6 space-y-6">
-			{/* Account Overview */}
-			<Card>
-				<CardHeader>
-					<div className="flex justify-between items-center">
-						<CardTitle className="flex items-center gap-2">
-							<Wallet className="h-5 w-5" />
-							{t("payment.accountOverview") || "Account Overview"}
-						</CardTitle>
-						<Button variant="outline" size="sm" onClick={refreshAccountData} disabled={accountLoading}>
+		<div className="space-y-4 md:space-y-6 lg:space-y-8 overflow-x-hidden">
+			{/* Hero Section */}
+			<div className="relative overflow-hidden rounded-2xl md:rounded-3xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 p-4 md:p-8 text-white shadow-2xl">
+				<div className="absolute inset-0 bg-black/10"></div>
+				<div className="relative z-10">
+					<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+						<div className="flex-1">
+							<h1 className="text-2xl md:text-4xl font-bold tracking-tight mb-2">Gestion des Transactions</h1>
+							<p className="text-blue-100 text-sm md:text-lg">Gérez vos transactions et votre compte</p>
+						</div>
+						<div className="flex md:hidden items-center justify-center">
+							<div className="bg-white/20 backdrop-blur-sm rounded-xl p-3 w-full">
+								<div className="text-lg font-bold text-center">{accountData?.formatted_balance || "0 FCFA"}</div>
+								<div className="text-blue-100 text-xs text-center">Solde actuel</div>
+							</div>
+						</div>
+						<div className="hidden md:flex items-center space-x-4">
+							<div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4">
+								<div className="text-2xl font-bold">{accountData?.formatted_balance || "0 FCFA"}</div>
+								<div className="text-blue-100 text-sm">Solde actuel</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				{/* Decorative elements */}
+				<div className="absolute top-0 right-0 w-16 h-16 md:w-32 md:h-32 bg-white/10 rounded-full blur-2xl"></div>
+				<div className="absolute bottom-0 left-0 w-12 h-12 md:w-24 md:h-24 bg-white/10 rounded-full blur-2xl"></div>
+			</div>
+
+			{/* Account Overview Section */}
+			<div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl md:rounded-3xl border border-white/20 dark:border-gray-700/50 shadow-xl">
+				<div className="p-4 md:p-8">
+					<div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 md:mb-8">
+						<div className="flex items-center gap-2 md:gap-3">
+							<div className="p-2 md:p-3 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl md:rounded-2xl">
+								<Wallet className="h-5 w-5 md:h-6 md:w-6 text-white" />
+							</div>
+							<div>
+								<h2 className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white">Vue d'ensemble du Compte</h2>
+								<p className="text-sm md:text-base text-gray-500 dark:text-gray-400">Informations détaillées de votre compte</p>
+							</div>
+						</div>
+						<Button 
+							variant="outline" 
+							size="sm" 
+							onClick={refreshAccountData} 
+							disabled={accountLoading}
+							className="rounded-xl md:rounded-2xl border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 w-full sm:w-auto"
+						>
 							<RefreshCw className={`h-4 w-4 mr-2 ${accountLoading ? 'animate-spin' : ''}`} />
 							{t("common.refresh") || "Refresh"}
 						</Button>
 					</div>
-				</CardHeader>
-				<CardContent>
+					
 					{accountLoading ? (
-						<div className="p-8 text-center text-muted-foreground">{t("common.loading")}</div>
+						<div className="p-8 md:p-12 text-center">
+							<div className="animate-spin rounded-full h-10 w-10 md:h-12 md:w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+							<p className="text-sm md:text-base text-gray-500 dark:text-gray-400">{t("common.loading")}</p>
+						</div>
 					) : accountError ? (
 						<ErrorDisplay
 							error={accountError}
@@ -259,352 +262,385 @@ export default function UserPaymentPage() {
 							showDismiss={false}
 						/>
 					) : accountData ? (
-						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-							<div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg">
-								<div className="flex items-center justify-between">
-									<div>
-										<p className="text-sm font-medium text-blue-600">{t("payment.currentBalance") || "Current Balance"}</p>
-										<p className="text-2xl font-bold text-blue-900">{accountData.formatted_balance}</p>
+						<div className="space-y-6 md:space-y-8">
+							{/* Main Balance Cards */}
+							<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+								<div className="relative overflow-hidden bg-gradient-to-br from-blue-500 to-blue-600 p-4 md:p-6 rounded-2xl md:rounded-3xl text-white shadow-lg">
+									<div className="absolute top-0 right-0 w-16 h-16 md:w-32 md:h-32 bg-white/10 rounded-full blur-2xl"></div>
+									<div className="relative z-10">
+										<div className="flex items-center justify-between mb-3 md:mb-4">
+											<Wallet className="h-6 w-6 md:h-8 md:w-8 text-blue-100" />
+											<div className="w-2 h-2 md:w-3 md:h-3 bg-green-400 rounded-full animate-pulse"></div>
+										</div>
+										<p className="text-blue-100 text-xs md:text-sm font-medium mb-2">Solde Actuel</p>
+										<p className="text-xl md:text-3xl font-bold">{accountData.formatted_balance}</p>
 									</div>
-									<Wallet className="h-8 w-8 text-blue-600" />
+								</div>
+
+								<div className="relative overflow-hidden bg-gradient-to-br from-green-500 to-green-600 p-4 md:p-6 rounded-2xl md:rounded-3xl text-white shadow-lg">
+									<div className="absolute top-0 right-0 w-16 h-16 md:w-32 md:h-32 bg-white/10 rounded-full blur-2xl"></div>
+									<div className="relative z-10">
+										<div className="flex items-center justify-between mb-3 md:mb-4">
+											<TrendingUp className="h-6 w-6 md:h-8 md:w-8 text-green-100" />
+											<div className="w-2 h-2 md:w-3 md:h-3 bg-green-400 rounded-full"></div>
+										</div>
+										<p className="text-green-100 text-xs md:text-sm font-medium mb-2">Total Rechargé</p>
+										<p className="text-xl md:text-3xl font-bold">{accountData.total_recharged} FCFA</p>
+									</div>
+								</div>
+
+								<div className="relative overflow-hidden bg-gradient-to-br from-purple-500 to-purple-600 p-4 md:p-6 rounded-2xl md:rounded-3xl text-white shadow-lg">
+									<div className="absolute top-0 right-0 w-16 h-16 md:w-32 md:h-32 bg-white/10 rounded-full blur-2xl"></div>
+									<div className="relative z-10">
+										<div className="flex items-center justify-between mb-3 md:mb-4">
+											<TrendingDown className="h-6 w-6 md:h-8 md:w-8 text-purple-100" />
+											<div className="w-2 h-2 md:w-3 md:h-3 bg-purple-400 rounded-full"></div>
+										</div>
+										<p className="text-purple-100 text-xs md:text-sm font-medium mb-2">Total Déposé</p>
+										<p className="text-xl md:text-3xl font-bold">{accountData.total_deposited} FCFA</p>
+									</div>
+								</div>
+
+								<div className="relative overflow-hidden bg-gradient-to-br from-orange-500 to-orange-600 p-4 md:p-6 rounded-2xl md:rounded-3xl text-white shadow-lg">
+									<div className="absolute top-0 right-0 w-16 h-16 md:w-32 md:h-32 bg-white/10 rounded-full blur-2xl"></div>
+									<div className="relative z-10">
+										<div className="flex items-center justify-between mb-3 md:mb-4">
+											<TrendingDown className="h-6 w-6 md:h-8 md:w-8 text-orange-100" />
+											<div className="w-2 h-2 md:w-3 md:h-3 bg-orange-400 rounded-full"></div>
+										</div>
+										<p className="text-orange-100 text-xs md:text-sm font-medium mb-2">Total Retiré</p>
+										<p className="text-xl md:text-3xl font-bold">{accountData.total_withdrawn} FCFA</p>
+									</div>
 								</div>
 							</div>
 
-							<div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg">
-								<div className="flex items-center justify-between">
-									<div>
-										<p className="text-sm font-medium text-green-600">{t("payment.totalRecharged") || "Total Recharged"}</p>
-										<p className="text-2xl font-bold text-green-900">{accountData.total_recharged} FCFA</p>
+							{/* Account Status */}
+							<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+								<div className="bg-gray-50 dark:bg-gray-800 p-4 md:p-6 rounded-xl md:rounded-2xl border border-gray-200 dark:border-gray-700">
+									<div className="flex items-center justify-between">
+										<div>
+											<p className="text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Statut du Compte</p>
+											<Badge variant={accountData.is_active ? "default" : "destructive"} className="text-xs md:text-sm">
+												{accountData.is_active ? "Actif" : "Inactif"}
+											</Badge>
+										</div>
+										<div className={`w-2 h-2 md:w-3 md:h-3 rounded-full ${accountData.is_active ? 'bg-green-500' : 'bg-red-500'}`}></div>
 									</div>
-									<TrendingUp className="h-8 w-8 text-green-600" />
 								</div>
-							</div>
 
-							<div className="bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-lg">
-								<div className="flex items-center justify-between">
-									<div>
-										<p className="text-sm font-medium text-purple-600">{t("payment.totalDeposited") || "Total Deposited"}</p>
-										<p className="text-2xl font-bold text-purple-900">{accountData.total_deposited} FCFA</p>
+								<div className="bg-gray-50 dark:bg-gray-800 p-4 md:p-6 rounded-xl md:rounded-2xl border border-gray-200 dark:border-gray-700">
+									<div className="flex items-center justify-between">
+										<div>
+											<p className="text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Compte Gelé</p>
+											<Badge variant={accountData.is_frozen ? "destructive" : "default"} className="text-xs md:text-sm">
+												{accountData.is_frozen ? "Oui" : "Non"}
+											</Badge>
+										</div>
+										<div className={`w-2 h-2 md:w-3 md:h-3 rounded-full ${accountData.is_frozen ? 'bg-red-500' : 'bg-green-500'}`}></div>
 									</div>
-									<TrendingDown className="h-8 w-8 text-purple-600" />
 								</div>
-							</div>
 
-							<div className="bg-gradient-to-r from-orange-50 to-orange-100 p-4 rounded-lg">
-								<div className="flex items-center justify-between">
-									<div>
-										<p className="text-sm font-medium text-orange-600">{t("payment.totalWithdrawn") || "Total Withdrawn"}</p>
-										<p className="text-2xl font-bold text-orange-900">{accountData.total_withdrawn} FCFA</p>
+								<div className="bg-gray-50 dark:bg-gray-800 p-4 md:p-6 rounded-xl md:rounded-2xl border border-gray-200 dark:border-gray-700 sm:col-span-2 lg:col-span-1">
+									<div className="flex items-center justify-between">
+										<div>
+											<p className="text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Taux d'Utilisation</p>
+											<p className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white">{(accountData.utilization_rate * 100).toFixed(1)}%</p>
+										</div>
+										<div className="w-8 h-8 md:w-12 md:h-12 bg-blue-100 dark:bg-blue-900/20 rounded-xl md:rounded-2xl flex items-center justify-center">
+											<div className="w-4 h-4 md:w-6 md:h-6 bg-blue-500 rounded-full"></div>
+										</div>
 									</div>
-									<TrendingDown className="h-8 w-8 text-orange-600" />
 								</div>
 							</div>
 						</div>
 					) : null}
+				</div>
+			</div>
 
-					{accountData && (
-						<div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-							<div className="flex items-center justify-between p-3 border rounded-lg">
-								<span className="text-sm font-medium">{t("payment.accountStatus") || "Account Status"}</span>
-								<Badge variant={accountData.is_active ? "default" : "destructive"}>
-									{accountData.is_active ? (t("payment.active") || "Active") : (t("payment.inactive") || "Inactive")}
-								</Badge>
+			{/* Transactions Section */}
+			<div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl md:rounded-3xl border border-white/20 dark:border-gray-700/50 shadow-xl overflow-hidden">
+				<div className="p-4 md:p-8 border-b border-gray-200/50 dark:border-gray-700/50">
+					<div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+						<div className="flex items-center gap-2 md:gap-3">
+							<div className="p-2 md:p-3 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl md:rounded-2xl">
+								<Activity className="h-5 w-5 md:h-6 md:w-6 text-white" />
 							</div>
-
-							<div className="flex items-center justify-between p-3 border rounded-lg">
-								<span className="text-sm font-medium">{t("payment.accountFrozen") || "Account Frozen"}</span>
-								<Badge variant={accountData.is_frozen ? "destructive" : "default"}>
-									{accountData.is_frozen ? (t("common.yes") || "Yes") : (t("common.no") || "No")}
-								</Badge>
-							</div>
-
-							<div className="flex items-center justify-between p-3 border rounded-lg">
-								<span className="text-sm font-medium">{t("payment.utilizationRate") || "Utilization Rate"}</span>
-								<span className="font-semibold">{(accountData.utilization_rate * 100).toFixed(1)}%</span>
+							<div>
+								<h2 className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white">Transactions</h2>
+								<p className="text-sm md:text-base text-gray-500 dark:text-gray-400">Historique et gestion des transactions</p>
 							</div>
 						</div>
-					)}
-				</CardContent>
-			</Card>
-
-			{/* Transactions */}
-			<Card>
-				<CardHeader>
-					<div className="flex justify-between items-center">
-						<CardTitle>{t("payment.transactionHistory") || "Transaction History"}</CardTitle>
-						<div className="flex gap-2">
-							<Button variant="outline" size="sm" onClick={refreshTransactions} disabled={loading}>
+						<div className="flex flex-col sm:flex-row gap-3 md:gap-4 w-full lg:w-auto">
+							<Button 
+								variant="outline" 
+								size="sm" 
+								onClick={fetchTransactions} 
+								disabled={loading}
+								className="rounded-xl md:rounded-2xl border-2 hover:bg-green-50 dark:hover:bg-green-900/20 w-full sm:w-auto"
+							>
 								<RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-								{t("common.refresh") || "Refresh"}
+								{t("common.refresh") || "Actualiser"}
 							</Button>
-							{/* <Button onClick={() => setCreateModalOpen(true)}>
+							{/* <Button 
+								onClick={() => setCreateModalOpen(true)}
+								className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl md:rounded-2xl w-full sm:w-auto"
+							>
 								<Plus className="h-4 w-4 mr-2" />
-								{t("payment.newTransaction") || "New Transaction"}
+								Nouvelle Transaction
 							</Button> */}
 						</div>
 					</div>
-				</CardHeader>
-				<CardContent>
-					{/* Search & Filter */}
-					<div className="flex flex-col sm:flex-row gap-4 mb-6 items-center">
+				</div>
+
+				<div className="p-4 md:p-8">
+					{/* Filters and Search */}
+					<div className="flex flex-col lg:flex-row gap-3 md:gap-4 mb-4 md:mb-6">
 						<div className="relative flex-1">
-							<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+							<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
 							<Input
-								placeholder={t("payment.searchTransactions") || "Search transactions..."}
+								placeholder="Rechercher des transactions..."
 								value={searchTerm}
 								onChange={(e) => setSearchTerm(e.target.value)}
-								className="pl-10"
+								className="pl-10 h-10 md:h-12 rounded-xl md:rounded-2xl border-2 focus:border-blue-500 text-sm md:text-base"
 							/>
 						</div>
-						<select
-							value={typeFilter}
-							onChange={(e) => setTypeFilter(e.target.value)}
-							className="w-full sm:w-48 border rounded px-3 py-2 bg-background"
-						>
-							<option value="all">{t("payment.allTypes") || "All Types"}</option>
-							<option value="deposit">{t("payment.deposit") || "Deposit"}</option>
-							<option value="withdraw">{t("payment.withdraw") || "Withdraw"}</option>
-							<option value="recharge">{t("payment.recharge") || "Recharge"}</option>
-						</select>
+						<Select value={typeFilter} onValueChange={setTypeFilter}>
+							<SelectTrigger className="w-full lg:w-48 rounded-xl md:rounded-2xl border-2 h-10 md:h-12">
+								<SelectValue placeholder="Type de transaction" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="all">Tous les types</SelectItem>
+								<SelectItem value="deposit">Dépôt</SelectItem>
+								<SelectItem value="withdrawal">Retrait</SelectItem>
+							</SelectContent>
+						</Select>
 					</div>
 
-					{/* Table */}
-					<div className="rounded-md border">
-						{loading ? (
-							<div className="p-8 text-center text-muted-foreground">{t("common.loading")}</div>
-						) : error ? (
-							<ErrorDisplay
-								error={error}
-								onRetry={() => {
-									setCurrentPage(1)
-									setError("")
-								}}
-								variant="full"
-								showDismiss={false}
-							/>
-						) : (
-							<Table>
-								<TableHeader>
-									<TableRow>
-										<TableHead>{t("payment.reference") || "Reference"}</TableHead>
-										<TableHead>
-											<Button variant="ghost" onClick={() => handleSort("type")} className="h-auto p-0 font-semibold">
-												{t("payment.type") || "Type"}
-												<ArrowUpDown className="ml-2 h-4 w-4" />
-											</Button>
-										</TableHead>
-										<TableHead>
-											<Button variant="ghost" onClick={() => handleSort("amount")} className="h-auto p-0 font-semibold">
-												{t("payment.amount") || "Amount"}
-												<ArrowUpDown className="ml-2 h-4 w-4" />
-											</Button>
-										</TableHead>
-										<TableHead>{t("payment.balanceBefore") || "Balance Before"}</TableHead>
-										<TableHead>{t("payment.balanceAfter") || "Balance After"}</TableHead>
-										<TableHead>{t("payment.description") || "Description"}</TableHead>
-										<TableHead>
-											<Button variant="ghost" onClick={() => handleSort("created_at")} className="h-auto p-0 font-semibold">
-												{t("payment.date") || "Date"}
-												<ArrowUpDown className="ml-2 h-4 w-4" />
-											</Button>
-										</TableHead>
-									</TableRow>
-								</TableHeader>
-								<TableBody>
-									{transactions.length === 0 ? (
-										<TableRow>
-											<TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-												{t("payment.noTransactions") || "No transactions found"}
-											</TableCell>
+					{/* Transactions Table */}
+					{loading ? (
+						<div className="text-center py-8 md:py-12">
+							<div className="animate-spin rounded-full h-10 w-10 md:h-12 md:w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+							<p className="text-sm md:text-base text-gray-500 dark:text-gray-400">Chargement des transactions...</p>
+						</div>
+					) : error ? (
+						<ErrorDisplay error={error} variant="full" />
+					) : (
+						<div className="bg-white/50 dark:bg-gray-800/50 rounded-xl md:rounded-2xl border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
+							<div className="overflow-x-auto">
+								<Table>
+									<TableHeader>
+										<TableRow className="bg-gray-50 dark:bg-gray-800/50">
+											<TableHead className="font-semibold text-xs md:text-sm py-3 md:py-4 px-3 md:px-6">Référence</TableHead>
+											<TableHead className="font-semibold text-xs md:text-sm py-3 md:py-4 px-3 md:px-6">Type</TableHead>
+											<TableHead className="font-semibold cursor-pointer text-xs md:text-sm py-3 md:py-4 px-3 md:px-6" onClick={() => handleSort("amount")}>
+												<div className="flex items-center gap-1 md:gap-2">
+													Montant
+													<ArrowUpDown className="h-3 w-3 md:h-4 md:w-4" />
+												</div>
+											</TableHead>
+											<TableHead className="font-semibold text-xs md:text-sm py-3 md:py-4 px-3 md:px-6">Statut</TableHead>
+											<TableHead className="font-semibold cursor-pointer text-xs md:text-sm py-3 md:py-4 px-3 md:px-6 hidden md:table-cell" onClick={() => handleSort("created_at")}>
+												<div className="flex items-center gap-1 md:gap-2">
+													Date
+													<ArrowUpDown className="h-3 w-3 md:h-4 md:w-4" />
+												</div>
+											</TableHead>
+											<TableHead className="font-semibold text-xs md:text-sm py-3 md:py-4 px-3 md:px-6">Actions</TableHead>
 										</TableRow>
-									) : (
-										transactions.map((transaction) => (
-											<TableRow key={transaction.uid}>
-												<TableCell>
-													<div className="flex items-center gap-2">
-														<span className="font-mono text-sm">{transaction.reference}</span>
-														<Button
-															variant="ghost"
-															size="icon"
-															className="h-5 w-5"
-															onClick={() => {
-																navigator.clipboard.writeText(transaction.reference)
-																toast({ title: t("payment.referenceCopied") || "Reference copied!" })
-															}}
-														>
-															<Copy className="h-3 w-3" />
-														</Button>
+									</TableHeader>
+									<TableBody>
+										{transactions.length === 0 ? (
+											<TableRow>
+												<TableCell colSpan={6} className="text-center py-6 md:py-8">
+													<div className="text-center">
+														<CreditCard className="h-8 w-8 md:h-12 md:w-12 text-gray-400 mx-auto mb-3 md:mb-4" />
+														<p className="text-sm md:text-base text-gray-500 dark:text-gray-400">Aucune transaction trouvée</p>
 													</div>
 												</TableCell>
-												<TableCell>
-													<div className="flex items-center gap-2">
-														{getTransactionIcon(transaction.type, transaction.is_credit)}
-														<Badge variant={getTransactionBadgeVariant(transaction.type)}>
-															{transaction.type_display || transaction.type}
-														</Badge>
-													</div>
-												</TableCell>
-												<TableCell className={`font-semibold ${transaction.is_credit ? 'text-green-600' : 'text-red-600'}`}>
-													{transaction.formatted_amount}
-												</TableCell>
-												<TableCell>{transaction.balance_before} FCFA</TableCell>
-												<TableCell>{transaction.balance_after} FCFA</TableCell>
-												<TableCell className="max-w-xs truncate" title={transaction.description}>
-													{transaction.description}
-												</TableCell>
-												<TableCell>{new Date(transaction.created_at).toLocaleDateString()}</TableCell>
 											</TableRow>
-										))
-									)}
-								</TableBody>
-							</Table>
-						)}
-					</div>
+										) : (
+											transactions.map((transaction) => (
+												<TableRow key={transaction.uid} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+													<TableCell className="py-3 md:py-4 px-3 md:px-6">
+														<div className="flex items-center gap-1 md:gap-2">
+															<span className="font-mono text-xs md:text-sm">{transaction.reference}</span>
+															<Button
+																variant="ghost"
+																size="sm"
+																onClick={() => copyToClipboard(transaction.reference)}
+																className="h-5 w-5 md:h-6 md:w-6 p-0"
+															>
+																<Copy className="h-2 w-2 md:h-3 md:w-3" />
+															</Button>
+														</div>
+													</TableCell>
+													<TableCell className="py-3 md:py-4 px-3 md:px-6">
+														<Badge variant={transaction.type === "deposit" ? "default" : "secondary"} className="text-xs">
+															{transaction.type === "deposit" ? "Dépôt" : "Retrait"}
+														</Badge>
+													</TableCell>
+													<TableCell className="font-semibold py-3 md:py-4 px-3 md:px-6 text-sm md:text-base">{transaction.formatted_amount}</TableCell>
+													<TableCell className="py-3 md:py-4 px-3 md:px-6">
+														<Badge 
+															variant={
+																transaction.status === "completed" ? "default" :
+																transaction.status === "pending" ? "secondary" :
+																"destructive"
+															}
+															className="text-xs"
+														>
+															{transaction.status_display}
+														</Badge>
+													</TableCell>
+													<TableCell className="text-xs md:text-sm text-gray-500 dark:text-gray-400 py-3 md:py-4 px-3 md:px-6 hidden md:table-cell">
+														{new Date(transaction.created_at).toLocaleDateString("fr-FR")}
+													</TableCell>
+													<TableCell className="py-3 md:py-4 px-3 md:px-6">
+														<Button variant="ghost" size="sm" className="rounded-lg md:rounded-xl text-xs md:text-sm">
+															Détails
+														</Button>
+													</TableCell>
+												</TableRow>
+											))
+										)}
+									</TableBody>
+								</Table>
+							</div>
+						</div>
+					)}
 
 					{/* Pagination */}
 					{totalPages > 1 && (
-						<div className="flex items-center justify-between mt-6">
-							<div className="text-sm text-muted-foreground">
-								{`${t("payment.showingResults") || "Showing"}: ${startIndex + 1}-${Math.min(startIndex + itemsPerPage, totalCount)} / ${totalCount}`}
+						<div className="flex flex-col sm:flex-row items-center justify-between gap-3 md:gap-4 mt-4 md:mt-6">
+							<div className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
+								Affichage {startIndex + 1} à {Math.min(startIndex + itemsPerPage, totalCount)} sur {totalCount} transactions
 							</div>
-							<div className="flex items-center space-x-2">
+							<div className="flex items-center gap-2">
 								<Button
 									variant="outline"
 									size="sm"
-									onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+									onClick={() => setCurrentPage(currentPage - 1)}
 									disabled={currentPage === 1}
+									className="rounded-lg md:rounded-xl text-xs md:text-sm px-2 md:px-3 py-1 md:py-2"
 								>
-									<ChevronLeft className="h-4 w-4 mr-1" />
-									{t("common.previous")}
+									<ChevronLeft className="h-3 w-3 md:h-4 md:w-4 mr-1" />
+									<span className="hidden sm:inline">Précédent</span>
+									<span className="sm:hidden">Prev</span>
 								</Button>
-								<div className="text-sm">
-									{`${t("payment.pageOf") || "Page"}: ${currentPage}/${totalPages}`}
-								</div>
+								<span className="text-xs md:text-sm font-medium px-2 md:px-3 py-1 md:py-2">
+									Page {currentPage} sur {totalPages}
+								</span>
 								<Button
 									variant="outline"
 									size="sm"
-									onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+									onClick={() => setCurrentPage(currentPage + 1)}
 									disabled={currentPage === totalPages}
+									className="rounded-lg md:rounded-xl text-xs md:text-sm px-2 md:px-3 py-1 md:py-2"
 								>
-									{t("common.next")}
-									<ChevronRight className="h-4 w-4 ml-1" />
+									<span className="hidden sm:inline">Suivant</span>
+									<span className="sm:hidden">Next</span>
+									<ChevronRight className="h-3 w-3 md:h-4 md:w-4 ml-1" />
 								</Button>
 							</div>
 						</div>
 					)}
-				</CardContent>
-			</Card>
+				</div>
+			</div>
 
 			{/* Create Transaction Modal */}
-			<Dialog open={createModalOpen} onOpenChange={(open) => { 
-				if (!open) {
-					setCreateModalOpen(false)
-					setCreateError("")
-					setTransactionForm({
-						type: "deposit",
-						amount: "",
-						recipient_phone: "",
-						network: "",
-						objet: ""
-					})
-				}
-			}}>
-				<DialogContent className="sm:max-w-[500px]">
+			<Dialog open={createModalOpen} onOpenChange={setCreateModalOpen}>
+				<DialogContent className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 rounded-2xl md:rounded-3xl mx-4 sm:mx-0">
 					<DialogHeader>
-						<DialogTitle>{t("payment.newTransaction") || "Create New Transaction"}</DialogTitle>
+						<DialogTitle className="text-lg md:text-2xl font-bold">Nouvelle Transaction</DialogTitle>
 					</DialogHeader>
-					
-					{createError && (
-						<ErrorDisplay
-							error={createError}
-							variant="inline"
-							showRetry={false}
-							className="mb-4"
-						/>
-					)}
-
-					<div className="space-y-4">
-						<div>
-							<Label htmlFor="type">{t("payment.transactionType") || "Transaction Type"} *</Label>
-							<select
-								id="type"
-								value={transactionForm.type}
-								onChange={(e) => setTransactionForm(prev => ({ ...prev, type: e.target.value as "deposit" | "withdraw" }))}
-								className="w-full border rounded px-3 py-2 bg-background"
-								required
-							>
-								<option value="deposit">{t("payment.deposit") || "Deposit"}</option>
-								<option value="withdraw">{t("payment.withdraw") || "Withdraw"}</option>
-							</select>
+					<div className="space-y-4 md:space-y-6">
+						<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+							<div>
+								<Label htmlFor="type" className="text-xs md:text-sm">Type de Transaction</Label>
+								<Select 
+									value={transactionForm.type} 
+									onValueChange={(value: "deposit" | "withdraw") => setTransactionForm({...transactionForm, type: value})}
+								>
+									<SelectTrigger className="rounded-xl md:rounded-2xl border-2 h-10 md:h-12">
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="deposit">Dépôt</SelectItem>
+										<SelectItem value="withdraw">Retrait</SelectItem>
+									</SelectContent>
+								</Select>
+							</div>
+							<div>
+								<Label htmlFor="amount" className="text-xs md:text-sm">Montant (FCFA)</Label>
+								<Input
+									id="amount"
+									type="number"
+									value={transactionForm.amount}
+									onChange={(e) => setTransactionForm({...transactionForm, amount: e.target.value})}
+									placeholder="0"
+									className="rounded-xl md:rounded-2xl border-2 h-10 md:h-12 text-sm md:text-base"
+								/>
+							</div>
 						</div>
-
 						<div>
-							<Label htmlFor="amount">{t("payment.amount") || "Amount"} *</Label>
-							<Input
-								id="amount"
-								type="number"
-								placeholder="Enter amount"
-								value={transactionForm.amount}
-								onChange={(e) => setTransactionForm(prev => ({ ...prev, amount: e.target.value }))}
-								required
-								min="1"
-							/>
-						</div>
-
-						<div>
-							<Label htmlFor="recipient_phone">{t("payment.recipientPhone") || "Recipient Phone"} *</Label>
+							<Label htmlFor="recipient_phone" className="text-xs md:text-sm">Numéro de Téléphone</Label>
 							<Input
 								id="recipient_phone"
-								type="tel"
-								placeholder="Enter phone number"
 								value={transactionForm.recipient_phone}
-								onChange={(e) => setTransactionForm(prev => ({ ...prev, recipient_phone: e.target.value }))}
-								required
+								onChange={(e) => setTransactionForm({...transactionForm, recipient_phone: e.target.value})}
+								placeholder="+225 0700000000"
+								className="rounded-xl md:rounded-2xl border-2 h-10 md:h-12 text-sm md:text-base"
 							/>
 						</div>
-
 						<div>
-							<Label htmlFor="network">{t("payment.network") || "Network"} *</Label>
-							<select
-								id="network"
-								value={transactionForm.network}
-								onChange={(e) => setTransactionForm(prev => ({ ...prev, network: e.target.value }))}
-								className="w-full border rounded px-3 py-2 bg-background"
-								required
-								disabled={networksLoading}
+							<Label htmlFor="network" className="text-xs md:text-sm">Réseau</Label>
+							<Select 
+								value={transactionForm.network} 
+								onValueChange={(value) => setTransactionForm({...transactionForm, network: value})}
 							>
-								<option value="">{networksLoading ? t("common.loading") || "Loading..." : t("payment.selectNetwork") || "Select Network"}</option>
-								{networks.map((network) => (
-									<option key={network.uid} value={network.uid} disabled={!network.is_active}>
-										{network.nom} ({network.country_name}) {!network.is_active && " - " + (t("common.inactive") || "Inactive")}
-									</option>
-								))}
-							</select>
+								<SelectTrigger className="rounded-xl md:rounded-2xl border-2 h-10 md:h-12">
+									<SelectValue placeholder="Sélectionner un réseau" />
+								</SelectTrigger>
+								<SelectContent>
+									{networks.map((network) => (
+										<SelectItem key={network.uid} value={network.uid}>
+											{network.nom}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
 						</div>
-
 						<div>
-							<Label htmlFor="objet">{t("payment.description") || "Description"}</Label>
+							<Label htmlFor="objet" className="text-xs md:text-sm">Objet</Label>
 							<Textarea
 								id="objet"
-								placeholder="Enter transaction description..."
 								value={transactionForm.objet}
-								onChange={(e) => setTransactionForm(prev => ({ ...prev, objet: e.target.value }))}
+								onChange={(e) => setTransactionForm({...transactionForm, objet: e.target.value})}
+								placeholder="Description de la transaction..."
+								className="rounded-xl md:rounded-2xl border-2 text-sm md:text-base"
 								rows={3}
 							/>
 						</div>
+						{createError && (
+							<div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl md:rounded-2xl p-3 md:p-4">
+								<p className="text-red-600 dark:text-red-400 text-xs md:text-sm">{createError}</p>
+							</div>
+						)}
 					</div>
-
-					<div className="flex justify-end gap-2 mt-6">
-						<DialogClose asChild>
-							<Button variant="outline" disabled={createLoading}>
-								{t("common.cancel") || "Cancel"}
-							</Button>
-						</DialogClose>
+					<div className="flex flex-col sm:flex-row justify-end gap-3 mt-4 md:mt-6">
 						<Button 
-							onClick={handleCreateTransaction} 
-							disabled={createLoading || !transactionForm.amount || !transactionForm.recipient_phone || !transactionForm.network}
+							variant="outline" 
+							onClick={() => setCreateModalOpen(false)}
+							className="rounded-xl md:rounded-2xl w-full sm:w-auto text-sm md:text-base px-4 md:px-6 py-2 md:py-3"
 						>
-							{createLoading ? (t("common.processing") || "Processing...") : (t("common.create") || "Create")}
+							Annuler
+						</Button>
+						<Button 
+							onClick={handleCreateTransaction}
+							disabled={createLoading}
+							className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl md:rounded-2xl w-full sm:w-auto text-sm md:text-base px-4 md:px-6 py-2 md:py-3"
+						>
+							{createLoading ? "Création..." : "Créer la Transaction"}
 						</Button>
 					</div>
 				</DialogContent>

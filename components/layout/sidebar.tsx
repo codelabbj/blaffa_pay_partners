@@ -6,14 +6,8 @@ import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/components/providers/language-provider"
-import { BarChart3, LayoutDashboard, CreditCard, LogOut, Menu, X, Zap, ChevronDown, ChevronUp, Globe, Share2, Phone, Monitor, MessageCircle, Bell, Settings, Terminal, User, ChevronDownCircleIcon, BarChart3Icon } from "lucide-react"
+import { BarChart3, LayoutDashboard, CreditCard, LogOut, Menu, X, Zap, ChevronDown, ChevronUp, Globe, Share2, Phone, Monitor, MessageCircle, Bell, Settings, Terminal, User, ChevronDownCircleIcon, BarChart3Icon, Sparkles, Shield, Activity } from "lucide-react"
 import { clearTokens } from "@/lib/api"
-
-// const navigation = [
-//   { name: "nav.dashboard", href: "/dashboard", icon: BarChart3 },
-//   { name: "nav.users", href: "/dashboard/users", icon: Users },
-//   { name: "nav.transactions", href: "/dashboard/transactions", icon: CreditCard },
-// ]
 
 export function Sidebar() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -57,10 +51,37 @@ export function Sidebar() {
   }
 
   // Helper for section headers
-  const SectionHeader = ({ children }: { children: React.ReactNode }) => (
-    <div className="mt-4 mb-2 px-2 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">
+  const SectionHeader = ({ children, icon: Icon }: { children: React.ReactNode, icon?: any }) => (
+    <div className="flex items-center gap-2 mt-8 mb-4 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+      {Icon && <Icon className="h-3 w-3" />}
       {children}
     </div>
+  )
+
+  const NavItem = ({ href, icon: Icon, children, isActive }: { href: string, icon: any, children: React.ReactNode, isActive: boolean }) => (
+    <Link
+      href={href}
+      className={cn(
+        "group relative flex items-center gap-4 px-6 py-4 text-sm font-medium rounded-2xl transition-all duration-300 hover:scale-105",
+        isActive
+          ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/25"
+          : "text-gray-700 hover:bg-white/50 hover:text-blue-600 dark:text-gray-300 dark:hover:bg-gray-800/50 dark:hover:text-white"
+      )}
+      onClick={() => setSidebarOpen(false)}
+    >
+      <div className={cn(
+        "flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-300",
+        isActive
+          ? "bg-white/20 text-white"
+          : "bg-gray-100 text-gray-600 group-hover:bg-blue-100 group-hover:text-blue-600 dark:bg-gray-800 dark:text-gray-400 dark:group-hover:bg-gray-700 dark:group-hover:text-white"
+      )}>
+        <Icon className="h-5 w-5" />
+      </div>
+      <span className="flex-1">{children}</span>
+      {isActive && (
+        <div className="absolute right-2 w-2 h-2 bg-white rounded-full animate-pulse"></div>
+      )}
+    </Link>
   )
 
   return (
@@ -71,357 +92,51 @@ export function Sidebar() {
         sidebarOpen ? "block" : "hidden"
       )}>
         <div
-          className="fixed inset-0 bg-gray-900 bg-opacity-60 backdrop-blur-sm transition-opacity"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
           onClick={() => setSidebarOpen(false)}
         />
-        <div className="fixed inset-y-0 left-0 flex w-72 flex-col bg-white dark:bg-gray-900 h-full shadow-xl transition-transform duration-300">
-          <div className="flex h-16 items-center justify-between px-4 border-b border-gray-200 dark:border-gray-800">
-            <div className="flex items-center space-x-2">
-              <img src="/logo.png" alt="Connect Pro Logo" className="h-10 w-10" />
-              <span className="text-sm font-bold text-gray-800 dark:text-gray-100">Connect Pro Partenaires</span>
+        <div className="fixed inset-y-0 left-0 flex w-80 flex-col bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-r border-white/20 dark:border-gray-700/50 h-full shadow-2xl transition-transform duration-300">
+          <div className="flex h-20 items-center justify-between px-6 border-b border-white/20 dark:border-gray-700/50">
+            <div className="flex items-center space-x-3">
+              <div className="relative">
+                <img src="/logo.png" alt="Blaffa Pay Logo" className="h-12 w-12 rounded-xl shadow-lg" />
+                <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+              </div>
+              <div>
+                <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                  Blaffa Pay
+                </span>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Partenaires</p>
+              </div>
             </div>
-            <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(false)}>
-              <X className="h-6 w-6" />
+            <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(false)} className="rounded-xl">
+              <X className="h-5 w-5" />
             </Button>
           </div>
-          <nav className="flex-1 space-y-2 px-2 py-4 overflow-y-auto min-h-0">
-            <SectionHeader>Generale</SectionHeader>
-            <Link
-              href="/dashboard"
-              aria-label="Dashboard"
-              className={cn(
-                "group flex items-center gap-3 px-3 py-2 text-base rounded-lg font-medium transition-colors",
-                pathname === "/dashboard"
-                  ? "bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-100 shadow"
-                  : "text-gray-700 hover:bg-blue-50 hover:text-blue-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
-              )}
-              onClick={() => setSidebarOpen(false)}
-            >
-              <BarChart3 className="h-5 w-5" />
+          <nav className="flex-1 space-y-2 px-4 py-6 overflow-y-auto min-h-0">
+            <SectionHeader icon={Sparkles}>Générale</SectionHeader>
+            <NavItem href="/dashboard" icon={BarChart3} isActive={pathname === "/dashboard"}>
               {t("nav.dashboard")}
-            </Link>
-            <br></br>
-            <SectionHeader>Gestion des transactions</SectionHeader>
-            <Link
-              href="/dashboard/transactions"
-              aria-label="Transactions"
-              className={cn(
-                "group flex items-center gap-3 px-3 py-2 text-base rounded-lg font-medium transition-colors",
-                pathname === "/dashboard/transactions"
-                  ? "bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-100 shadow"
-                  : "text-gray-700 hover:bg-blue-50 hover:text-blue-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
-              )}
-              onClick={() => setSidebarOpen(false)}
-            >
-              <CreditCard className="h-5 w-5" />
+            </NavItem>
+            
+            <SectionHeader icon={Activity}>Gestion des transactions</SectionHeader>
+            <NavItem href="/dashboard/transactions" icon={CreditCard} isActive={pathname === "/dashboard/transactions"}>
               {t("nav.transactions")}
-            </Link>
-            <Link
-              href="/dashboard/account-transaction"
-              aria-label="Transactions"
-              className={cn(
-                "group flex items-center gap-3 px-3 py-2 text-base rounded-lg font-medium transition-colors",
-                pathname === "/dashboard/account-transaction"
-                  ? "bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-100 shadow"
-                  : "text-gray-700 hover:bg-blue-50 hover:text-blue-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
-              )}
-              onClick={() => setSidebarOpen(false)}
-            >
-              <LayoutDashboard className="h-5 w-5" />
+            </NavItem>
+            <NavItem href="/dashboard/account-transaction" icon={LayoutDashboard} isActive={pathname === "/dashboard/account-transaction"}>
               {t("nav.accountTransaction")}
-            </Link>
-            <Link
-              href="/dashboard/topup"
-              aria-label="Transactions"
-              className={cn(
-                "group flex items-center gap-3 px-3 py-2 text-base rounded-lg font-medium transition-colors",
-                pathname === "/dashboard/topup"
-                  ? "bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-100 shadow"
-                  : "text-gray-700 hover:bg-blue-50 hover:text-blue-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
-              )}
-              onClick={() => setSidebarOpen(false)}
-            >
-              <Zap className="h-5 w-5" />
+            </NavItem>
+            <NavItem href="/dashboard/topup" icon={Zap} isActive={pathname === "/dashboard/topup"}>
               {t("nav.topup")}
-            </Link>
-            
-            
-            {/* Users Dropdown */}
-            {/* <div>
-              <button
-                className={cn(
-                  "group flex items-center w-full gap-3 px-3 py-2 text-base rounded-lg font-medium transition-colors focus:outline-none",
-                  isUsersActive
-                    ? "bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-100 shadow"
-                    : "text-gray-700 hover:bg-blue-50 hover:text-blue-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
-                )}
-                onClick={() => setUsersDropdownOpen((open) => !open)}
-                aria-expanded={usersDropdownOpen}
-                aria-label="Users menu"
-              >
-                <Users className="h-5 w-5" />
-                {t("nav.users")}
-                {usersDropdownOpen ? (
-                  <ChevronUp className="ml-auto h-4 w-4" />
-                ) : (
-                  <ChevronDown className="ml-auto h-4 w-4" />
-                )}
-              </button>
-              <div
-                className={cn(
-                  "pl-8 flex flex-col gap-1 overflow-hidden transition-all duration-300",
-                  usersDropdownOpen ? "max-h-32 opacity-100" : "max-h-0 opacity-0 pointer-events-none"
-                )}
-              >
-                <Link
-                  href="/dashboard/users/register"
-                  className={cn(
-                    "block px-2 py-2 text-sm rounded-md transition-colors",
-                    isRegisterActive
-                      ? "bg-blue-200 text-blue-900 dark:bg-blue-800 dark:text-blue-100 font-semibold"
-                      : "text-gray-600 hover:bg-blue-100 hover:text-blue-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
-                  )}
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  {t("nav.register")}
-                </Link>
-                <Link
-                  href="/dashboard/users/list"
-                  className={cn(
-                    "block px-2 py-2 text-sm rounded-md transition-colors",
-                    isListActive
-                      ? "bg-blue-200 text-blue-900 dark:bg-blue-800 dark:text-blue-100 font-semibold"
-                      : "text-gray-600 hover:bg-blue-100 hover:text-blue-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
-                  )}
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  {t("nav.userList")}
-                </Link>
-              </div>
-            </div> */}
-            
-            {/* Country Dropdown */}
-            {/* <div>
-              <button
-                className={cn(
-                  "group flex items-center w-full gap-3 px-3 py-2 text-base rounded-lg font-medium transition-colors focus:outline-none",
-                  isCountryActive
-                    ? "bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-100 shadow"
-                    : "text-gray-700 hover:bg-blue-50 hover:text-blue-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
-                )}
-                onClick={() => setCountryDropdownOpen((open) => !open)}
-                aria-expanded={countryDropdownOpen}
-                aria-label="Country menu"
-              >
-                <Globe className="h-5 w-5" />
-                {t("nav.country")}
-                {countryDropdownOpen ? (
-                  <ChevronUp className="ml-auto h-4 w-4" />
-                ) : (
-                  <ChevronDown className="ml-auto h-4 w-4" />
-                )}
-              </button>
-              <div
-                className={cn(
-                  "pl-8 flex flex-col gap-1 overflow-hidden transition-all duration-300",
-                  countryDropdownOpen ? "max-h-32 opacity-100" : "max-h-0 opacity-0 pointer-events-none"
-                )}
-              >
-                <Link href="/dashboard/country/list" className={cn(
-                  "block px-2 py-2 text-sm rounded-md transition-colors",
-                  isCountryListActive
-                    ? "bg-blue-200 text-blue-900 dark:bg-blue-800 dark:text-blue-100 font-semibold"
-                    : "text-gray-600 hover:bg-blue-100 hover:text-blue-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
-                )}>{t("nav.countryList")}</Link>
-                <Link href="/dashboard/country/create" className={cn(
-                  "block px-2 py-2 text-sm rounded-md transition-colors",
-                  isCountryCreateActive
-                    ? "bg-blue-200 text-blue-900 dark:bg-blue-800 dark:text-blue-100 font-semibold"
-                    : "text-gray-600 hover:bg-blue-100 hover:text-blue-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
-                )}>{t("nav.countryCreate")}</Link>
-              </div>
-            </div> */}
-            {/* Network Dropdown */}
-            {/* <div>
-              <button
-                className={cn(
-                  "group flex items-center w-full gap-3 px-3 py-2 text-base rounded-lg font-medium transition-colors focus:outline-none",
-                  isNetworkActive
-                    ? "bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-100 shadow"
-                    : "text-gray-700 hover:bg-blue-50 hover:text-blue-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
-                )}
-                onClick={() => setNetworkDropdownOpen((open) => !open)}
-                aria-expanded={networkDropdownOpen}
-                aria-label="Network menu"
-              >
-                <Share2 className="h-5 w-5" />
-                {t("nav.network")}
-                {networkDropdownOpen ? (
-                  <ChevronUp className="ml-auto h-4 w-4" />
-                ) : (
-                  <ChevronDown className="ml-auto h-4 w-4" />
-                )}
-              </button>
-              <div
-                className={cn(
-                  "pl-8 flex flex-col gap-1 overflow-hidden transition-all duration-300",
-                  networkDropdownOpen ? "max-h-32 opacity-100" : "max-h-0 opacity-0 pointer-events-none"
-                )}
-              >
-                <Link href="/dashboard/network/list" className={cn(
-                  "block px-2 py-2 text-sm rounded-md transition-colors",
-                  isNetworkListActive
-                    ? "bg-blue-200 text-blue-900 dark:bg-blue-800 dark:text-blue-100 font-semibold"
-                    : "text-gray-600 hover:bg-blue-100 hover:text-blue-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
-                )}>{t("nav.networkList")}</Link>
-                <Link href="/dashboard/network/create" className={cn(
-                  "block px-2 py-2 text-sm rounded-md transition-colors",
-                  isNetworkCreateActive
-                    ? "bg-blue-200 text-blue-900 dark:bg-blue-800 dark:text-blue-100 font-semibold"
-                    : "text-gray-600 hover:bg-blue-100 hover:text-blue-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
-                )}>{t("nav.networkCreate")}</Link>
-              </div>
-            </div>
-            <Link href="/dashboard/phone-number/list" className={cn(
-              "group flex items-center px-3 py-2 text-base rounded-lg font-medium transition-colors",
-              pathname === "/dashboard/phone-number/list"
-                ? "bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-100"
-                : "text-gray-700 hover:bg-blue-50 hover:text-blue-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white",
-            )}>
-              <Phone className="mr-3 h-6 w-6 flex-shrink-0" />
-              {t("nav.phoneNumbers")}
-            </Link>
-            <div>
-              <button
-                className={cn(
-                  "group flex items-center w-full gap-3 px-3 py-2 text-base rounded-lg font-medium transition-colors focus:outline-none",
-                  isDevicesActive
-                    ? "bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-100 shadow"
-                    : "text-gray-700 hover:bg-blue-50 hover:text-blue-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
-                )}
-                onClick={() => setDevicesDropdownOpen((open) => !open)}
-                aria-expanded={devicesDropdownOpen}
-                aria-label="Devices menu"
-              >
-                <Monitor className="h-5 w-5" />
-                {t("nav.devices")}
-                {devicesDropdownOpen ? (
-                  <ChevronUp className="ml-auto h-4 w-4" />
-                ) : (
-                  <ChevronDown className="ml-auto h-4 w-4" />
-                )}
-              </button>
-              <div
-                className={cn(
-                  "pl-8 flex flex-col gap-1 overflow-hidden transition-all duration-300",
-                  devicesDropdownOpen ? "max-h-32 opacity-100" : "max-h-0 opacity-0 pointer-events-none"
-                )}
-              >
-                <Link href="/dashboard/devices/list" className={cn(
-                  "block px-2 py-2 text-sm rounded-md transition-colors",
-                  isDevicesListActive
-                    ? "bg-blue-200 text-blue-900 dark:bg-blue-800 dark:text-blue-100 font-semibold"
-                    : "text-gray-600 hover:bg-blue-100 hover:text-blue-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
-                )}>{t("nav.devicesList")}</Link>
-              </div>
-            </div>
-            <Link href="/dashboard/sms-logs/list" className={cn(
-              "group flex items-center px-3 py-2 text-base rounded-lg font-medium transition-colors",
-              pathname === "/dashboard/sms-logs/list"
-                ? "bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-100"
-                : "text-gray-700 hover:bg-blue-50 hover:text-blue-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white",
-            )}>
-              <MessageCircle className="mr-3 h-6 w-6 flex-shrink-0" />
-              {t("nav.smsLogs")}
-            </Link>
-            <Link href="/dashboard/fcm-logs/list" className={cn(
-              "group flex items-center px-3 py-2 text-base rounded-lg font-medium transition-colors",
-              pathname === "/dashboard/fcm-logs/list"
-                ? "bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-100"
-                : "text-gray-700 hover:bg-blue-50 hover:text-blue-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white",
-            )}>
-              <Bell className="mr-3 h-6 w-6 flex-shrink-0" />
-              {t("nav.fcmLogs")}
-            </Link>
-            <Link href="/dashboard/partner" className={cn(
-              "group flex items-center px-3 py-2 text-base rounded-lg font-medium transition-colors",
-              pathname === "/dashboard/partner"
-                ? "bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-100"
-                : "text-gray-700 hover:bg-blue-50 hover:text-blue-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white",
-            )}>
-              <User className="mr-3 h-6 w-6 flex-shrink-0" />
-              {t("nav.partner")}
-            </Link>
-            <Link href="/dashboard/topup" className={cn(
-              "group flex items-center px-3 py-2 text-base rounded-lg font-medium transition-colors",
-              pathname === "/dashboard/topup"
-                ? "bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-100"
-                : "text-gray-700 hover:bg-blue-50 hover:text-blue-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white",
-            )}>
-              <CreditCard className="mr-3 h-6 w-6 flex-shrink-0" />
-              {t("topup.title")}
-            </Link>
-            <Link href="/dashboard/earning-management" className={cn(
-              "group flex items-center px-3 py-2 text-base rounded-lg font-medium transition-colors",
-              pathname === "/dashboard/earning-management"
-                ? "bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-100"
-                : "text-gray-700 hover:bg-blue-50 hover:text-blue-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white",
-            )}>
-              <BarChart3 className="mr-3 h-6 w-6 flex-shrink-0" />
-              {t("earning.title")}
-            </Link> */}
-            {/* <div>
-              <button
-                className={cn(
-                  "group flex items-center w-full px-2 py-2 text-sm font-medium rounded-md transition-colors",
-                  isNetworkConfigActive
-                    ? "bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-100"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
-                )}
-                onClick={() => setNetworkConfigDropdownOpen((open) => !open)}
-                aria-expanded={networkConfigDropdownOpen}
-              >
-                <Settings className="mr-3 h-6 w-6 flex-shrink-0" />
-                {t("nav.networkConfig")}
-                {networkConfigDropdownOpen ? (
-                  <ChevronUp className="ml-auto h-4 w-4" />
-                ) : (
-                  <ChevronDown className="ml-auto h-4 w-4" />
-                )}
-              </button>
-              <div
-                className={cn(
-                  "pl-8 flex flex-col gap-1 overflow-hidden transition-all duration-300",
-                  networkConfigDropdownOpen ? "max-h-32 opacity-100" : "max-h-0 opacity-0 pointer-events-none"
-                )}
-              >
-                <Link href="/dashboard/network-config/list" className={cn(
-                  "block px-2 py-2 text-sm rounded-md transition-colors",
-                  isNetworkConfigListActive
-                    ? "bg-blue-200 text-blue-900 dark:bg-blue-800 dark:text-blue-100"
-                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
-                )}>{t("nav.networkConfigList")}</Link>
-                <Link href="/dashboard/network-config/create" className={cn(
-                  "block px-2 py-2 text-sm rounded-md transition-colors",
-                  isNetworkConfigCreateActive
-                    ? "bg-blue-200 text-blue-900 dark:bg-blue-800 dark:text-blue-100"
-                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
-                )}>{t("nav.networkConfigCreate")}</Link>
-              </div>
-            </div>
-            <Link href="/dashboard/remote-command/create" className={cn(
-              "group flex items-center px-2 py-2 text-sm font-medium rounded-md",
-              pathname === "/dashboard/remote-command/create"
-                ? "bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-100"
-                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white",
-            )}>
-              <Terminal className="mr-3 h-6 w-6 flex-shrink-0" />
-              {t("nav.remoteCommand")}
-            </Link> */}
+            </NavItem>
           </nav>
-          <div className="p-4 border-t border-gray-200 dark:border-gray-800">
-            <Button variant="ghost" className="w-full justify-start" onClick={handleLogout}>
-              <LogOut className="mr-3 h-6 w-6" />
+          <div className="p-6 border-t border-white/20 dark:border-gray-700/50">
+            <Button 
+              variant="ghost" 
+              className="w-full justify-start rounded-2xl hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20" 
+              onClick={handleLogout}
+            >
+              <LogOut className="mr-3 h-5 w-5" />
               {t("nav.logout")}
             </Button>
           </div>
@@ -429,341 +144,46 @@ export function Sidebar() {
       </div>
 
       {/* Desktop sidebar */}
-      <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-72 lg:flex-col">
-        <div className="flex flex-col flex-grow bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 h-full min-h-0 shadow">
-          <div className="flex h-16 items-center px-4 border-b border-gray-200 dark:border-gray-800">
-            <div className="flex items-center space-x-2">
-              <img src="/logo.png" alt="Connect Pro Logo" className="h-8 w-8" />
-              <span className="text-lg font-bold text-gray-800 dark:text-gray-100">Connect Pro Partenaires</span>
+      <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-80 lg:flex-col">
+        <div className="flex flex-col flex-grow bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-r border-white/20 dark:border-gray-700/50 h-full min-h-0 shadow-2xl">
+          <div className="flex h-20 items-center px-6 border-b border-white/20 dark:border-gray-700/50">
+            <div className="flex items-center space-x-3">
+              <div className="relative">
+                <img src="/logo.png" alt="Blaffa Pay Logo" className="h-12 w-12 rounded-xl shadow-lg" />
+                <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white animate-pulse"></div>
+              </div>
+              <div>
+                <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                  Blaffa Pay
+                </span>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Partenaires</p>
+              </div>
             </div>
           </div>
-          <nav className="flex-1 space-y-2 px-2 py-4 overflow-y-auto min-h-0">
-            <SectionHeader>Generale</SectionHeader>
-            <Link
-              href="/dashboard"
-              className={cn(
-                "group flex items-center px-2 py-2 text-sm font-medium rounded-md",
-                pathname === "/dashboard"
-                  ? "bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-100"
-                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white",
-              )}
-            >
-              <BarChart3 className="mr-3 h-6 w-6 flex-shrink-0" />
+          <nav className="flex-1 space-y-2 px-4 py-6 overflow-y-auto min-h-0">
+            <SectionHeader icon={Sparkles}>Générale</SectionHeader>
+            <NavItem href="/dashboard" icon={BarChart3} isActive={pathname === "/dashboard"}>
               {t("nav.dashboard")}
-            </Link>
-            {/* Users Dropdown */}
-            {/* <div>
-              <button
-                className={cn(
-                  "group flex items-center w-full px-2 py-2 text-sm font-medium rounded-md transition-colors",
-                  isUsersActive
-                    ? "bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-100"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
-                )}
-                onClick={() => setUsersDropdownOpen((open) => !open)}
-                aria-expanded={usersDropdownOpen}
-              >
-                <Users className="mr-3 h-6 w-6 flex-shrink-0" />
-                {t("nav.users")}
-                {usersDropdownOpen ? (
-                  <ChevronUp className="ml-auto h-4 w-4" />
-                ) : (
-                  <ChevronDown className="ml-auto h-4 w-4" />
-                )}
-              </button>
-              <div
-                className={cn(
-                  "pl-8 flex flex-col gap-1 overflow-hidden transition-all duration-300",
-                  usersDropdownOpen ? "max-h-32 opacity-100" : "max-h-0 opacity-0 pointer-events-none"
-                )}
-              >
-                <Link
-                  href="/dashboard/users/register"
-                  className={cn(
-                    "block px-2 py-2 text-sm rounded-md transition-colors",
-                    isRegisterActive
-                      ? "bg-blue-200 text-blue-900 dark:bg-blue-800 dark:text-blue-100 font-semibold"
-                      : "text-gray-600 hover:bg-blue-100 hover:text-blue-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
-                  )}
-                >
-                  {t("nav.register")}
-                </Link>
-                <Link
-                  href="/dashboard/users/list"
-                  className={cn(
-                    "block px-2 py-2 text-sm rounded-md transition-colors",
-                    isListActive
-                      ? "bg-blue-200 text-blue-900 dark:bg-blue-800 dark:text-blue-100 font-semibold"
-                      : "text-gray-600 hover:bg-blue-100 hover:text-blue-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
-                  )}
-                >
-                  {t("nav.userList")}
-                </Link>
-              </div>
-            </div> */}
-            <br></br>
-            <SectionHeader>Gestion des transactions</SectionHeader>
-            <Link
-              href="/dashboard/transactions"
-              className={cn(
-                "group flex items-center px-2 py-2 text-sm font-medium rounded-md",
-                pathname === "/dashboard/transactions"
-                  ? "bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-100"
-                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white",
-              )}
-            >
-              <CreditCard className="mr-3 h-6 w-6 flex-shrink-0" />
+            </NavItem>
+            
+            <SectionHeader icon={Activity}>Gestion des transactions</SectionHeader>
+            <NavItem href="/dashboard/transactions" icon={CreditCard} isActive={pathname === "/dashboard/transactions"}>
               {t("nav.transactions")}
-            </Link>
-             <Link
-              href="/dashboard/account-transaction"
-              aria-label="Transactions"
-              className={cn(
-                "group flex items-center gap-3 px-3 py-2 text-base rounded-lg font-medium transition-colors",
-                pathname === "/dashboard/account-transaction"
-                  ? "bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-100 shadow"
-                  : "text-gray-700 hover:bg-blue-50 hover:text-blue-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
-              )}
-              onClick={() => setSidebarOpen(false)}
-            >
-              <LayoutDashboard className="h-5 w-5" />
+            </NavItem>
+            <NavItem href="/dashboard/account-transaction" icon={LayoutDashboard} isActive={pathname === "/dashboard/account-transaction"}>
               {t("nav.accountTransaction")}
-            </Link>
-            <Link
-              href="/dashboard/topup"
-              aria-label="Transactions"
-              className={cn(
-                "group flex items-center gap-3 px-3 py-2 text-base rounded-lg font-medium transition-colors",
-                pathname === "/dashboard/topup"
-                  ? "bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-100 shadow"
-                  : "text-gray-700 hover:bg-blue-50 hover:text-blue-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
-              )}
-              onClick={() => setSidebarOpen(false)}
-            >
-              <Zap className="h-5 w-5" />
+            </NavItem>
+            <NavItem href="/dashboard/topup" icon={Zap} isActive={pathname === "/dashboard/topup"}>
               {t("nav.topup")}
-            </Link>
-            
-            
-            {/* Country Dropdown */}
-            {/* <div>
-              <button
-                className={cn(
-                  "group flex items-center w-full px-2 py-2 text-sm font-medium rounded-md transition-colors",
-                  isCountryActive
-                    ? "bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-100"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
-                )}
-                onClick={() => setCountryDropdownOpen((open) => !open)}
-                aria-expanded={countryDropdownOpen}
-              >
-                <Globe className="mr-3 h-6 w-6 flex-shrink-0" />
-                {t("nav.country")}
-                {countryDropdownOpen ? (
-                  <ChevronUp className="ml-auto h-4 w-4" />
-                ) : (
-                  <ChevronDown className="ml-auto h-4 w-4" />
-                )}
-              </button>
-              <div
-                className={cn(
-                  "pl-8 flex flex-col gap-1 overflow-hidden transition-all duration-300",
-                  countryDropdownOpen ? "max-h-32 opacity-100" : "max-h-0 opacity-0 pointer-events-none"
-                )}
-              >
-                <Link href="/dashboard/country/list" className={cn(
-                  "block px-2 py-2 text-sm rounded-md transition-colors",
-                  isCountryListActive
-                    ? "bg-blue-200 text-blue-900 dark:bg-blue-800 dark:text-blue-100 font-semibold"
-                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
-                )}>{t("nav.countryList")}</Link>
-                <Link href="/dashboard/country/create" className={cn(
-                  "block px-2 py-2 text-sm rounded-md transition-colors",
-                  isCountryCreateActive
-                    ? "bg-blue-200 text-blue-900 dark:bg-blue-800 dark:text-blue-100 font-semibold"
-                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
-                )}>{t("nav.countryCreate")}</Link>
-              </div>
-            </div> */}
-            {/* Network Dropdown */}
-            {/* <div>
-              <button
-                className={cn(
-                  "group flex items-center w-full px-2 py-2 text-sm font-medium rounded-md transition-colors",
-                  isNetworkActive
-                    ? "bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-100"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
-                )}
-                onClick={() => setNetworkDropdownOpen((open) => !open)}
-                aria-expanded={networkDropdownOpen}
-              >
-                <Share2 className="mr-3 h-6 w-6 flex-shrink-0" />
-                {t("nav.network")}
-                {networkDropdownOpen ? (
-                  <ChevronUp className="ml-auto h-4 w-4" />
-                ) : (
-                  <ChevronDown className="ml-auto h-4 w-4" />
-                )}
-              </button> */}
-              {/* <div
-                className={cn(
-                  "pl-8 flex flex-col gap-1 overflow-hidden transition-all duration-300",
-                  networkDropdownOpen ? "max-h-32 opacity-100" : "max-h-0 opacity-0 pointer-events-none"
-                )}
-              >
-                <Link href="/dashboard/network/list" className={cn(
-                  "block px-2 py-2 text-sm rounded-md transition-colors",
-                  isNetworkListActive
-                    ? "bg-blue-200 text-blue-900 dark:bg-blue-800 dark:text-blue-100 font-semibold"
-                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
-                )}>{t("nav.networkList")}</Link>
-                <Link href="/dashboard/network/create" className={cn(
-                  "block px-2 py-2 text-sm rounded-md transition-colors",
-                  isNetworkCreateActive
-                    ? "bg-blue-200 text-blue-900 dark:bg-blue-800 dark:text-blue-100 font-semibold"
-                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
-                )}>{t("nav.networkCreate")}</Link>
-              </div>
-            </div>
-            <Link href="/dashboard/phone-number/list" className={cn(
-              "group flex items-center px-2 py-2 text-sm font-medium rounded-md",
-              pathname === "/dashboard/phone-number/list"
-                ? "bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-100"
-                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white",
-            )}>
-              <Phone className="mr-3 h-6 w-6 flex-shrink-0" />
-              {t("nav.phoneNumbers")}
-            </Link>
-            <div>
-              <button
-                className={cn(
-                  "group flex items-center w-full px-2 py-2 text-sm font-medium rounded-md transition-colors",
-                  isDevicesActive
-                    ? "bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-100"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
-                )}
-                onClick={() => setDevicesDropdownOpen((open) => !open)}
-                aria-expanded={devicesDropdownOpen}
-              >
-                <Monitor className="mr-3 h-6 w-6 flex-shrink-0" />
-                {t("nav.devices")}
-                {devicesDropdownOpen ? (
-                  <ChevronUp className="ml-auto h-4 w-4" />
-                ) : (
-                  <ChevronDown className="ml-auto h-4 w-4" />
-                )}
-              </button>
-              <div
-                className={cn(
-                  "pl-8 flex flex-col gap-1 overflow-hidden transition-all duration-300",
-                  devicesDropdownOpen ? "max-h-32 opacity-100" : "max-h-0 opacity-0 pointer-events-none"
-                )}
-              >
-                <Link href="/dashboard/devices/list" className={cn(
-                  "block px-2 py-2 text-sm rounded-md transition-colors",
-                  isDevicesListActive
-                    ? "bg-blue-200 text-blue-900 dark:bg-blue-800 dark:text-blue-100 font-semibold"
-                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
-                )}>{t("nav.devicesList")}</Link>
-              </div>
-            </div>
-            <Link href="/dashboard/sms-logs/list" className={cn(
-              "group flex items-center px-2 py-2 text-sm font-medium rounded-md",
-              pathname === "/dashboard/sms-logs/list"
-                ? "bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-100"
-                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white",
-            )}>
-              <MessageCircle className="mr-3 h-6 w-6 flex-shrink-0" />
-              {t("nav.smsLogs")}
-            </Link> */}
-            {/* <Link href="/dashboard/fcm-logs/list" className={cn(
-              "group flex items-center px-2 py-2 text-sm font-medium rounded-md",
-              pathname === "/dashboard/fcm-logs/list"
-                ? "bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-100"
-                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white",
-            )}>
-              <Bell className="mr-3 h-6 w-6 flex-shrink-0" />
-              {t("nav.fcmLogs")}
-            </Link> */}
-            {/* <Link href="/dashboard/partner" className={cn(
-              "group flex items-center px-2 py-2 text-sm font-medium rounded-md",
-              pathname === "/dashboard/partner"
-                ? "bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-100"
-                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white",
-            )}>
-              <User className="mr-3 h-6 w-6 flex-shrink-0" />
-              {t("nav.partner")}
-            </Link> */}
-            {/* <Link href="/dashboard/topup" className={cn(
-              "group flex items-center px-2 py-2 text-sm font-medium rounded-md",
-              pathname === "/dashboard/topup"
-                ? "bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-100"
-                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white",
-            )}>
-              <CreditCard className="mr-3 h-6 w-6 flex-shrink-0" />
-              {t("topup.title")}
-            </Link> */}
-            {/* <Link href="/dashboard/earning-management" className={cn(
-              "group flex items-center px-2 py-2 text-sm font-medium rounded-md",
-              pathname === "/dashboard/earning-management"
-                ? "bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-100"
-                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white",
-            )}>
-              <BarChart3 className="mr-3 h-6 w-6 flex-shrink-0" />
-              {t("earning.title")}
-            </Link> */}
-            {/* <div>
-              <button
-                className={cn(
-                  "group flex items-center w-full px-2 py-2 text-sm font-medium rounded-md transition-colors",
-                  isNetworkConfigActive
-                    ? "bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-100"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
-                )}
-                onClick={() => setNetworkConfigDropdownOpen((open) => !open)}
-                aria-expanded={networkConfigDropdownOpen}
-              >
-                <Settings className="mr-3 h-6 w-6 flex-shrink-0" />
-                {t("nav.networkConfig")}
-                {networkConfigDropdownOpen ? (
-                  <ChevronUp className="ml-auto h-4 w-4" />
-                ) : (
-                  <ChevronDown className="ml-auto h-4 w-4" />
-                )}
-              </button>
-              <div
-                className={cn(
-                  "pl-8 flex flex-col gap-1 overflow-hidden transition-all duration-300",
-                  networkConfigDropdownOpen ? "max-h-32 opacity-100" : "max-h-0 opacity-0 pointer-events-none"
-                )}
-              >
-                <Link href="/dashboard/network-config/list" className={cn(
-                  "block px-2 py-2 text-sm rounded-md transition-colors",
-                  isNetworkConfigListActive
-                    ? "bg-blue-200 text-blue-900 dark:bg-blue-800 dark:text-blue-100"
-                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
-                )}>{t("nav.networkConfigList")}</Link>
-                <Link href="/dashboard/network-config/create" className={cn(
-                  "block px-2 py-2 text-sm rounded-md transition-colors",
-                  isNetworkConfigCreateActive
-                    ? "bg-blue-200 text-blue-900 dark:bg-blue-800 dark:text-blue-100"
-                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
-                )}>{t("nav.networkConfigCreate")}</Link>
-              </div>
-            </div>
-            <Link href="/dashboard/remote-command/create" className={cn(
-              "group flex items-center px-2 py-2 text-sm font-medium rounded-md",
-              pathname === "/dashboard/remote-command/create"
-                ? "bg-blue-100 text-blue-900 dark:bg-blue-900 dark:text-blue-100"
-                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white",
-            )}>
-              <Terminal className="mr-3 h-6 w-6 flex-shrink-0" />
-              {t("nav.remoteCommand")}
-            </Link> */}
+            </NavItem>
           </nav>
-          <div className="p-4 border-t border-gray-200 dark:border-gray-800">
-            <Button variant="ghost" className="w-full justify-start" onClick={handleLogout}>
-              <LogOut className="mr-3 h-6 w-6" />
+          <div className="p-6 border-t border-white/20 dark:border-gray-700/50">
+            <Button 
+              variant="ghost" 
+              className="w-full justify-start rounded-2xl hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20" 
+              onClick={handleLogout}
+            >
+              <LogOut className="mr-3 h-5 w-5" />
               {t("nav.logout")}
             </Button>
           </div>
@@ -772,8 +192,13 @@ export function Sidebar() {
 
       {/* Mobile menu button */}
       <div className="lg:hidden">
-        <Button variant="ghost" size="icon" className="fixed top-4 left-4 z-40" onClick={() => setSidebarOpen(true)}>
-          <Menu className="h-6 w-6" />
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="fixed top-6 left-6 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 rounded-2xl shadow-lg" 
+          onClick={() => setSidebarOpen(true)}
+        >
+          <Menu className="h-5 w-5" />
         </Button>
       </div>
     </>

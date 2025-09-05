@@ -103,30 +103,27 @@ export function SignInForm() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4">
-      {/* <div className="flex justify-between items-center w-full max-w-md mb-6">
-        <div className="flex items-center space-x-2">
-          <img src="/logo.png" alt="Connect Pro Logo" className="h-12 w-12" />
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 ">
+      <div className="w-full max-w-md space-y-8">
+        <div className="text-center">
+          {/* <div className="relative mx-auto h-16 w-16 rounded-3xl flex items-center justify-center mb-6 shadow-xl">
+             <div className="absolute inset-0 bg-white/20 rounded-3xl blur-sm"></div>
+            <img src="/logo.png" alt="Blaffa Pay Logo" className="h-10 w-10 relative z-10" />
+          </div> */}
+          <h2 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white mb-2">
+            Blaffa Pay Partenaires
+          </h2>
+          <p className="text-lg text-gray-600 dark:text-gray-400">
+            {t("auth.subtitle")}
+          </p>
         </div>
-        <div className="flex items-center space-x-2">
-          <ThemeToggle />
-          <LanguageSwitcher />
-        </div>
-      </div> */}
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <div className="flex justify-center mb-4">
-             <div className="flex items-center space-x-2">
-                <img src="/logo.png" alt="Connect Pro Logo" className="h-12 w-12" />
-              </div>
-          </div>
-          <CardTitle className="text-2xl text-center">Connect Pro Partenaires</CardTitle>
-          <CardDescription className="text-center">{t("auth.subtitle")}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+        
+        <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl border border-white/20 dark:border-gray-700/50 shadow-xl p-8">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="email">{t("auth.email")}</Label>
+              <Label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                {t("auth.email")}
+              </Label>
               <Input
                 id="email"
                 type="email"
@@ -135,10 +132,13 @@ export function SignInForm() {
                 onChange={(e) => setIdentifier(e.target.value)}
                 required
                 disabled={loading}
+                className="rounded-2xl border-2 focus:border-blue-500 h-12"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">{t("auth.password")}</Label>
+              <Label htmlFor="password" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                {t("auth.password")}
+              </Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -147,7 +147,7 @@ export function SignInForm() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   disabled={loading}
-                  className="pr-10"
+                  className="rounded-2xl border-2 focus:border-blue-500 h-12 pr-12"
                 />
                 <button
                   type="button"
@@ -184,12 +184,23 @@ export function SignInForm() {
                 className="mt-2"
               />
             )}
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? t("auth.loggingIn") : t("auth.signIn")}
+            <Button 
+              type="submit" 
+              className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-2xl h-12 text-lg font-semibold" 
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                  {t("auth.loggingIn")}
+                </>
+              ) : (
+                t("auth.signIn")
+              )}
             </Button>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+                      </form>
+          </div>
+        </div>
+      </div>
   )
 }
