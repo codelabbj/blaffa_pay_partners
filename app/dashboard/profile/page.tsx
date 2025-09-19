@@ -137,11 +137,11 @@ export default function ProfilePage() {
   if (loading && !profile) {
     return (
       <div className="space-y-4 md:space-y-6 lg:space-y-8 overflow-x-hidden">
-        <div className="relative overflow-hidden rounded-2xl md:rounded-3xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 p-4 md:p-8 text-white shadow-2xl">
+        <div className="relative overflow-hidden rounded-2xl md:rounded-3xl bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 p-4 md:p-8 text-white shadow-2xl">
           <div className="absolute inset-0 bg-black/10"></div>
           <div className="relative z-10">
             <h1 className="text-2xl md:text-4xl font-bold tracking-tight mb-2">Profil Utilisateur</h1>
-            <p className="text-blue-100 text-sm md:text-lg">Gérez vos informations personnelles</p>
+            <p className="text-orange-100 text-sm md:text-lg">Gérez vos informations personnelles</p>
           </div>
         </div>
         <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl md:rounded-3xl border border-white/20 dark:border-gray-700/50 shadow-xl p-4 md:p-8">
@@ -162,24 +162,24 @@ export default function ProfilePage() {
   return (
     <div className="space-y-4 md:space-y-6 lg:space-y-8 overflow-x-hidden">
       {/* Hero Section */}
-      <div className="relative overflow-hidden rounded-2xl md:rounded-3xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 p-4 md:p-8 text-white shadow-2xl">
+      <div className="relative overflow-hidden rounded-2xl md:rounded-3xl bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 p-4 md:p-8 text-white shadow-2xl">
         <div className="absolute inset-0 bg-black/10"></div>
         <div className="relative z-10">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="flex-1">
               <h1 className="text-2xl md:text-4xl font-bold tracking-tight mb-2">Profil Utilisateur</h1>
-              <p className="text-blue-100 text-sm md:text-lg">Gérez vos informations personnelles</p>
+              <p className="text-orange-100 text-sm md:text-lg">Gérez vos informations personnelles</p>
             </div>
             <div className="flex md:hidden items-center space-x-4">
               <div className="bg-white/20 backdrop-blur-sm rounded-xl md:rounded-2xl p-3 md:p-4">
                 <div className="text-lg md:text-2xl font-bold">{profile?.display_name || "Utilisateur"}</div>
-                <div className="text-blue-100 text-xs md:text-sm">Nom d'affichage</div>
+                <div className="text-orange-100 text-xs md:text-sm">Nom d'affichage</div>
               </div>
             </div>
             <div className="hidden md:flex items-center space-x-4">
               <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4">
                 <div className="text-2xl font-bold">{profile?.display_name || "Utilisateur"}</div>
-                <div className="text-blue-100 text-sm">Nom d'affichage</div>
+                <div className="text-orange-100 text-sm">Nom d'affichage</div>
               </div>
             </div>
           </div>
@@ -194,7 +194,7 @@ export default function ProfilePage() {
         <div className="p-4 md:p-8 border-b border-gray-200/50 dark:border-gray-700/50">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div className="flex items-center gap-2 md:gap-3">
-              <div className="p-2 md:p-3 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl md:rounded-2xl">
+              <div className="p-2 md:p-3 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl md:rounded-2xl">
                 <User className="h-5 w-5 md:h-6 md:w-6 text-white" />
               </div>
               <div>
@@ -205,7 +205,7 @@ export default function ProfilePage() {
             {!editing ? (
               <Button 
                 onClick={() => setEditing(true)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl md:rounded-2xl w-full lg:w-auto"
+                className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl md:rounded-2xl w-full lg:w-auto"
               >
                 <Edit className="h-4 w-4 mr-2" />
                 Modifier
@@ -223,7 +223,7 @@ export default function ProfilePage() {
                 <Button 
                   onClick={handleSubmit}
                   disabled={loading}
-                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl md:rounded-2xl w-full sm:w-auto"
+                  className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-xl md:rounded-2xl w-full sm:w-auto"
                 >
                   {loading ? (
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -243,7 +243,7 @@ export default function ProfilePage() {
             <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-6 p-4 md:p-6 bg-gray-50 dark:bg-gray-800 rounded-xl md:rounded-2xl border border-gray-200 dark:border-gray-700">
               <Avatar className="h-16 w-16 md:h-20 md:w-20 border-4 border-white dark:border-gray-700 shadow-lg">
                 <AvatarImage src="/placeholder-user.jpg" alt="Profile" />
-                <AvatarFallback className="text-lg md:text-2xl font-bold bg-gradient-to-r from-blue-500 to-indigo-600 text-white">
+                <AvatarFallback className="text-lg md:text-2xl font-bold bg-gradient-to-r from-orange-500 to-orange-600 text-white">
                   {profile?.first_name?.[0]}{profile?.last_name?.[0]}
                 </AvatarFallback>
               </Avatar>
@@ -274,7 +274,7 @@ export default function ProfilePage() {
                   value={editing ? formData.first_name || '' : profile?.first_name || ''}
                   onChange={handleInputChange}
                   disabled={!editing}
-                  className="h-10 md:h-12 rounded-xl md:rounded-2xl border-2 focus:border-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 text-sm md:text-base"
+                  className="h-10 md:h-12 rounded-xl md:rounded-2xl border-2 focus:border-blue-500 focus:ring-blue-500/20 disabled:bg-gray-50 dark:disabled:bg-gray-800 text-sm md:text-base"
                 />
               </div>
               <div>
@@ -287,7 +287,7 @@ export default function ProfilePage() {
                   value={editing ? formData.last_name || '' : profile?.last_name || ''}
                   onChange={handleInputChange}
                   disabled={!editing}
-                  className="h-10 md:h-12 rounded-xl md:rounded-2xl border-2 focus:border-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 text-sm md:text-base"
+                  className="h-10 md:h-12 rounded-xl md:rounded-2xl border-2 focus:border-blue-500 focus:ring-blue-500/20 disabled:bg-gray-50 dark:disabled:bg-gray-800 text-sm md:text-base"
                 />
               </div>
               <div>

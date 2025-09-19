@@ -351,24 +351,24 @@ export default function UserTransactionsPage() {
   return (
     <div className="space-y-4 md:space-y-6 lg:space-y-8 overflow-x-hidden">
       {/* Hero Section */}
-      <div className="relative overflow-hidden rounded-2xl md:rounded-3xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 p-4 md:p-8 text-white shadow-2xl">
+      <div className="relative overflow-hidden rounded-2xl md:rounded-3xl bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 p-4 md:p-8 text-white shadow-2xl">
         <div className="absolute inset-0 bg-black/10"></div>
         <div className="relative z-10">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="flex-1">
               <h1 className="text-2xl md:text-4xl font-bold tracking-tight mb-2">{t("transactions.title") || "My Transactions"}</h1>
-              <p className="text-blue-100 text-sm md:text-lg">{t("transactions.subtitle") || "Manage your transactions"}</p>
+              <p className="text-orange-100 text-sm md:text-lg">{t("transactions.subtitle") || "Manage your transactions"}</p>
             </div>
             <div className="flex md:hidden items-center justify-center">
               <div className="bg-white/20 backdrop-blur-sm rounded-xl p-3 w-full">
                 <div className="text-lg font-bold text-center">{accountData?.formatted_balance || "0 FCFA"}</div>
-                <div className="text-blue-100 text-xs text-center">{t("payment.currentBalance") || "Current Balance"}</div>
+                <div className="text-orange-100 text-xs text-center">{t("payment.currentBalance") || "Current Balance"}</div>
               </div>
             </div>
             <div className="hidden md:flex items-center space-x-4">
               <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4">
                 <div className="text-2xl font-bold">{accountData?.formatted_balance || "0 FCFA"}</div>
-                <div className="text-blue-100 text-sm">{t("payment.currentBalance") || "Current Balance"}</div>
+                <div className="text-orange-100 text-sm">{t("payment.currentBalance") || "Current Balance"}</div>
               </div>
             </div>
           </div>
@@ -383,7 +383,7 @@ export default function UserTransactionsPage() {
         <div className="p-4 md:p-8">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 md:mb-8">
             <div className="flex items-center gap-2 md:gap-3">
-              <div className="p-2 md:p-3 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl md:rounded-2xl">
+              <div className="p-2 md:p-3 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl md:rounded-2xl">
                 <Wallet className="h-5 w-5 md:h-6 md:w-6 text-white" />
               </div>
               <div>
@@ -396,7 +396,7 @@ export default function UserTransactionsPage() {
               size="sm" 
               onClick={refreshAccountData} 
               disabled={accountLoading}
-              className="rounded-xl md:rounded-2xl border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 w-full sm:w-auto"
+              className="rounded-xl md:rounded-2xl border-2 hover:bg-orange-50 dark:hover:bg-orange-900/20 w-full sm:w-auto"
             >
               <RefreshCw className={`h-4 w-4 mr-2 ${accountLoading ? 'animate-spin' : ''}`} />
               {t("common.refresh") || "Refresh"}
@@ -516,7 +516,7 @@ export default function UserTransactionsPage() {
         <div className="p-4 md:p-8 border-b border-gray-200/50 dark:border-gray-700/50">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div className="flex items-center gap-2 md:gap-3">
-              <div className="p-2 md:p-3 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl md:rounded-2xl">
+              <div className="p-2 md:p-3 bg-gradient-to-r from-green-500 to-green-600 rounded-xl md:rounded-2xl">
                 <Activity className="h-5 w-5 md:h-6 md:w-6 text-white" />
               </div>
               <div>
@@ -530,7 +530,7 @@ export default function UserTransactionsPage() {
                 variant="outline" 
                 size="sm"
                 disabled={refreshing}
-                className="rounded-xl md:rounded-2xl border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 w-full sm:w-auto"
+                className="rounded-xl md:rounded-2xl border-2 hover:bg-orange-50 dark:hover:bg-orange-900/20 w-full sm:w-auto"
               >
                 <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
                 {t("common.refresh") || "Refresh"}
@@ -538,7 +538,7 @@ export default function UserTransactionsPage() {
             
               <Button 
                 onClick={() => router.push('/dashboard/transactions/create')}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl md:rounded-2xl w-full sm:w-auto"
+                className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl md:rounded-2xl w-full sm:w-auto"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 {t("payment.newTransaction") || "New Transaction"}
@@ -559,7 +559,7 @@ export default function UserTransactionsPage() {
                   setSearchTerm(e.target.value)
                   setCurrentPage(1)
                 }}
-                className="pl-10 h-10 md:h-12 rounded-xl md:rounded-2xl border-2 focus:border-blue-500 text-sm md:text-base"
+                className="pl-10 h-10 md:h-12 rounded-xl md:rounded-2xl border-2 focus:border-blue-500 focus:ring-blue-500/20 text-sm md:text-base"
               />
             </div>
             <div className="flex flex-col sm:flex-row gap-3 md:gap-4">

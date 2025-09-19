@@ -132,7 +132,7 @@ export function SignInForm() {
                 onChange={(e) => setIdentifier(e.target.value)}
                 required
                 disabled={loading}
-                className="rounded-2xl border-2 focus:border-blue-500 h-12"
+                className="rounded-2xl border-2 focus:border-blue-500 focus:ring-blue-500/20 h-12"
               />
             </div>
             <div className="space-y-2">
@@ -147,7 +147,7 @@ export function SignInForm() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   disabled={loading}
-                  className="rounded-2xl border-2 focus:border-blue-500 h-12 pr-12"
+                  className="rounded-2xl border-2 focus:border-blue-500 focus:ring-blue-500/20 h-12 pr-12"
                 />
                 <button
                   type="button"
@@ -167,6 +167,7 @@ export function SignInForm() {
                   checked={rememberMe}
                   onCheckedChange={(checked) => setRememberMe(checked as boolean)}
                   disabled={loading}
+                  className="data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
                 />
                 <Label htmlFor="remember" className="text-sm">
                   {t("auth.rememberMe")}
@@ -186,7 +187,7 @@ export function SignInForm() {
             )}
             <Button 
               type="submit" 
-              className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-2xl h-12 text-lg font-semibold" 
+              className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-2xl h-12 text-lg font-semibold shadow-lg shadow-orange-500/25" 
               disabled={loading}
             >
               {loading ? (

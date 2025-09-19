@@ -130,7 +130,7 @@ export default function CreateTransactionPage() {
   return (
     <div className="space-y-4 md:space-y-6 lg:space-y-8 overflow-x-hidden">
       {/* Hero Section */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 p-8 text-white shadow-2xl">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 p-8 text-white shadow-2xl">
         <div className="absolute inset-0 bg-black/10"></div>
         <div className="relative z-10">
           <div className="flex items-center justify-between">
@@ -147,12 +147,12 @@ export default function CreateTransactionPage() {
                 </Button>
               </div>
               <h1 className="text-4xl font-bold tracking-tight mb-2">Nouvelle Transaction</h1>
-              <p className="text-blue-100 text-lg">Créez une nouvelle transaction de paiement</p>
+              <p className="text-orange-100 text-lg">Créez une nouvelle transaction de paiement</p>
             </div>
             <div className="hidden md:flex items-center space-x-4">
               <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4">
                 <div className="text-2xl font-bold">Transaction</div>
-                <div className="text-blue-100 text-sm">Création</div>
+                <div className="text-orange-100 text-sm">Création</div>
               </div>
             </div>
           </div>
@@ -166,7 +166,7 @@ export default function CreateTransactionPage() {
       <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl border border-white/20 dark:border-gray-700/50 shadow-xl overflow-hidden">
         <div className="p-8 border-b border-gray-200/50 dark:border-gray-700/50">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl">
+            <div className="p-3 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl">
               <CreditCard className="h-6 w-6 text-white" />
             </div>
             <div>
@@ -180,19 +180,19 @@ export default function CreateTransactionPage() {
             <div 
               className={`relative overflow-hidden rounded-3xl border-2 cursor-pointer transition-all duration-300 ${
                 transactionForm.type === "deposit" 
-                  ? "border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20" 
-                  : "border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600"
+                  ? "border-orange-500 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20" 
+                  : "border-gray-200 dark:border-gray-700 hover:border-orange-300 dark:hover:border-orange-600"
               }`}
               onClick={() => handleTransactionTypeSelect("deposit")}
             >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl"></div>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full blur-2xl"></div>
               <div className="relative z-10 p-8">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-2xl">
-                    <TrendingUp className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                  <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-2xl">
+                    <TrendingUp className="h-8 w-8 text-orange-600 dark:text-orange-400" />
                   </div>
                   {transactionForm.type === "deposit" && (
-                    <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                    <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
                       <Check className="h-4 w-4 text-white" />
                     </div>
                   )}
@@ -201,7 +201,7 @@ export default function CreateTransactionPage() {
                 <p className="text-gray-600 dark:text-gray-400 mb-4">
                   Ajouter de l'argent à votre compte ou transférer vers un autre compte
                 </p>
-                <div className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400">
+                <div className="flex items-center gap-2 text-sm text-orange-600 dark:text-orange-400">
                   <DollarSign className="h-4 w-4" />
                   <span>Crédit de compte</span>
                 </div>
@@ -247,7 +247,7 @@ export default function CreateTransactionPage() {
         <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl border border-white/20 dark:border-gray-700/50 shadow-xl overflow-hidden">
           <div className="p-8 border-b border-gray-200/50 dark:border-gray-700/50">
             <div className="flex items-center gap-3">
-              <div className="p-3 bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl">
+              <div className="p-3 bg-gradient-to-r from-green-500 to-green-600 rounded-2xl">
                 <Wallet className="h-6 w-6 text-white" />
               </div>
               <div>
@@ -270,7 +270,7 @@ export default function CreateTransactionPage() {
                     value={transactionForm.amount}
                     onChange={(e) => setTransactionForm(prev => ({ ...prev, amount: e.target.value }))}
                     placeholder="0"
-                    className="rounded-2xl border-2 focus:border-blue-500 text-lg font-semibold pl-12"
+                    className="rounded-2xl border-2 focus:border-blue-500 focus:ring-blue-500/20 text-lg font-semibold pl-12"
                   />
                   <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
                     <DollarSign className="h-5 w-5 text-gray-400" />
@@ -290,7 +290,7 @@ export default function CreateTransactionPage() {
                     value={transactionForm.recipient_phone}
                     onChange={(e) => setTransactionForm(prev => ({ ...prev, recipient_phone: e.target.value }))}
                     placeholder="+225 0700000000"
-                    className="rounded-2xl border-2 focus:border-blue-500 pl-12"
+                    className="rounded-2xl border-2 focus:border-blue-500 focus:ring-blue-500/20 pl-12"
                   />
                   <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
                     <Phone className="h-5 w-5 text-gray-400" />
@@ -305,7 +305,7 @@ export default function CreateTransactionPage() {
                 </Label>
                 {networksLoading ? (
                   <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700">
-                    <RefreshCw className="h-5 w-5 animate-spin text-blue-500" />
+                    <RefreshCw className="h-5 w-5 animate-spin text-orange-500" />
                     <span className="text-gray-600 dark:text-gray-400">Chargement des réseaux...</span>
                   </div>
                 ) : networksError ? (
@@ -347,7 +347,7 @@ export default function CreateTransactionPage() {
                 <Button
                   onClick={handleCreateClick}
                   disabled={!isFormValid()}
-                  className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-2xl py-6 text-lg font-semibold"
+                  className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-2xl py-6 text-lg font-semibold"
                 >
                   <CreditCard className="h-5 w-5 mr-2" />
                   Créer la Transaction
@@ -411,7 +411,7 @@ export default function CreateTransactionPage() {
             <Button 
               onClick={handleConfirmTransaction}
               disabled={submitting}
-              className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-2xl"
+              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-2xl"
             >
               {submitting ? (
                 <>

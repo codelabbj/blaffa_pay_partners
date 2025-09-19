@@ -428,6 +428,7 @@ const translations = {
     "topup.completed": "Completed",
     "topup.approved": "Approved",
     "topup.rejected": "Rejected",
+    "topup.rejectionReason": "Rejection Reason",
     "topup.expired": "Expired",
     "topup.uid": "UID",
     "topup.formattedAmount": "Formatted Amount",
@@ -449,7 +450,6 @@ const translations = {
     "topup.proofImage": "Proof Image",
     "topup.proofDescription": "Proof Description",
     "topup.requestHistory": "Request History",
-
 
     "topup.amount": "Amount",
     "topup.user": "User",
@@ -1139,7 +1139,7 @@ const translations = {
     "topup.expiresAt": "Expire le",
     "topup.timeRemaining": "Temps restant",
     "topup.adminNotes": "Notes administrateur",
-    // "topup.timeRemaining": "Temps restant",
+    "topup.rejectionReason": "Reason de rejet",
     "topup.transactionDate": "Date de la transaction",
     "topup.canSubmitProof": "Peut soumettre une preuve",
     "topup.proofSubmitted": "Preuve soumise",
@@ -1151,7 +1151,6 @@ const translations = {
     "topup.proofImage": "Image de preuve",
     "topup.proofDescription": "Description de la preuve",
     "topup.requestHistory": "Historique des recharges",
-
     "topup.amount": "Montant",
     "topup.user": "Utilisateur",
     "topup.status": "Statut",

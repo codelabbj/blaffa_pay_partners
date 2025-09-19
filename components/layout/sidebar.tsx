@@ -64,8 +64,8 @@ export function Sidebar() {
       className={cn(
         "group relative flex items-center gap-4 px-6 py-4 text-sm font-medium rounded-2xl transition-all duration-300 hover:scale-105",
         isActive
-          ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/25"
-          : "text-gray-700 hover:bg-white/50 hover:text-blue-600 dark:text-gray-300 dark:hover:bg-gray-800/50 dark:hover:text-white"
+          ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/25"
+          : "text-gray-700 hover:bg-white/50 hover:text-orange-600 dark:text-gray-300 dark:hover:bg-gray-800/50 dark:hover:text-white"
       )}
       onClick={() => setSidebarOpen(false)}
     >
@@ -73,7 +73,7 @@ export function Sidebar() {
         "flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-300",
         isActive
           ? "bg-white/20 text-white"
-          : "bg-gray-100 text-gray-600 group-hover:bg-blue-100 group-hover:text-blue-600 dark:bg-gray-800 dark:text-gray-400 dark:group-hover:bg-gray-700 dark:group-hover:text-white"
+          : "bg-gray-100 text-gray-600 group-hover:bg-orange-100 group-hover:text-orange-600 dark:bg-gray-800 dark:text-gray-400 dark:group-hover:bg-gray-700 dark:group-hover:text-white"
       )}>
         <Icon className="h-5 w-5" />
       </div>
@@ -103,7 +103,7 @@ export function Sidebar() {
                 <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
               </div>
               <div>
-                <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                <span className="text-lg font-bold bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
                   Blaffa Pay
                 </span>
                 <p className="text-xs text-gray-500 dark:text-gray-400">Partenaires</p>
@@ -153,7 +153,7 @@ export function Sidebar() {
                 <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white animate-pulse"></div>
               </div>
               <div>
-                <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                <span className="text-xl font-bold bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
                   Blaffa Pay
                 </span>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Partenaires</p>

@@ -194,13 +194,13 @@ export default function UserTopupPage() {
 	}
 
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4 md:p-6 overflow-x-hidden">
+		<div className="min-h-screen bg-gradient-to-br from-orange-50 via-blue-50 to-green-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4 md:p-6 overflow-x-hidden">
 			<div className="max-w-7xl mx-auto space-y-4 md:space-y-6 lg:space-y-8">
 				{/* Header Section */}
 				<div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl md:rounded-3xl border border-white/30 dark:border-gray-700/50 shadow-xl p-4 md:p-8">
 					<div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 md:gap-6">
 						<div className="flex items-center gap-3 md:gap-4">
-							<div className="p-3 md:p-4 rounded-2xl md:rounded-3xl bg-gradient-to-r from-blue-500 to-indigo-600 shadow-lg">
+							<div className="p-3 md:p-4 rounded-2xl md:rounded-3xl bg-gradient-to-r from-orange-500 to-orange-600 shadow-lg">
 								<Wallet className="h-6 w-6 md:h-8 md:w-8 text-white" />
 							</div>
 							<div>
@@ -214,7 +214,7 @@ export default function UserTopupPage() {
 						</div>
 						<Button 
 							onClick={() => setCreateModalOpen(true)}
-							className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl md:rounded-2xl px-4 md:px-6 py-2 md:py-3 w-full lg:w-auto"
+							className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl md:rounded-2xl px-4 md:px-6 py-2 md:py-3 w-full lg:w-auto"
 						>
 							<Plus className="h-4 w-4 md:h-5 md:w-5 mr-2" />
 							{t("topup.createNew") || "Create New Request"}
@@ -224,9 +224,9 @@ export default function UserTopupPage() {
 
 				{/* Main Content Card */}
 				<Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-white/30 dark:border-gray-700/50 shadow-xl rounded-2xl md:rounded-3xl overflow-hidden">
-					<CardHeader className="bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-900/20 dark:to-indigo-900/20 border-b border-white/30 dark:border-gray-700/50 p-4 md:p-6">
+					<CardHeader className="bg-gradient-to-r from-orange-50/50 to-orange-50/50 dark:from-orange-900/20 dark:to-orange-900/20 border-b border-white/30 dark:border-gray-700/50 p-4 md:p-6">
 						<CardTitle className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2 md:gap-3">
-							<Clock className="h-5 w-5 md:h-6 md:w-6 text-blue-600 dark:text-blue-400" />
+							<Clock className="h-5 w-5 md:h-6 md:w-6 text-orange-600 dark:text-orange-400" />
 							{t("topup.requestHistory") || "Request History"}
 						</CardTitle>
 					</CardHeader>
@@ -281,7 +281,7 @@ export default function UserTopupPage() {
 								<div className="overflow-x-auto">
 									<Table>
 										<TableHeader>
-											<TableRow className="bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-900/20 dark:to-indigo-900/20 border-b border-white/30 dark:border-gray-700/50">
+											<TableRow className="bg-gradient-to-r from-orange-50/50 to-orange-50/50 dark:from-orange-900/20 dark:to-orange-900/20 border-b border-white/30 dark:border-gray-700/50">
 												<TableHead className="text-left font-semibold text-gray-900 dark:text-white py-3 md:py-4 px-3 md:px-6 text-xs md:text-sm">{t("topup.reference") || "Reference"}</TableHead>
 												<TableHead className="text-left font-semibold text-gray-900 dark:text-white py-3 md:py-4 px-3 md:px-6 text-xs md:text-sm">
 													<Button variant="ghost" onClick={() => handleSort("amount")} className="h-auto p-0 font-semibold hover:bg-transparent text-xs md:text-sm">
@@ -363,7 +363,7 @@ export default function UserTopupPage() {
 																size="sm" 
 																variant="outline" 
 																onClick={() => handleOpenDetail(topup.uid)}
-																className="rounded-xl md:rounded-2xl border-white/30 dark:border-gray-700/50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-blue-900/20 dark:hover:to-indigo-900/20 transition-all duration-300 text-xs md:text-sm px-2 md:px-3 py-1 md:py-2"
+																className="rounded-xl md:rounded-2xl border-white/30 dark:border-gray-700/50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl hover:bg-gradient-to-r hover:from-orange-50 hover:to-orange-50 dark:hover:from-orange-900/20 dark:hover:to-orange-900/20 transition-all duration-300 text-xs md:text-sm px-2 md:px-3 py-1 md:py-2"
 															>
 																<span className="hidden sm:inline">{t("topup.viewDetails") || "View Details"}</span>
 																<span className="sm:hidden">View</span>
@@ -390,7 +390,7 @@ export default function UserTopupPage() {
 										size="sm"
 										onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
 										disabled={currentPage === 1}
-										className="rounded-xl md:rounded-2xl border-white/30 dark:border-gray-700/50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-blue-900/20 dark:hover:to-indigo-900/20 transition-all duration-300 text-xs md:text-sm px-2 md:px-3 py-1 md:py-2"
+										className="rounded-xl md:rounded-2xl border-white/30 dark:border-gray-700/50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl hover:bg-gradient-to-r hover:from-orange-50 hover:to-orange-50 dark:hover:from-orange-900/20 dark:hover:to-orange-900/20 transition-all duration-300 text-xs md:text-sm px-2 md:px-3 py-1 md:py-2"
 									>
 										<ChevronLeft className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
 										<span className="hidden sm:inline">{t("common.previous")}</span>
@@ -404,7 +404,7 @@ export default function UserTopupPage() {
 										size="sm"
 										onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
 										disabled={currentPage === totalPages}
-										className="rounded-xl md:rounded-2xl border-white/30 dark:border-gray-700/50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-blue-900/20 dark:hover:to-indigo-900/20 transition-all duration-300 text-xs md:text-sm px-2 md:px-3 py-1 md:py-2"
+										className="rounded-xl md:rounded-2xl border-white/30 dark:border-gray-700/50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl hover:bg-gradient-to-r hover:from-orange-50 hover:to-orange-50 dark:hover:from-orange-900/20 dark:hover:to-orange-900/20 transition-all duration-300 text-xs md:text-sm px-2 md:px-3 py-1 md:py-2"
 									>
 										<span className="hidden sm:inline">{t("common.next")}</span>
 										<span className="sm:hidden">Next</span>
@@ -524,7 +524,7 @@ export default function UserTopupPage() {
 						<Button 
 							onClick={handleCreateTopup} 
 							disabled={createLoading || !formData.amount}
-							className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl md:rounded-2xl px-4 md:px-6 py-2 md:py-3 text-sm md:text-base w-full sm:w-auto"
+							className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl md:rounded-2xl px-4 md:px-6 py-2 md:py-3 text-sm md:text-base w-full sm:w-auto"
 						>
 							{createLoading ? (
 								<>
@@ -723,7 +723,7 @@ export default function UserTopupPage() {
 						</div>
 					) : null}
 					<DialogClose asChild>
-						<Button className="mt-4 md:mt-6 w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl md:rounded-2xl text-sm md:text-base py-2 md:py-3">
+						<Button className="mt-4 md:mt-6 w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl md:rounded-2xl text-sm md:text-base py-2 md:py-3">
 							{t("common.close") || "Close"}
 						</Button>
 					</DialogClose>
