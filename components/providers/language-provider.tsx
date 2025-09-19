@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { createContext, useContext, useState } from "react"
+import { createContext, useContext, useEffect, useState } from "react"
 
 type Language = "en" | "fr"
 
@@ -1427,9 +1427,27 @@ const LanguageProviderContext = createContext<LanguageProviderState>(initialStat
 
 export function LanguageProvider({ children }: LanguageProviderProps) {
   const [language, setLanguage] = useState<Language>("fr")
+  const [isClient, setIsClient] = useState(false)
+
+  // Handle hydration by ensuring client-side state matches server-side
+  useEffect(() => {
+    setIsClient(true)
+    const savedLanguage = localStorage.getItem('language') as Language
+    if (savedLanguage === "en" || savedLanguage === "fr") {
+      setLanguage(savedLanguage)
+    }
+  }, [])
+
+  // Custom setLanguage function that persists to localStorage
+  const handleSetLanguage = (newLanguage: Language) => {
+    setLanguage(newLanguage)
+    localStorage.setItem('language', newLanguage)
+  }
 
   const t = (key: string, params?: Record<string, any>): string => {
-    let text = translations[language][key as keyof (typeof translations)["en"]] || key
+    // Use default language during SSR to prevent hydration mismatch
+    const currentLanguage = isClient ? language : "fr"
+    let text = translations[currentLanguage][key as keyof (typeof translations)["en"]] || key
     if (params) {
       Object.entries(params).forEach(([param, value]) => {
         text = text.replace(`{${param}}`, String(value))
@@ -1440,7 +1458,7 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
 
   const value = {
     language,
-    setLanguage,
+    setLanguage: handleSetLanguage,
     t,
   }
 

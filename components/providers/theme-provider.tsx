@@ -22,29 +22,9 @@ const initialState: ThemeProviderState = {
 
 const ThemeProviderContext = createContext<ThemeProviderState>(initialState)
 
-// Helper function to check if user is authenticated
-function isUserAuthenticated(): boolean {
-  if (typeof window === 'undefined') return false
-  
-  // Check for access token in localStorage
-  const accessToken = localStorage.getItem('accessToken')
-  if (accessToken) return true
-  
-  // Check for access token in cookies
-  const hasTokenCookie = document.cookie.split(';').some(cookie => 
-    cookie.trim().startsWith('accessToken=')
-  )
-  if (hasTokenCookie) return true
-  
-  return false
-}
-
 // Helper function to get initial theme
 function getInitialTheme(): Theme {
   if (typeof window === 'undefined') return "light"
-  
-  // Only restore theme if user is authenticated
-  if (!isUserAuthenticated()) return "light"
   
   const savedTheme = localStorage.getItem('theme') as Theme
   return savedTheme === "dark" || savedTheme === "light" ? savedTheme : "light"
@@ -62,11 +42,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   // Custom setTheme function that persists to localStorage
   const handleSetTheme = (newTheme: Theme) => {
     setTheme(newTheme)
-    
-    // Only persist theme if user is authenticated
-    if (isUserAuthenticated()) {
-      localStorage.setItem('theme', newTheme)
-    }
+    localStorage.setItem('theme', newTheme)
   }
 
   const value = {
