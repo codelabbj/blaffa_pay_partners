@@ -714,6 +714,9 @@ const translations = {
     "common.failedToCreate": "Failed to create",
     "common.failedToUpdate": "Failed to update",
     "common.failedToDelete": "Failed to delete",
+    "common.startDate": "Start Date",
+    "common.endDate": "End Date",
+    "common.clearDates": "Clear Dates",
   },
   fr: {
     // Auth
@@ -1414,6 +1417,9 @@ const translations = {
     "common.failedToCreate": "Échec de la création",
     "common.failedToUpdate": "Échec de la mise à jour",
     "common.failedToDelete": "Échec de la suppression",
+    "common.startDate": "Date de début",
+    "common.endDate": "Date de fin",
+    "common.clearDates": "Effacer les dates",
   },
 }
 

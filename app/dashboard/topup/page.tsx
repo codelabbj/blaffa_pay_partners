@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -8,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useLanguage } from "@/components/providers/language-provider"
-import { Search, ChevronLeft, ChevronRight, ArrowUpDown, Copy, Plus, Upload, Wallet, Clock, CheckCircle, XCircle, AlertCircle } from "lucide-react"
+import { Search, ChevronLeft, ChevronRight, ArrowUpDown, Copy, Plus, Upload, Wallet, Clock, CheckCircle, XCircle, AlertCircle, RefreshCw, Activity } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog"
 import { ErrorDisplay, extractErrorMessages } from "@/components/ui/error-display"
@@ -20,6 +19,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 export default function UserTopupPage() {
 	const [searchTerm, setSearchTerm] = useState("")
 	const [statusFilter, setStatusFilter] = useState("all")
+	const [startDate, setStartDate] = useState("")
+	const [endDate, setEndDate] = useState("")
 	const [currentPage, setCurrentPage] = useState(1)
 	const [topups, setTopups] = useState<any[]>([])
 	const [totalCount, setTotalCount] = useState(0)
@@ -37,6 +38,7 @@ export default function UserTopupPage() {
 	const [detailTopup, setDetailTopup] = useState<any | null>(null)
 	const [detailLoading, setDetailLoading] = useState(false)
 	const [detailError, setDetailError] = useState("")
+	const [refreshing, setRefreshing] = useState(false)
 	
 	// Create topup modal state
 	const [createModalOpen, setCreateModalOpen] = useState(false)
@@ -65,6 +67,12 @@ export default function UserTopupPage() {
 				if (statusFilter !== "all") {
 					params.append("status", statusFilter)
 				}
+				if (startDate) {
+					params.append("date_from", startDate)
+				}
+				if (endDate) {
+					params.append("date_to", endDate)
+				}
 				const orderingParam = sortField
 					? `&ordering=${(sortDirection === "asc" ? "+" : "-")}${sortField}`
 					: ""
@@ -85,9 +93,17 @@ export default function UserTopupPage() {
 			}
 		}
 		fetchTopups()
-	}, [searchTerm, currentPage, itemsPerPage, baseUrl, statusFilter, sortField, sortDirection, t, toast, apiFetch])
+	}, [searchTerm, currentPage, itemsPerPage, baseUrl, statusFilter, startDate, endDate, sortField, sortDirection, t, toast, apiFetch])
 
 	const startIndex = (currentPage - 1) * itemsPerPage
+
+	// Manual refresh function
+	const handleRefresh = async () => {
+		setRefreshing(true)
+		setCurrentPage(1)
+		await new Promise(resolve => setTimeout(resolve, 500)) // Small delay for UX
+		setRefreshing(false)
+	}
 
 	const handleSort = (field: "amount" | "created_at" | "status") => {
 		if (sortField === field) {
@@ -194,60 +210,90 @@ export default function UserTopupPage() {
 	}
 
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-orange-50 via-blue-50 to-green-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4 md:p-6 overflow-x-hidden">
-			<div className="max-w-7xl mx-auto space-y-4 md:space-y-6 lg:space-y-8">
-				{/* Header Section */}
-				<div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl md:rounded-3xl border border-white/30 dark:border-gray-700/50 shadow-xl p-4 md:p-8">
-					<div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 md:gap-6">
-						<div className="flex items-center gap-3 md:gap-4">
-							<div className="p-3 md:p-4 rounded-2xl md:rounded-3xl bg-gradient-to-r from-orange-500 to-orange-600 shadow-lg">
-								<Wallet className="h-6 w-6 md:h-8 md:w-8 text-white" />
-							</div>
-							<div>
-								<h1 className="text-xl md:text-3xl font-bold text-gray-900 dark:text-white">
-									{t("topup.title") || "My Top Up Requests"}
-								</h1>
-								<p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-1 md:mt-2">
-									Manage your account recharge requests and track their status
-								</p>
+		<div className="space-y-4 md:space-y-6 lg:space-y-8 overflow-x-hidden">
+			{/* Hero Section */}
+			<div className="relative overflow-hidden rounded-2xl md:rounded-3xl bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 p-4 md:p-8 text-white shadow-2xl">
+				<div className="absolute inset-0 bg-black/10"></div>
+				<div className="relative z-10">
+					<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+						<div className="flex-1">
+							<h1 className="text-2xl md:text-4xl font-bold tracking-tight mb-2">{t("topup.title") || "My Top Up Requests"}</h1>
+							<p className="text-orange-100 text-sm md:text-lg">{t("topup.subtitle") || "Manage your account recharge requests and track their status"}</p>
+						</div>
+						<div className="flex md:hidden items-center justify-center">
+							<div className="bg-white/20 backdrop-blur-sm rounded-xl p-3 w-full">
+								<div className="text-lg font-bold text-center">{totalCount}</div>
+								<div className="text-orange-100 text-xs text-center">{t("topup.totalRequests") || "Total Requests"}</div>
 							</div>
 						</div>
-						<Button 
-							onClick={() => setCreateModalOpen(true)}
-							className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl md:rounded-2xl px-4 md:px-6 py-2 md:py-3 w-full lg:w-auto"
-						>
-							<Plus className="h-4 w-4 md:h-5 md:w-5 mr-2" />
-							{t("topup.createNew") || "Create New Request"}
-						</Button>
+						<div className="hidden md:flex items-center space-x-4">
+							<div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4">
+								<div className="text-2xl font-bold">{totalCount}</div>
+								<div className="text-orange-100 text-sm">{t("topup.totalRequests") || "Total Requests"}</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				{/* Decorative elements */}
+				<div className="absolute top-0 right-0 w-16 h-16 md:w-32 md:h-32 bg-white/10 rounded-full blur-2xl"></div>
+				<div className="absolute bottom-0 left-0 w-12 h-12 md:w-24 md:h-24 bg-white/10 rounded-full blur-2xl"></div>
+			</div>
+
+			{/* Topup Requests Section */}
+			<div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl md:rounded-3xl border border-white/20 dark:border-gray-700/50 shadow-xl overflow-hidden">
+				<div className="p-4 md:p-8 border-b border-gray-200/50 dark:border-gray-700/50">
+					<div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+						<div className="flex items-center gap-2 md:gap-3">
+							<div className="p-2 md:p-3 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl md:rounded-2xl">
+								<Activity className="h-5 w-5 md:h-6 md:w-6 text-white" />
+							</div>
+							<div>
+								<h2 className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white">{t("topup.requestHistory") || "Request History"}</h2>
+								<p className="text-sm md:text-base text-gray-500 dark:text-gray-400">{t("topup.manageRequests") || "Manage and track your top-up requests"}</p>
+							</div>
+						</div>
+						<div className="flex flex-col sm:flex-row gap-2">
+							<Button 
+								onClick={handleRefresh} 
+								variant="outline" 
+								size="sm"
+								disabled={refreshing}
+								className="rounded-xl md:rounded-2xl border-2 hover:bg-orange-50 dark:hover:bg-orange-900/20 w-full sm:w-auto"
+							>
+								<RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+								{t("common.refresh") || "Refresh"}
+							</Button>
+							<Button 
+								onClick={() => setCreateModalOpen(true)}
+								className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl md:rounded-2xl w-full sm:w-auto"
+							>
+								<Plus className="h-4 w-4 mr-2" />
+								{t("topup.createNew") || "Create New Request"}
+							</Button>
+						</div> 
 					</div>
 				</div>
 
-				{/* Main Content Card */}
-				<Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-white/30 dark:border-gray-700/50 shadow-xl rounded-2xl md:rounded-3xl overflow-hidden">
-					<CardHeader className="bg-gradient-to-r from-orange-50/50 to-orange-50/50 dark:from-orange-900/20 dark:to-orange-900/20 border-b border-white/30 dark:border-gray-700/50 p-4 md:p-6">
-						<CardTitle className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2 md:gap-3">
-							<Clock className="h-5 w-5 md:h-6 md:w-6 text-orange-600 dark:text-orange-400" />
-							{t("topup.requestHistory") || "Request History"}
-						</CardTitle>
-					</CardHeader>
-					<CardContent className="p-4 md:p-8">
-						{/* Search & Filter Section */}
-						<div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-2xl md:rounded-3xl border border-white/30 dark:border-gray-700/50 p-4 md:p-6 mb-6 md:mb-8">
-							<div className="flex flex-col lg:flex-row gap-4 md:gap-6 items-center">
-								<div className="relative flex-1 w-full">
-									<Search className="absolute left-3 md:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 md:h-5 md:w-5" />
-									<Input
-										placeholder={t("topup.search") || "Search by reference or amount..."}
-										value={searchTerm}
-										onChange={(e) => setSearchTerm(e.target.value)}
-										className="pl-10 md:pl-12 h-10 md:h-12 rounded-xl md:rounded-2xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-white/30 dark:border-gray-700/50 shadow-lg focus:shadow-xl transition-all duration-300 text-sm md:text-base"
-									/>
-								</div>
+				<div className="p-4 md:p-8">
+					{/* Filters and Search */}
+					<div className="space-y-4 mb-4 md:mb-6">
+						{/* Search and Status Filters */}
+						<div className="flex flex-col lg:flex-row gap-3 md:gap-4">
+							<div className="relative flex-1">
+								<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+								<Input
+									placeholder={t("topup.search") || "Search by reference or amount..."}
+									value={searchTerm}
+									onChange={(e) => setSearchTerm(e.target.value)}
+									className="pl-10 h-10 md:h-12 rounded-xl md:rounded-2xl border-2 focus:border-blue-500 focus:ring-blue-500/20 text-sm md:text-base"
+								/>
+							</div>
+							<div className="flex flex-col sm:flex-row gap-3 md:gap-4">
 								<Select value={statusFilter} onValueChange={setStatusFilter}>
-									<SelectTrigger className="w-full lg:w-56 h-10 md:h-12 rounded-xl md:rounded-2xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-white/30 dark:border-gray-700/50 shadow-lg">
+									<SelectTrigger className="w-full sm:w-48 rounded-xl md:rounded-2xl border-2 h-10 md:h-12">
 										<SelectValue placeholder={t("topup.allStatuses") || "All Statuses"} />
 									</SelectTrigger>
-									<SelectContent className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-white/30 dark:border-gray-700/50 rounded-xl md:rounded-2xl shadow-xl">
+									<SelectContent>
 										<SelectItem value="all">{t("topup.allStatuses") || "All Statuses"}</SelectItem>
 										<SelectItem value="pending">{t("topup.pending") || "Pending"}</SelectItem>
 										<SelectItem value="approved">{t("topup.approved") || "Approved"}</SelectItem>
@@ -257,164 +303,226 @@ export default function UserTopupPage() {
 								</Select>
 							</div>
 						</div>
-
-						{/* Table Section */}
-						<div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-2xl md:rounded-3xl border border-white/30 dark:border-gray-700/50 overflow-hidden shadow-lg">
-							{loading ? (
-								<div className="p-8 md:p-12 text-center">
-									<div className="inline-flex items-center gap-2 md:gap-3 text-gray-600 dark:text-gray-400">
-										<div className="animate-spin rounded-full h-5 w-5 md:h-6 md:w-6 border-b-2 border-blue-600"></div>
-										<span className="text-sm md:text-base">{t("common.loading")}</span>
-									</div>
-								</div>
-							) : error ? (
-								<ErrorDisplay
-									error={error}
-									onRetry={() => {
-										setCurrentPage(1)
-										setError("")
-									}}
-									variant="full"
-									showDismiss={false}
+						
+						{/* Date Filters */}
+						<div className="flex flex-col sm:flex-row gap-3 md:gap-4">
+							<div className="flex-1">
+								<Label htmlFor="startDate" className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+									{t("common.startDate") || "Start Date"}
+								</Label>
+								<Input
+									id="startDate"
+									type="date"
+									value={startDate}
+									onChange={(e) => setStartDate(e.target.value)}
+									className="h-10 md:h-12 rounded-xl md:rounded-2xl border-2 focus:border-blue-500 focus:ring-blue-500/20 text-sm md:text-base"
 								/>
-							) : (
-								<div className="overflow-x-auto">
-									<Table>
-										<TableHeader>
-											<TableRow className="bg-gradient-to-r from-orange-50/50 to-orange-50/50 dark:from-orange-900/20 dark:to-orange-900/20 border-b border-white/30 dark:border-gray-700/50">
-												<TableHead className="text-left font-semibold text-gray-900 dark:text-white py-3 md:py-4 px-3 md:px-6 text-xs md:text-sm">{t("topup.reference") || "Reference"}</TableHead>
-												<TableHead className="text-left font-semibold text-gray-900 dark:text-white py-3 md:py-4 px-3 md:px-6 text-xs md:text-sm">
-													<Button variant="ghost" onClick={() => handleSort("amount")} className="h-auto p-0 font-semibold hover:bg-transparent text-xs md:text-sm">
-														{t("topup.amount") || "Amount"}
-														<ArrowUpDown className="ml-1 md:ml-2 h-3 w-3 md:h-4 md:w-4" />
-													</Button>
-												</TableHead>
-												<TableHead className="text-left font-semibold text-gray-900 dark:text-white py-3 md:py-4 px-3 md:px-6 text-xs md:text-sm">
-													<Button variant="ghost" onClick={() => handleSort("status")} className="h-auto p-0 font-semibold hover:bg-transparent text-xs md:text-sm">
-														{t("topup.status") || "Status"}
-														<ArrowUpDown className="ml-1 md:ml-2 h-3 w-3 md:h-4 md:w-4" />
-													</Button>
-												</TableHead>
-												<TableHead className="text-left font-semibold text-gray-900 dark:text-white py-3 md:py-4 px-3 md:px-6 text-xs md:text-sm hidden md:table-cell">
-													<Button variant="ghost" onClick={() => handleSort("created_at")} className="h-auto p-0 font-semibold hover:bg-transparent text-xs md:text-sm">
-														{t("topup.createdAt") || "Created At"}
-														<ArrowUpDown className="ml-1 md:ml-2 h-3 w-3 md:h-4 md:w-4" />
-													</Button>
-												</TableHead>
-												<TableHead className="text-left font-semibold text-gray-900 dark:text-white py-3 md:py-4 px-3 md:px-6 text-xs md:text-sm hidden lg:table-cell">{t("topup.expiresAt") || "Expires At"}</TableHead>
-												<TableHead className="text-left font-semibold text-gray-900 dark:text-white py-3 md:py-4 px-3 md:px-6 text-xs md:text-sm hidden lg:table-cell">{t("topup.timeRemaining") || "Time Remaining"}</TableHead>
-												<TableHead className="text-left font-semibold text-gray-900 dark:text-white py-3 md:py-4 px-3 md:px-6 text-xs md:text-sm">{t("common.actions") || "Actions"}</TableHead>
-											</TableRow>
-										</TableHeader>
-										<TableBody>
-											{topups.length === 0 ? (
-												<TableRow>
-													<TableCell colSpan={7} className="text-center py-8 md:py-12">
-														<div className="flex flex-col items-center gap-3 md:gap-4 text-gray-500 dark:text-gray-400">
-															<Wallet className="h-8 w-8 md:h-12 md:w-12 opacity-50" />
-															<p className="text-base md:text-lg font-medium">{t("topup.noRequests") || "No top-up requests found"}</p>
-															<p className="text-xs md:text-sm">Create your first top-up request to get started</p>
-														</div>
-													</TableCell>
-												</TableRow>
-											) : (
-												topups.map((topup) => (
-													<TableRow key={topup.uid} className="hover:bg-white/50 dark:hover:bg-gray-800/50 transition-all duration-300 border-b border-white/20 dark:border-gray-700/30">
-														<TableCell className="py-3 md:py-4 px-3 md:px-6">
-															<span className="font-mono text-xs md:text-sm bg-gray-100/80 dark:bg-gray-800/80 px-2 md:px-3 py-1 rounded-lg md:rounded-xl">
-																{topup.reference}
-															</span>
-														</TableCell>
-														<TableCell className="py-3 md:py-4 px-3 md:px-6">
-															<span className="font-semibold text-sm md:text-lg text-gray-900 dark:text-white">
-																{topup.formatted_amount}
-															</span>
-														</TableCell>
-														<TableCell className="py-3 md:py-4 px-3 md:px-6">
-															<Badge variant={getStatusBadgeVariant(topup.status)} className="rounded-lg md:rounded-xl px-2 md:px-3 py-1 text-xs">
-																{topup.status === "pending" && <Clock className="h-2 w-2 md:h-3 md:w-3 mr-1" />}
-																{topup.status === "approved" && <CheckCircle className="h-2 w-2 md:h-3 md:w-3 mr-1" />}
-																{topup.status === "rejected" && <XCircle className="h-2 w-2 md:h-3 md:w-3 mr-1" />}
-																{topup.status === "expired" && <AlertCircle className="h-2 w-2 md:h-3 md:w-3 mr-1" />}
-																<span className="hidden sm:inline">{topup.status_display || topup.status}</span>
-																<span className="sm:hidden">{topup.status_display?.charAt(0) || topup.status.charAt(0)}</span>
-															</Badge>
-														</TableCell>
-														<TableCell className="py-3 md:py-4 px-3 md:px-6 text-gray-600 dark:text-gray-400 text-xs md:text-sm hidden md:table-cell">
-															{topup.created_at ? new Date(topup.created_at).toLocaleDateString() : "-"}
-														</TableCell>
-														<TableCell className="py-3 md:py-4 px-3 md:px-6 text-gray-600 dark:text-gray-400 text-xs md:text-sm hidden lg:table-cell">
-															{topup.expires_at ? new Date(topup.expires_at).toLocaleDateString() : "-"}
-														</TableCell>
-														<TableCell className="py-3 md:py-4 px-3 md:px-6 hidden lg:table-cell">
-															{topup.is_expired ? (
-																<Badge variant="destructive" className="rounded-lg md:rounded-xl text-xs">
-																	<AlertCircle className="h-2 w-2 md:h-3 md:w-3 mr-1" />
-																	{t("topup.expired") || "Expired"}
-																</Badge>
-															) : (
-																<span className="text-xs md:text-sm text-gray-600 dark:text-gray-400 bg-gray-100/80 dark:bg-gray-800/80 px-2 md:px-3 py-1 rounded-lg md:rounded-xl">
-																	{formatTimeRemaining(topup.time_remaining)}
-																</span>
-															)}
-														</TableCell>
-														<TableCell className="py-3 md:py-4 px-3 md:px-6">
-															<Button 
-																size="sm" 
-																variant="outline" 
-																onClick={() => handleOpenDetail(topup.uid)}
-																className="rounded-xl md:rounded-2xl border-white/30 dark:border-gray-700/50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl hover:bg-gradient-to-r hover:from-orange-50 hover:to-orange-50 dark:hover:from-orange-900/20 dark:hover:to-orange-900/20 transition-all duration-300 text-xs md:text-sm px-2 md:px-3 py-1 md:py-2"
-															>
-																<span className="hidden sm:inline">{t("topup.viewDetails") || "View Details"}</span>
-																<span className="sm:hidden">View</span>
-															</Button>
-														</TableCell>
-													</TableRow>
-												))
-											)}
-										</TableBody>
-									</Table>
+							</div>
+							<div className="flex-1">
+								<Label htmlFor="endDate" className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+									{t("common.endDate") || "End Date"}
+								</Label>
+								<Input
+									id="endDate"
+									type="date"
+									value={endDate}
+									onChange={(e) => setEndDate(e.target.value)}
+									className="h-10 md:h-12 rounded-xl md:rounded-2xl border-2 focus:border-blue-500 focus:ring-blue-500/20 text-sm md:text-base"
+								/>
+							</div>
+							{(startDate || endDate) && (
+								<div className="flex items-end">
+									<Button
+										variant="outline"
+										size="sm"
+										onClick={() => {
+											setStartDate("")
+											setEndDate("")
+										}}
+										className="h-10 md:h-12 rounded-xl md:rounded-2xl border-2 text-sm md:text-base px-3 md:px-4"
+									>
+										{t("common.clearDates") || "Clear Dates"}
+									</Button>
 								</div>
 							)}
 						</div>
+					</div>
 
-						{/* Pagination Section */}
-						{totalPages > 1 && (
-							<div className="flex flex-col sm:flex-row items-center justify-between gap-3 md:gap-4 mt-6 md:mt-8 p-4 md:p-6 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-2xl md:rounded-3xl border border-white/30 dark:border-gray-700/50">
-								<div className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
-									{`${t("topup.showingResults") || "Showing"}: ${startIndex + 1}-${Math.min(startIndex + itemsPerPage, totalCount)} / ${totalCount}`}
-								</div>
-								<div className="flex items-center gap-2 md:gap-3">
-									<Button
-										variant="outline"
-										size="sm"
-										onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-										disabled={currentPage === 1}
-										className="rounded-xl md:rounded-2xl border-white/30 dark:border-gray-700/50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl hover:bg-gradient-to-r hover:from-orange-50 hover:to-orange-50 dark:hover:from-orange-900/20 dark:hover:to-orange-900/20 transition-all duration-300 text-xs md:text-sm px-2 md:px-3 py-1 md:py-2"
-									>
-										<ChevronLeft className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
-										<span className="hidden sm:inline">{t("common.previous")}</span>
-										<span className="sm:hidden">Prev</span>
-									</Button>
-									<div className="text-xs md:text-sm font-medium text-gray-900 dark:text-white bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl px-3 md:px-4 py-1 md:py-2 rounded-xl md:rounded-2xl border border-white/30 dark:border-gray-700/50">
-										{`${t("topup.pageOf") || "Page"}: ${currentPage}/${totalPages}`}
-									</div>
-									<Button
-										variant="outline"
-										size="sm"
-										onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-										disabled={currentPage === totalPages}
-										className="rounded-xl md:rounded-2xl border-white/30 dark:border-gray-700/50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl hover:bg-gradient-to-r hover:from-orange-50 hover:to-orange-50 dark:hover:from-orange-900/20 dark:hover:to-orange-900/20 transition-all duration-300 text-xs md:text-sm px-2 md:px-3 py-1 md:py-2"
-									>
-										<span className="hidden sm:inline">{t("common.next")}</span>
-										<span className="sm:hidden">Next</span>
-										<ChevronRight className="h-3 w-3 md:h-4 md:w-4 ml-1 md:ml-2" />
-									</Button>
-								</div>
+					{/* Inline error display */}
+					{error && (
+						<div className="mb-4">
+							<ErrorDisplay
+								error={error}
+								onRetry={() => {
+									setCurrentPage(1)
+									setError("")
+								}}
+								variant="full"
+								showDismiss={false}
+							/>
+						</div>
+					)}
+
+					{/* Topup Requests Table */}
+					{loading ? (
+						<div className="text-center py-8 md:py-12">
+							<div className="animate-spin rounded-full h-10 w-10 md:h-12 md:w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+							<p className="text-sm md:text-base text-gray-500 dark:text-gray-400">{t("common.loading") || "Loading..."}</p>
+						</div>
+					) : error ? (
+						<ErrorDisplay error={error} variant="full" />
+					) : (
+						<div className="bg-white/50 dark:bg-gray-800/50 rounded-xl md:rounded-2xl border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
+							<div className="overflow-x-auto">
+								<Table>
+									<TableHeader>
+										<TableRow className="bg-gray-50 dark:bg-gray-800/50">
+											<TableHead className="font-semibold text-xs md:text-sm py-3 md:py-4 px-3 md:px-6">{t("topup.reference") || "Reference"}</TableHead>
+											<TableHead className="font-semibold cursor-pointer text-xs md:text-sm py-3 md:py-4 px-3 md:px-6" onClick={() => handleSort("amount")}>
+												<div className="flex items-center gap-1 md:gap-2">
+													{t("topup.amount") || "Amount"}
+													<ArrowUpDown className="h-3 w-3 md:h-4 md:w-4" />
+												</div>
+											</TableHead>
+											<TableHead className="font-semibold cursor-pointer text-xs md:text-sm py-3 md:py-4 px-3 md:px-6" onClick={() => handleSort("status")}>
+												<div className="flex items-center gap-1 md:gap-2">
+													{t("topup.status") || "Status"}
+													<ArrowUpDown className="h-3 w-3 md:h-4 md:w-4" />
+												</div>
+											</TableHead>
+											<TableHead className="font-semibold cursor-pointer text-xs md:text-sm py-3 md:py-4 px-3 md:px-6 hidden md:table-cell" onClick={() => handleSort("created_at")}>
+												<div className="flex items-center gap-1 md:gap-2">
+													{t("topup.createdAt") || "Created At"}
+													<ArrowUpDown className="h-3 w-3 md:h-4 md:w-4" />
+												</div>
+											</TableHead>
+											<TableHead className="font-semibold text-xs md:text-sm py-3 md:py-4 px-3 md:px-6 hidden lg:table-cell">{t("topup.expiresAt") || "Expires At"}</TableHead>
+											<TableHead className="font-semibold text-xs md:text-sm py-3 md:py-4 px-3 md:px-6 hidden lg:table-cell">{t("topup.timeRemaining") || "Time Remaining"}</TableHead>
+											<TableHead className="font-semibold text-xs md:text-sm py-3 md:py-4 px-3 md:px-6">{t("common.actions") || "Actions"}</TableHead>
+										</TableRow>
+									</TableHeader>
+									<TableBody>
+										{topups.length === 0 ? (
+											<TableRow>
+												<TableCell colSpan={7} className="text-center py-6 md:py-8">
+													<div className="text-center">
+														<Wallet className="h-8 w-8 md:h-12 md:w-12 text-gray-400 mx-auto mb-3 md:mb-4" />
+														<p className="text-sm md:text-base text-gray-500 dark:text-gray-400">{t("topup.noRequests") || "No top-up requests found"}</p>
+														<p className="text-xs md:text-sm text-gray-400">Create your first top-up request to get started</p>
+													</div>
+												</TableCell>
+											</TableRow>
+										) : (
+											topups.map((topup) => (
+												<TableRow key={topup.uid} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+													<TableCell className="py-3 md:py-4 px-3 md:px-6">
+														<div className="flex items-center gap-1 md:gap-2">
+															<span className="font-mono text-xs md:text-sm">{topup.reference}</span>
+															<Button
+																variant="ghost"
+																size="sm"
+																onClick={() => {
+																	navigator.clipboard.writeText(topup.reference)
+																	toast({ title: t("topup.referenceCopied") || "Reference copied!" })
+																}}
+																className="h-5 w-5 md:h-6 md:w-6 p-0"
+															>
+																<Copy className="h-2 w-2 md:h-3 md:w-3" />
+															</Button>
+														</div>
+													</TableCell>
+													<TableCell className="font-semibold py-3 md:py-4 px-3 md:px-6">
+														<span className="text-sm md:text-base">{topup.formatted_amount}</span>
+													</TableCell>
+													<TableCell className="py-3 md:py-4 px-3 md:px-6">
+														<Badge variant={getStatusBadgeVariant(topup.status)} className="text-xs">
+															{topup.status === "pending" && <Clock className="h-2 w-2 md:h-3 md:w-3 mr-1" />}
+															{topup.status === "approved" && <CheckCircle className="h-2 w-2 md:h-3 md:w-3 mr-1" />}
+															{topup.status === "rejected" && <XCircle className="h-2 w-2 md:h-3 md:w-3 mr-1" />}
+															{topup.status === "expired" && <AlertCircle className="h-2 w-2 md:h-3 md:w-3 mr-1" />}
+															<span className="hidden sm:inline">{topup.status_display || topup.status}</span>
+															<span className="sm:hidden">{topup.status_display?.charAt(0) || topup.status.charAt(0)}</span>
+														</Badge>
+													</TableCell>
+													<TableCell className="text-xs md:text-sm text-gray-500 dark:text-gray-400 py-3 md:py-4 px-3 md:px-6 hidden md:table-cell">
+														<div className="flex flex-col">
+															<span>{topup.created_at ? new Date(topup.created_at).toLocaleDateString() : "-"}</span>
+															<span className="text-xs">
+																{topup.created_at ? new Date(topup.created_at).toLocaleTimeString() : ""}
+															</span>
+														</div>
+													</TableCell>
+													<TableCell className="text-xs md:text-sm text-gray-500 dark:text-gray-400 py-3 md:py-4 px-3 md:px-6 hidden lg:table-cell">
+														{topup.expires_at ? new Date(topup.expires_at).toLocaleDateString() : "-"}
+													</TableCell>
+													<TableCell className="py-3 md:py-4 px-3 md:px-6 hidden lg:table-cell">
+														{topup.is_expired ? (
+															<Badge variant="destructive" className="text-xs">
+																<AlertCircle className="h-2 w-2 md:h-3 md:w-3 mr-1" />
+																{t("topup.expired") || "Expired"}
+															</Badge>
+														) : (
+															<span className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
+																{formatTimeRemaining(topup.time_remaining)}
+															</span>
+														)}
+													</TableCell>
+													<TableCell className="py-3 md:py-4 px-3 md:px-6">
+														<Button 
+															size="sm" 
+															variant="outline" 
+															onClick={() => handleOpenDetail(topup.uid)}
+															className="text-xs md:text-sm px-2 md:px-3 py-1 md:py-2 rounded-lg md:rounded-xl"
+														>
+															<span className="hidden sm:inline">{t("topup.viewDetails") || "View Details"}</span>
+															<span className="sm:hidden">View</span>
+														</Button>
+													</TableCell>
+												</TableRow>
+											))
+										)}
+									</TableBody>
+								</Table>
 							</div>
-						)}
-					</CardContent>
-				</Card>
+						</div>
+					)}
+
+					{/* Pagination */}
+					{totalPages > 1 && (
+						<div className="flex flex-col sm:flex-row items-center justify-between gap-3 md:gap-4 mt-4 md:mt-6">
+							<div className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
+								{t("topup.showingResults") || "Showing"} {startIndex + 1} {t("common.to") || "to"} {Math.min(startIndex + itemsPerPage, totalCount)} {t("common.of") || "of"} {totalCount} {t("topup.requests") || "requests"}
+							</div>
+							<div className="flex items-center gap-2">
+								<Button
+									variant="outline"
+									size="sm"
+									onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+									disabled={currentPage === 1 || loading}
+									className="rounded-lg md:rounded-xl text-xs md:text-sm px-2 md:px-3 py-1 md:py-2"
+								>
+									<ChevronLeft className="h-3 w-3 md:h-4 md:w-4 mr-1" />
+									<span className="hidden sm:inline">{t("common.previous") || "Previous"}</span>
+									<span className="sm:hidden">Prev</span>
+								</Button>
+								<span className="text-xs md:text-sm font-medium px-2 md:px-3 py-1 md:py-2">
+									{t("topup.pageOf") || "Page"} {currentPage} {t("common.of") || "of"} {totalPages}
+								</span>
+								<Button
+									variant="outline"
+									size="sm"
+									onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+									disabled={currentPage === totalPages || loading}
+									className="rounded-lg md:rounded-xl text-xs md:text-sm px-2 md:px-3 py-1 md:py-2"
+								>
+									<span className="hidden sm:inline">{t("common.next") || "Next"}</span>
+									<span className="sm:hidden">Next</span>
+									<ChevronRight className="h-3 w-3 md:h-4 md:w-4 ml-1" />
+								</Button>
+							</div>
+						</div>
+					)}
+				</div>
 			</div>
 
 			{/* Create Topup Modal */}
@@ -430,10 +538,10 @@ export default function UserTopupPage() {
 					})
 				}
 			}}>
-				<DialogContent className="sm:max-w-[600px] bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-white/30 dark:border-gray-700/50 rounded-2xl md:rounded-3xl shadow-2xl mx-4 sm:mx-0">
+				<DialogContent className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 rounded-2xl md:rounded-3xl sm:max-w-[600px] mx-4 sm:mx-0">
 					<DialogHeader className="pb-4 md:pb-6">
 						<DialogTitle className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2 md:gap-3">
-							<Plus className="h-5 w-5 md:h-6 md:w-6 text-blue-600 dark:text-blue-400" />
+							<Plus className="h-5 w-5 md:h-6 md:w-6 text-orange-600 dark:text-orange-400" />
 							{t("topup.createNew") || "Create New Top-Up Request"}
 						</DialogTitle>
 					</DialogHeader>
@@ -459,7 +567,7 @@ export default function UserTopupPage() {
 								value={formData.amount}
 								onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))}
 								required
-								className="h-10 md:h-12 rounded-xl md:rounded-2xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-white/30 dark:border-gray-700/50 shadow-lg focus:shadow-xl transition-all duration-300 text-sm md:text-base"
+								className="h-10 md:h-12 rounded-xl md:rounded-2xl border-2 focus:border-blue-500 focus:ring-blue-500/20 text-sm md:text-base"
 							/>
 						</div>
 
@@ -473,10 +581,10 @@ export default function UserTopupPage() {
 									type="file"
 									accept="image/*"
 									onChange={handleFileChange}
-									className="flex-1 h-10 md:h-12 rounded-xl md:rounded-2xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-white/30 dark:border-gray-700/50 shadow-lg text-sm"
+									className="flex-1 h-10 md:h-12 rounded-xl md:rounded-2xl border-2 text-sm"
 								/>
 								{formData.proof_image && (
-									<Badge variant="outline" className="rounded-xl md:rounded-2xl px-2 md:px-3 py-1 md:py-2 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-white/30 dark:border-gray-700/50 text-xs">
+									<Badge variant="outline" className="px-2 md:px-3 py-1 md:py-2 text-xs">
 										<span className="truncate max-w-32 md:max-w-none">{formData.proof_image.name}</span>
 									</Badge>
 								)}
@@ -493,7 +601,7 @@ export default function UserTopupPage() {
 								value={formData.proof_description}
 								onChange={(e) => setFormData(prev => ({ ...prev, proof_description: e.target.value }))}
 								rows={3}
-								className="rounded-xl md:rounded-2xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-white/30 dark:border-gray-700/50 shadow-lg focus:shadow-xl transition-all duration-300 text-sm md:text-base"
+								className="rounded-xl md:rounded-2xl border-2 focus:border-blue-500 focus:ring-blue-500/20 text-sm md:text-base"
 							/>
 						</div>
 
@@ -506,7 +614,7 @@ export default function UserTopupPage() {
 								type="date"
 								value={formData.transaction_date}
 								onChange={(e) => setFormData(prev => ({ ...prev, transaction_date: e.target.value }))}
-								className="h-10 md:h-12 rounded-xl md:rounded-2xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-white/30 dark:border-gray-700/50 shadow-lg focus:shadow-xl transition-all duration-300 text-sm md:text-base"
+								className="h-10 md:h-12 rounded-xl md:rounded-2xl border-2 focus:border-blue-500 focus:ring-blue-500/20 text-sm md:text-base"
 							/>
 						</div>
 					</div>
@@ -516,7 +624,7 @@ export default function UserTopupPage() {
 							<Button 
 								variant="outline" 
 								disabled={createLoading}
-								className="rounded-xl md:rounded-2xl border-white/30 dark:border-gray-700/50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 dark:hover:from-gray-800/50 dark:hover:to-gray-700/50 transition-all duration-300 text-sm md:text-base px-4 md:px-6 py-2 md:py-3 w-full sm:w-auto"
+								className="rounded-xl md:rounded-2xl text-sm md:text-base px-4 md:px-6 py-2 md:py-3 w-full sm:w-auto"
 							>
 								{t("common.cancel") || "Cancel"}
 							</Button>
@@ -524,7 +632,7 @@ export default function UserTopupPage() {
 						<Button 
 							onClick={handleCreateTopup} 
 							disabled={createLoading || !formData.amount}
-							className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl md:rounded-2xl px-4 md:px-6 py-2 md:py-3 text-sm md:text-base w-full sm:w-auto"
+							className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl md:rounded-2xl px-4 md:px-6 py-2 md:py-3 text-sm md:text-base w-full sm:w-auto"
 						>
 							{createLoading ? (
 								<>
@@ -541,10 +649,10 @@ export default function UserTopupPage() {
 
 			{/* Topup Details Modal */}
 			<Dialog open={detailModalOpen} onOpenChange={(open) => { if (!open) handleCloseDetail() }}>
-				<DialogContent className="sm:max-w-[700px] bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-white/30 dark:border-gray-700/50 rounded-2xl md:rounded-3xl shadow-2xl mx-4 sm:mx-0 max-h-[90vh] overflow-y-auto">
+				<DialogContent className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 rounded-2xl md:rounded-3xl sm:max-w-[700px] mx-4 sm:mx-0 max-h-[90vh] overflow-y-auto">
 					<DialogHeader className="pb-4 md:pb-6">
 						<DialogTitle className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2 md:gap-3">
-							<Wallet className="h-5 w-5 md:h-6 md:w-6 text-blue-600 dark:text-blue-400" />
+							<Wallet className="h-5 w-5 md:h-6 md:w-6 text-orange-600 dark:text-orange-400" />
 							{t("topup.details") || "Top Up Request Details"}
 						</DialogTitle>
 					</DialogHeader>
@@ -566,18 +674,16 @@ export default function UserTopupPage() {
 						<div className="space-y-4 md:space-y-6">
 							<div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
 								<div className="space-y-3 md:space-y-4">
-									<div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-xl md:rounded-2xl border border-white/30 dark:border-gray-700/50 p-3 md:p-4">
+									<div className="bg-gray-50 dark:bg-gray-800 p-3 md:p-4 rounded-xl md:rounded-2xl">
 										<Label className="text-xs md:text-sm font-semibold text-gray-900 dark:text-white mb-2 block">
 											{t("topup.reference") || "Reference"}
 										</Label>
 										<div className="flex items-center gap-2">
-											<span className="font-mono text-xs md:text-sm bg-gray-100/80 dark:bg-gray-800/80 px-2 md:px-3 py-1 rounded-lg md:rounded-xl">
-												{detailTopup.reference}
-											</span>
+											<span className="font-mono text-xs md:text-sm">{detailTopup.reference}</span>
 											<Button
 												variant="ghost"
 												size="icon"
-												className="h-7 w-7 md:h-8 md:w-8 rounded-lg md:rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-800/80"
+												className="h-7 w-7 md:h-8 md:w-8"
 												onClick={() => {
 													navigator.clipboard.writeText(detailTopup.reference)
 													toast({ title: t("topup.copiedReference") || "Reference copied!" })
@@ -588,7 +694,7 @@ export default function UserTopupPage() {
 										</div>
 									</div>
 									
-									<div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-xl md:rounded-2xl border border-white/30 dark:border-gray-700/50 p-3 md:p-4">
+									<div className="bg-gray-50 dark:bg-gray-800 p-3 md:p-4 rounded-xl md:rounded-2xl">
 										<Label className="text-xs md:text-sm font-semibold text-gray-900 dark:text-white mb-2 block">
 											{t("topup.amount") || "Amount"}
 										</Label>
@@ -597,12 +703,12 @@ export default function UserTopupPage() {
 										</p>
 									</div>
 									
-									<div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-xl md:rounded-2xl border border-white/30 dark:border-gray-700/50 p-3 md:p-4">
+									<div className="bg-gray-50 dark:bg-gray-800 p-3 md:p-4 rounded-xl md:rounded-2xl">
 										<Label className="text-xs md:text-sm font-semibold text-gray-900 dark:text-white mb-2 block">
 											{t("topup.status") || "Status"}
 										</Label>
 										<div>
-											<Badge variant={getStatusBadgeVariant(detailTopup.status)} className="rounded-lg md:rounded-xl px-2 md:px-3 py-1 text-xs">
+											<Badge variant={getStatusBadgeVariant(detailTopup.status)} className="text-xs">
 												{detailTopup.status === "pending" && <Clock className="h-2 w-2 md:h-3 md:w-3 mr-1" />}
 												{detailTopup.status === "approved" && <CheckCircle className="h-2 w-2 md:h-3 md:w-3 mr-1" />}
 												{detailTopup.status === "rejected" && <XCircle className="h-2 w-2 md:h-3 md:w-3 mr-1" />}
@@ -612,7 +718,7 @@ export default function UserTopupPage() {
 										</div>
 									</div>
 
-									<div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-xl md:rounded-2xl border border-white/30 dark:border-gray-700/50 p-3 md:p-4">
+									<div className="bg-gray-50 dark:bg-gray-800 p-3 md:p-4 rounded-xl md:rounded-2xl">
 										<Label className="text-xs md:text-sm font-semibold text-gray-900 dark:text-white mb-2 block">
 											{t("topup.createdAt") || "Created At"}
 										</Label>
@@ -621,7 +727,7 @@ export default function UserTopupPage() {
 										</p>
 									</div>
 
-									<div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-xl md:rounded-2xl border border-white/30 dark:border-gray-700/50 p-3 md:p-4">
+									<div className="bg-gray-50 dark:bg-gray-800 p-3 md:p-4 rounded-xl md:rounded-2xl">
 										<Label className="text-xs md:text-sm font-semibold text-gray-900 dark:text-white mb-2 block">
 											{t("topup.expiresAt") || "Expires At"}
 										</Label>
@@ -632,25 +738,25 @@ export default function UserTopupPage() {
 								</div>
 
 								<div className="space-y-3 md:space-y-4">
-									<div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-xl md:rounded-2xl border border-white/30 dark:border-gray-700/50 p-3 md:p-4">
+									<div className="bg-gray-50 dark:bg-gray-800 p-3 md:p-4 rounded-xl md:rounded-2xl">
 										<Label className="text-xs md:text-sm font-semibold text-gray-900 dark:text-white mb-2 block">
 											{t("topup.timeRemaining") || "Time Remaining"}
 										</Label>
 										<p>
 											{detailTopup.is_expired ? (
-												<Badge variant="destructive" className="rounded-lg md:rounded-xl text-xs">
+												<Badge variant="destructive" className="text-xs">
 													<AlertCircle className="h-2 w-2 md:h-3 md:w-3 mr-1" />
 													{t("topup.expired") || "Expired"}
 												</Badge>
 											) : (
-												<span className="text-xs md:text-sm text-gray-600 dark:text-gray-400 bg-gray-100/80 dark:bg-gray-800/80 px-2 md:px-3 py-1 rounded-lg md:rounded-xl">
+												<span className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
 													{formatTimeRemaining(detailTopup.time_remaining)}
 												</span>
 											)}
 										</p>
 									</div>
 
-									<div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-xl md:rounded-2xl border border-white/30 dark:border-gray-700/50 p-3 md:p-4">
+									<div className="bg-gray-50 dark:bg-gray-800 p-3 md:p-4 rounded-xl md:rounded-2xl">
 										<Label className="text-xs md:text-sm font-semibold text-gray-900 dark:text-white mb-2 block">
 											{t("topup.transactionDate") || "Transaction Date"}
 										</Label>
@@ -659,7 +765,7 @@ export default function UserTopupPage() {
 										</p>
 									</div>
 
-									<div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-xl md:rounded-2xl border border-white/30 dark:border-gray-700/50 p-3 md:p-4">
+									<div className="bg-gray-50 dark:bg-gray-800 p-3 md:p-4 rounded-xl md:rounded-2xl">
 										<Label className="text-xs md:text-sm font-semibold text-gray-900 dark:text-white mb-2 block">
 											{t("topup.canSubmitProof") || "Can Submit Proof"}
 										</Label>
@@ -668,7 +774,7 @@ export default function UserTopupPage() {
 										</p>
 									</div>
 
-									<div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-xl md:rounded-2xl border border-white/30 dark:border-gray-700/50 p-3 md:p-4">
+									<div className="bg-gray-50 dark:bg-gray-800 p-3 md:p-4 rounded-xl md:rounded-2xl">
 										<Label className="text-xs md:text-sm font-semibold text-gray-900 dark:text-white mb-2 block">
 											{t("topup.reviewedAt") || "Reviewed At"}
 										</Label>
@@ -677,7 +783,7 @@ export default function UserTopupPage() {
 										</p>
 									</div>
 
-									<div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-xl md:rounded-2xl border border-white/30 dark:border-gray-700/50 p-3 md:p-4">
+									<div className="bg-gray-50 dark:bg-gray-800 p-3 md:p-4 rounded-xl md:rounded-2xl">
 										<Label className="text-xs md:text-sm font-semibold text-gray-900 dark:text-white mb-2 block">
 											{t("topup.processedAt") || "Processed At"}
 										</Label>
@@ -689,18 +795,18 @@ export default function UserTopupPage() {
 							</div>
 
 							{detailTopup.proof_description && (
-								<div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-xl md:rounded-2xl border border-white/30 dark:border-gray-700/50 p-3 md:p-4">
-									<Label className="text-xs md:text-sm font-semibold text-gray-900 dark:text-white mb-2 block">
+								<div className="bg-blue-50/80 dark:bg-blue-900/20 p-3 md:p-4 rounded-xl md:rounded-2xl">
+									<Label className="text-xs md:text-sm font-semibold text-blue-900 dark:text-blue-200 mb-2 block">
 										{t("topup.proofDescription") || "Proof Description"}
 									</Label>
-									<p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 mt-1">
+									<p className="text-xs md:text-sm text-blue-800 dark:text-blue-200 mt-1">
 										{detailTopup.proof_description}
 									</p>
 								</div>
 							)}
 
 							{detailTopup.rejection_reason && (
-								<div className="bg-red-50/80 dark:bg-red-900/20 backdrop-blur-sm rounded-xl md:rounded-2xl border border-red-200/50 dark:border-red-800/50 p-3 md:p-4">
+								<div className="bg-red-50/80 dark:bg-red-900/20 p-3 md:p-4 rounded-xl md:rounded-2xl">
 									<Label className="text-xs md:text-sm font-semibold text-red-900 dark:text-red-200 mb-2 block">
 										{t("topup.rejectionReason") || "Rejection Reason"}
 									</Label>
@@ -711,11 +817,11 @@ export default function UserTopupPage() {
 							)}
 
 							{detailTopup.admin_notes && (
-								<div className="bg-blue-50/80 dark:bg-blue-900/20 backdrop-blur-sm rounded-xl md:rounded-2xl border border-blue-200/50 dark:border-blue-800/50 p-3 md:p-4">
-									<Label className="text-xs md:text-sm font-semibold text-blue-900 dark:text-blue-200 mb-2 block">
+								<div className="bg-yellow-50/80 dark:bg-yellow-900/20 p-3 md:p-4 rounded-xl md:rounded-2xl">
+									<Label className="text-xs md:text-sm font-semibold text-yellow-900 dark:text-yellow-200 mb-2 block">
 										{t("topup.adminNotes") || "Admin Notes"}
 									</Label>
-									<p className="text-xs md:text-sm text-blue-800 dark:text-blue-200 mt-1">
+									<p className="text-xs md:text-sm text-yellow-800 dark:text-yellow-200 mt-1">
 										{detailTopup.admin_notes}
 									</p>
 								</div>
@@ -723,7 +829,7 @@ export default function UserTopupPage() {
 						</div>
 					) : null}
 					<DialogClose asChild>
-						<Button className="mt-4 md:mt-6 w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl md:rounded-2xl text-sm md:text-base py-2 md:py-3">
+						<Button className="mt-4 md:mt-6 w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl md:rounded-2xl text-sm md:text-base py-2 md:py-3">
 							{t("common.close") || "Close"}
 						</Button>
 					</DialogClose>

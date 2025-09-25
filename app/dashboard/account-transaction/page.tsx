@@ -29,6 +29,8 @@ export default function UserPaymentPage() {
 	const [currentPage, setCurrentPage] = useState(1)
 	const [searchTerm, setSearchTerm] = useState("")
 	const [typeFilter, setTypeFilter] = useState("all")
+	const [startDate, setStartDate] = useState("")
+	const [endDate, setEndDate] = useState("")
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState("")
 	const [sortField, setSortField] = useState<"amount" | "created_at" | "type" | null>(null)
@@ -91,6 +93,12 @@ export default function UserPaymentPage() {
 			if (typeFilter !== "all") {
 				params.append("type", typeFilter)
 			}
+			if (startDate) {
+				params.append("date_from", startDate)
+			}
+			if (endDate) {
+				params.append("date_to", endDate)
+			}
 			const orderingParam = sortField
 				? `&ordering=${(sortDirection === "asc" ? "+" : "-")}${sortField}`
 				: ""
@@ -125,7 +133,7 @@ export default function UserPaymentPage() {
 	useEffect(() => {
 		fetchTransactions()
 		fetchNetworks()
-	}, [currentPage, searchTerm, typeFilter, sortField, sortDirection])
+	}, [currentPage, searchTerm, typeFilter, startDate, endDate, sortField, sortDirection])
 
 	const refreshAccountData = async () => {
 		setAccountLoading(true)
@@ -394,26 +402,72 @@ export default function UserPaymentPage() {
 
 				<div className="p-4 md:p-8">
 					{/* Filters and Search */}
-					<div className="flex flex-col lg:flex-row gap-3 md:gap-4 mb-4 md:mb-6">
-						<div className="relative flex-1">
-							<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-							<Input
-								placeholder="Rechercher des transactions..."
-								value={searchTerm}
-								onChange={(e) => setSearchTerm(e.target.value)}
-								className="pl-10 h-10 md:h-12 rounded-xl md:rounded-2xl border-2 focus:border-blue-500 focus:ring-blue-500/20 text-sm md:text-base"
-							/>
+					<div className="space-y-4 mb-4 md:mb-6">
+						{/* Search and Type Filters */}
+						<div className="flex flex-col lg:flex-row gap-3 md:gap-4">
+							<div className="relative flex-1">
+								<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+								<Input
+									placeholder="Rechercher des transactions..."
+									value={searchTerm}
+									onChange={(e) => setSearchTerm(e.target.value)}
+									className="pl-10 h-10 md:h-12 rounded-xl md:rounded-2xl border-2 focus:border-blue-500 focus:ring-blue-500/20 text-sm md:text-base"
+								/>
+							</div>
+							<Select value={typeFilter} onValueChange={setTypeFilter}>
+								<SelectTrigger className="w-full lg:w-48 rounded-xl md:rounded-2xl border-2 h-10 md:h-12">
+									<SelectValue placeholder="Type de transaction" />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="all">Tous les types</SelectItem>
+									<SelectItem value="deposit">Dépôt</SelectItem>
+									<SelectItem value="withdrawal">Retrait</SelectItem>
+								</SelectContent>
+							</Select>
 						</div>
-						<Select value={typeFilter} onValueChange={setTypeFilter}>
-							<SelectTrigger className="w-full lg:w-48 rounded-xl md:rounded-2xl border-2 h-10 md:h-12">
-								<SelectValue placeholder="Type de transaction" />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="all">Tous les types</SelectItem>
-								<SelectItem value="deposit">Dépôt</SelectItem>
-								<SelectItem value="withdrawal">Retrait</SelectItem>
-							</SelectContent>
-						</Select>
+						
+						{/* Date Filters */}
+						<div className="flex flex-col sm:flex-row gap-3 md:gap-4">
+							<div className="flex-1">
+								<Label htmlFor="startDate" className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+									{t("common.startDate") || "Date de début"}
+								</Label>
+								<Input
+									id="startDate"
+									type="date"
+									value={startDate}
+									onChange={(e) => setStartDate(e.target.value)}
+									className="h-10 md:h-12 rounded-xl md:rounded-2xl border-2 focus:border-blue-500 focus:ring-blue-500/20 text-sm md:text-base"
+								/>
+							</div>
+							<div className="flex-1">
+								<Label htmlFor="endDate" className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+									{t("common.endDate") || "Date de fin"}
+								</Label>
+								<Input
+									id="endDate"
+									type="date"
+									value={endDate}
+									onChange={(e) => setEndDate(e.target.value)}
+									className="h-10 md:h-12 rounded-xl md:rounded-2xl border-2 focus:border-blue-500 focus:ring-blue-500/20 text-sm md:text-base"
+								/>
+							</div>
+							{(startDate || endDate) && (
+								<div className="flex items-end">
+									<Button
+										variant="outline"
+										size="sm"
+										onClick={() => {
+											setStartDate("")
+											setEndDate("")
+										}}
+										className="h-10 md:h-12 rounded-xl md:rounded-2xl border-2 text-sm md:text-base px-3 md:px-4"
+									>
+										{t("common.clearDates") || "Effacer les dates"}
+									</Button>
+								</div>
+							)}
+						</div>
 					</div>
 
 					{/* Transactions Table */}

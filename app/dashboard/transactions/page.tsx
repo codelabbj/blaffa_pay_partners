@@ -52,6 +52,8 @@ export default function UserTransactionsPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [typeFilter, setTypeFilter] = useState("all")
+  const [startDate, setStartDate] = useState("")
+  const [endDate, setEndDate] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
   const [sortField, setSortField] = useState<"amount" | "date" | null>(null)
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc")
@@ -145,6 +147,14 @@ export default function UserTransactionsPage() {
       // Add type filter  
       if (typeFilter !== "all") {
         params.append("type", typeFilter);
+      }
+
+      // Add date filters
+      if (startDate) {
+        params.append("date_from", startDate);
+      }
+      if (endDate) {
+        params.append("date_to", endDate);
       }
 
       // Add sorting
@@ -250,7 +260,7 @@ export default function UserTransactionsPage() {
 
   useEffect(() => {
     fetchTransactions()
-  }, [currentPage, searchTerm, statusFilter, typeFilter, sortField, sortDirection])
+  }, [currentPage, searchTerm, statusFilter, typeFilter, startDate, endDate, sortField, sortDirection])
 
   const totalPages = Math.ceil(totalCount / itemsPerPage)
   const startIndex = (currentPage - 1) * itemsPerPage
@@ -549,50 +559,103 @@ export default function UserTransactionsPage() {
 
         <div className="p-4 md:p-8">
           {/* Filters and Search */}
-          <div className="flex flex-col lg:flex-row gap-3 md:gap-4 mb-4 md:mb-6">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder={t("common.searchPlaceholder") || "Search by reference, phone, or amount..."}
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value)
+          <div className="space-y-4 mb-4 md:mb-6">
+            {/* Search and Status/Type Filters */}
+            <div className="flex flex-col lg:flex-row gap-3 md:gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder={t("common.searchPlaceholder") || "Search by reference, phone, or amount..."}
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value)
+                    setCurrentPage(1)
+                  }}
+                  className="pl-10 h-10 md:h-12 rounded-xl md:rounded-2xl border-2 focus:border-blue-500 focus:ring-blue-500/20 text-sm md:text-base"
+                />
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
+                <Select value={statusFilter} onValueChange={(value) => {
+                  setStatusFilter(value)
                   setCurrentPage(1)
-                }}
-                className="pl-10 h-10 md:h-12 rounded-xl md:rounded-2xl border-2 focus:border-blue-500 focus:ring-blue-500/20 text-sm md:text-base"
-              />
+                }}>
+                  <SelectTrigger className="w-full sm:w-48 rounded-xl md:rounded-2xl border-2 h-10 md:h-12">
+                    <SelectValue placeholder={t("transactions.allStatuses") || "All Statuses"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("transactions.allStatuses") || "All Statuses"}</SelectItem>
+                    <SelectItem value="pending">{t("transactions.pending") || "Pending"}</SelectItem>
+                    <SelectItem value="sent_to_user">{t("transactions.sentToUser") || "Sent to User"}</SelectItem>
+                    <SelectItem value="completed">{t("transactions.completed") || "Completed"}</SelectItem>
+                    <SelectItem value="success">{t("transactions.success") || "Success"}</SelectItem>
+                    <SelectItem value="failed">{t("transactions.failed") || "Failed"}</SelectItem>
+                    <SelectItem value="cancelled">{t("transactions.cancelled") || "Cancelled"}</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={typeFilter} onValueChange={(value) => {
+                  setTypeFilter(value)
+                  setCurrentPage(1)
+                }}>
+                  <SelectTrigger className="w-full sm:w-48 rounded-xl md:rounded-2xl border-2 h-10 md:h-12">
+                    <SelectValue placeholder={t("transactions.allTypes") || "All Types"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("transactions.allTypes") || "All Types"}</SelectItem>
+                    <SelectItem value="deposit">{t("transactions.deposit") || "Deposit"}</SelectItem>
+                    <SelectItem value="withdrawal">{t("transactions.withdrawal") || "Withdrawal"}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
+            
+            {/* Date Filters */}
             <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
-              <Select value={statusFilter} onValueChange={(value) => {
-                setStatusFilter(value)
-                setCurrentPage(1)
-              }}>
-                <SelectTrigger className="w-full sm:w-48 rounded-xl md:rounded-2xl border-2 h-10 md:h-12">
-                  <SelectValue placeholder={t("transactions.allStatuses") || "All Statuses"} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t("transactions.allStatuses") || "All Statuses"}</SelectItem>
-                  <SelectItem value="pending">{t("transactions.pending") || "Pending"}</SelectItem>
-                  <SelectItem value="sent_to_user">{t("transactions.sentToUser") || "Sent to User"}</SelectItem>
-                  <SelectItem value="completed">{t("transactions.completed") || "Completed"}</SelectItem>
-                  <SelectItem value="success">{t("transactions.success") || "Success"}</SelectItem>
-                  <SelectItem value="failed">{t("transactions.failed") || "Failed"}</SelectItem>
-                  <SelectItem value="cancelled">{t("transactions.cancelled") || "Cancelled"}</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={typeFilter} onValueChange={(value) => {
-                setTypeFilter(value)
-                setCurrentPage(1)
-              }}>
-                <SelectTrigger className="w-full sm:w-48 rounded-xl md:rounded-2xl border-2 h-10 md:h-12">
-                  <SelectValue placeholder={t("transactions.allTypes") || "All Types"} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t("transactions.allTypes") || "All Types"}</SelectItem>
-                  <SelectItem value="deposit">{t("transactions.deposit") || "Deposit"}</SelectItem>
-                  <SelectItem value="withdrawal">{t("transactions.withdrawal") || "Withdrawal"}</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="flex-1">
+                <Label htmlFor="startDate" className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                  {t("common.startDate") || "Start Date"}
+                </Label>
+                <Input
+                  id="startDate"
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => {
+                    setStartDate(e.target.value)
+                    setCurrentPage(1)
+                  }}
+                  className="h-10 md:h-12 rounded-xl md:rounded-2xl border-2 focus:border-blue-500 focus:ring-blue-500/20 text-sm md:text-base"
+                />
+              </div>
+              <div className="flex-1">
+                <Label htmlFor="endDate" className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                  {t("common.endDate") || "End Date"}
+                </Label>
+                <Input
+                  id="endDate"
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => {
+                    setEndDate(e.target.value)
+                    setCurrentPage(1)
+                  }}
+                  className="h-10 md:h-12 rounded-xl md:rounded-2xl border-2 focus:border-blue-500 focus:ring-blue-500/20 text-sm md:text-base"
+                />
+              </div>
+              {(startDate || endDate) && (
+                <div className="flex items-end">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setStartDate("")
+                      setEndDate("")
+                      setCurrentPage(1)
+                    }}
+                    className="h-10 md:h-12 rounded-xl md:rounded-2xl border-2 text-sm md:text-base px-3 md:px-4"
+                  >
+                    {t("common.clearDates") || "Clear Dates"}
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
 
