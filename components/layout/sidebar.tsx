@@ -6,7 +6,7 @@ import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/components/providers/language-provider"
-import { BarChart3, LayoutDashboard, CreditCard, LogOut, Menu, X, Zap, ChevronDown, ChevronUp, Globe, Share2, Phone, Monitor, MessageCircle, Bell, Settings, Terminal, User, ChevronDownCircleIcon, BarChart3Icon, Sparkles, Shield, Activity } from "lucide-react"
+import { BarChart3, LayoutDashboard, CreditCard, LogOut, Menu, X, Zap, ChevronDown, ChevronUp, Globe, Share2, Phone, Monitor, MessageCircle, Bell, Settings, Terminal, User, ChevronDownCircleIcon, BarChart3Icon, Sparkles, Shield, Activity, Send } from "lucide-react"
 import { clearTokens } from "@/lib/api"
 
 export function Sidebar() {
@@ -129,6 +129,9 @@ export function Sidebar() {
             <NavItem href="/dashboard/topup" icon={Zap} isActive={pathname === "/dashboard/topup"}>
               {t("nav.topup")}
             </NavItem>
+            <NavItem href="/dashboard/transfer" icon={Send} isActive={pathname === "/dashboard/transfer"}>
+              Transfert UV
+            </NavItem>
           </nav>
           <div className="p-6 border-t border-white/20 dark:border-gray-700/50">
             <Button 
@@ -175,6 +178,9 @@ export function Sidebar() {
             </NavItem>
             <NavItem href="/dashboard/topup" icon={Zap} isActive={pathname === "/dashboard/topup"}>
               {t("nav.topup")}
+            </NavItem>
+            <NavItem href="/dashboard/transfer" icon={Send} isActive={pathname === "/dashboard/transfer"}>
+              Transfert UV
             </NavItem>
           </nav>
           <div className="p-6 border-t border-white/20 dark:border-gray-700/50">
