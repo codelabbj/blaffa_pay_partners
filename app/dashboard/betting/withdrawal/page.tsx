@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic'
 
 import { useState, useEffect } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
+import { Suspense } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -18,7 +19,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 
-export default function BettingWithdrawalPage() {
+function BettingWithdrawalContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const { t } = useLanguage()
@@ -492,5 +493,13 @@ export default function BettingWithdrawalPage() {
         </>
       ) : null}
     </div>
+  )
+}
+
+export default function BettingWithdrawalPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <BettingWithdrawalContent />
+    </Suspense>
   )
 }
