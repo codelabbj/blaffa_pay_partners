@@ -459,6 +459,10 @@ const translations = {
     "topup.noTopupsFound": "No top ups found.",
     "topup.pageOf": "Page current of total",
     "topup.showingResults": "Showing start to end of total results",
+    "topup.totalRequests": "Total Requests",
+    "topup.subtitle": "Manage your account recharge requests and track their status",
+    "topup.amountPlaceholder": "Enter amount (e.g., 50000)",
+    "topup.proofDescriptionPlaceholder": "Describe your payment proof...",
     // Earning Management Page
     "earning.title": "Earning Management",
     "earning.list": "Earning List",
@@ -1162,6 +1166,10 @@ const translations = {
     "topup.noTopupsFound": "Aucune recharge trouvée.",
     "topup.pageOf": "Page {current} sur {total}",
     "topup.showingResults": "Affichage de {start} à {end} sur {total} résultats",
+    "topup.totalRequests": "Total des demandes",
+    "topup.subtitle": "Gérez vos demandes de recharge de compte et suivez leur statut",
+    "topup.amountPlaceholder": "Entrez le montant (ex: 50000)",
+    "topup.proofDescriptionPlaceholder": "Décrivez votre preuve de paiement...",
     // Earning Management Page
     "earning.title": "Gestion des gains",
     "earning.list": "Liste des gains",

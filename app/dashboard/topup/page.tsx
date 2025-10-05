@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -52,46 +52,47 @@ export default function UserTopupPage() {
 	})
 
 	// Fetch topups from API
-	useEffect(() => {
-		const fetchTopups = async () => {
-			setLoading(true)
-			setError("")
-			try {
-				const params = new URLSearchParams({
-					page: currentPage.toString(),
-					page_size: itemsPerPage.toString(),
-				})
-				if (searchTerm.trim() !== "") {
-					params.append("search", searchTerm)
-				}
-				if (statusFilter !== "all") {
-					params.append("status", statusFilter)
-				}
-				if (startDate) {
-					params.append("date_from", startDate)
-				}
-				if (endDate) {
-					params.append("date_to", endDate)
-				}
-				const orderingParam = sortField
-					? `&ordering=${(sortDirection === "asc" ? "+" : "-")}${sortField}`
-					: ""
-				const endpoint = `${baseUrl.replace(/\/$/, "")}/api/payments/user/recharges/?${params.toString()}${orderingParam}`
-				const data = await apiFetch(endpoint)
-				setTopups(data.results || [])
-				setTotalCount(data.count || 0)
-				setTotalPages(Math.ceil((data.count || 0) / itemsPerPage))
-			} catch (err: any) {
-				const errorMessage = extractErrorMessages(err)
-				setError(errorMessage)
-				setTopups([])
-				setTotalCount(0)
-				setTotalPages(1)
-				toast({ title: t("topup.failedToLoad"), description: errorMessage, variant: "destructive" })
-			} finally {
-				setLoading(false)
+	const fetchTopups = useCallback(async () => {
+		setLoading(true)
+		setError("")
+		try {
+			const params = new URLSearchParams({
+				page: currentPage.toString(),
+				page_size: itemsPerPage.toString(),
+			})
+			if (searchTerm.trim() !== "") {
+				params.append("search", searchTerm)
 			}
+			if (statusFilter !== "all") {
+				params.append("status", statusFilter)
+			}
+			if (startDate) {
+				params.append("date_from", startDate)
+			}
+			if (endDate) {
+				params.append("date_to", endDate)
+			}
+			const orderingParam = sortField
+				? `&ordering=${(sortDirection === "asc" ? "+" : "-")}${sortField}`
+				: ""
+			const endpoint = `${baseUrl.replace(/\/$/, "")}/api/payments/user/recharges/?${params.toString()}${orderingParam}`
+			const data = await apiFetch(endpoint)
+			setTopups(data.results || [])
+			setTotalCount(data.count || 0)
+			setTotalPages(Math.ceil((data.count || 0) / itemsPerPage))
+		} catch (err: any) {
+			const errorMessage = extractErrorMessages(err)
+			setError(errorMessage)
+			setTopups([])
+			setTotalCount(0)
+			setTotalPages(1)
+			toast({ title: t("topup.failedToLoad"), description: errorMessage, variant: "destructive" })
+		} finally {
+			setLoading(false)
 		}
+	}, [searchTerm, currentPage, itemsPerPage, baseUrl, statusFilter, startDate, endDate, sortField, sortDirection, t, toast, apiFetch])
+
+	useEffect(() => {
 		fetchTopups()
 	}, [searchTerm, currentPage, itemsPerPage, baseUrl, statusFilter, startDate, endDate, sortField, sortDirection, t, toast, apiFetch])
 
@@ -101,8 +102,13 @@ export default function UserTopupPage() {
 	const handleRefresh = async () => {
 		setRefreshing(true)
 		setCurrentPage(1)
-		await new Promise(resolve => setTimeout(resolve, 500)) // Small delay for UX
-		setRefreshing(false)
+		try {
+			await fetchTopups()
+		} catch (error) {
+			console.error('Refresh failed:', error)
+		} finally {
+			setRefreshing(false)
+		}
 	}
 
 	const handleSort = (field: "amount" | "created_at" | "status") => {
@@ -563,7 +569,7 @@ export default function UserTopupPage() {
 							<Input
 								id="amount"
 								type="number"
-								placeholder="Enter amount (e.g., 50000)"
+								placeholder={t("topup.amountPlaceholder") || "Enter amount (e.g., 50000)"}
 								value={formData.amount}
 								onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))}
 								required
@@ -597,7 +603,7 @@ export default function UserTopupPage() {
 							</Label>
 							<Textarea
 								id="proof_description"
-								placeholder="Describe your payment proof..."
+								placeholder={t("topup.proofDescriptionPlaceholder") || "Describe your payment proof..."}
 								value={formData.proof_description}
 								onChange={(e) => setFormData(prev => ({ ...prev, proof_description: e.target.value }))}
 								rows={3}

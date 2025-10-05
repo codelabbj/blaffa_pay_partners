@@ -6,7 +6,7 @@ import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/components/providers/language-provider"
-import { BarChart3, LayoutDashboard, CreditCard, LogOut, Menu, X, Zap, ChevronDown, ChevronUp, Globe, Share2, Phone, Monitor, MessageCircle, Bell, Settings, Terminal, User, ChevronDownCircleIcon, BarChart3Icon, Sparkles, Shield, Activity, Send } from "lucide-react"
+import { BarChart3, LayoutDashboard, CreditCard, LogOut, Menu, X, Zap, ChevronDown, ChevronUp, Globe, Share2, Phone, Monitor, MessageCircle, Bell, Settings, Terminal, User, ChevronDownCircleIcon, BarChart3Icon, Sparkles, Shield, Activity, Send, Gamepad2, TrendingUp, DollarSign } from "lucide-react"
 import { clearTokens } from "@/lib/api"
 
 export function Sidebar() {
@@ -40,6 +40,12 @@ export function Sidebar() {
   const isNetworkConfigActive = pathname.startsWith("/dashboard/network-config")
   const isNetworkConfigListActive = pathname === "/dashboard/network-config/list"
   const isNetworkConfigCreateActive = pathname === "/dashboard/network-config/create"
+
+  // Betting navigation active logic
+  const isBettingActive = pathname.startsWith("/dashboard/betting")
+  const isBettingPlatformsActive = pathname.startsWith("/dashboard/betting/platforms")
+  const isBettingTransactionsActive = pathname.startsWith("/dashboard/betting/transactions")
+  const isBettingCommissionsActive = pathname.startsWith("/dashboard/betting/commissions")
 
   const handleLogout = () => {
     clearTokens();
@@ -132,6 +138,17 @@ export function Sidebar() {
             <NavItem href="/dashboard/transfer" icon={Send} isActive={pathname === "/dashboard/transfer"}>
               Transfert UV
             </NavItem>
+            
+            <SectionHeader icon={Gamepad2}>Plateformes de Paris</SectionHeader>
+            <NavItem href="/dashboard/betting/platforms" icon={Shield} isActive={isBettingPlatformsActive}>
+              Plateformes
+            </NavItem>
+            <NavItem href="/dashboard/betting/transactions" icon={Activity} isActive={isBettingTransactionsActive}>
+              Transactions
+            </NavItem>
+            <NavItem href="/dashboard/betting/commissions" icon={DollarSign} isActive={isBettingCommissionsActive}>
+              Commissions
+            </NavItem>
           </nav>
           <div className="p-6 border-t border-white/20 dark:border-gray-700/50">
             <Button 
@@ -181,6 +198,17 @@ export function Sidebar() {
             </NavItem>
             <NavItem href="/dashboard/transfer" icon={Send} isActive={pathname === "/dashboard/transfer"}>
               Transfert UV
+            </NavItem>
+            
+            <SectionHeader icon={Gamepad2}>Plateformes de Paris</SectionHeader>
+            <NavItem href="/dashboard/betting/platforms" icon={Shield} isActive={isBettingPlatformsActive}>
+              Plateformes
+            </NavItem>
+            <NavItem href="/dashboard/betting/transactions" icon={Activity} isActive={isBettingTransactionsActive}>
+              Transactions
+            </NavItem>
+            <NavItem href="/dashboard/betting/commissions" icon={DollarSign} isActive={isBettingCommissionsActive}>
+              Commissions
             </NavItem>
           </nav>
           <div className="p-6 border-t border-white/20 dark:border-gray-700/50">
