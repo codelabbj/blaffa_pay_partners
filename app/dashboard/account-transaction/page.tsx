@@ -52,6 +52,10 @@ export default function UserPaymentPage() {
 		objet: ""
 	})
 
+	// Transaction details state
+	const [detailsModalOpen, setDetailsModalOpen] = useState(false)
+	const [selectedTransaction, setSelectedTransaction] = useState<any>(null)
+
 	const { t } = useLanguage()
 	const itemsPerPage = 10
 	const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || ""
@@ -198,6 +202,11 @@ export default function UserPaymentPage() {
 	const copyToClipboard = (text: string) => {
 		navigator.clipboard.writeText(text)
 		toast({ title: t("common.copied"), description: t("common.copiedToClipboard") })
+	}
+
+	const handleShowDetails = (transaction: any) => {
+		setSelectedTransaction(transaction)
+		setDetailsModalOpen(true)
 	}
 
 	const startIndex = (currentPage - 1) * itemsPerPage
@@ -550,7 +559,12 @@ export default function UserPaymentPage() {
 														{new Date(transaction.created_at).toLocaleDateString("fr-FR")}
 													</TableCell>
 													<TableCell className="py-3 md:py-4 px-3 md:px-6">
-														<Button variant="ghost" size="sm" className="rounded-lg md:rounded-xl text-xs md:text-sm">
+														<Button 
+															variant="ghost" 
+															size="sm" 
+															onClick={() => handleShowDetails(transaction)}
+															className="rounded-lg md:rounded-xl text-xs md:text-sm"
+														>
 															Détails
 														</Button>
 													</TableCell>
@@ -695,6 +709,166 @@ export default function UserPaymentPage() {
 							className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl md:rounded-2xl w-full sm:w-auto text-sm md:text-base px-4 md:px-6 py-2 md:py-3"
 						>
 							{createLoading ? "Création..." : "Créer la Transaction"}
+						</Button>
+					</div>
+				</DialogContent>
+			</Dialog>
+
+			{/* Transaction Details Modal */}
+			<Dialog open={detailsModalOpen} onOpenChange={setDetailsModalOpen}>
+				<DialogContent className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 rounded-2xl md:rounded-3xl mx-4 sm:mx-0 max-w-2xl">
+					<DialogHeader>
+						<DialogTitle className="text-lg md:text-2xl font-bold">Détails de la Transaction</DialogTitle>
+					</DialogHeader>
+					{selectedTransaction && (
+						<div className="space-y-4 md:space-y-6">
+							{/* Transaction Overview */}
+							<div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl md:rounded-2xl p-4 md:p-6">
+								<div className="flex items-center justify-between mb-3">
+									<div className="flex items-center gap-3">
+										<div className="p-2 bg-blue-500 rounded-lg">
+											<Activity className="h-5 w-5 text-white" />
+										</div>
+										<div>
+											<h3 className="font-semibold text-gray-900 dark:text-white">Transaction #{selectedTransaction.reference}</h3>
+											<p className="text-sm text-gray-600 dark:text-gray-400">{selectedTransaction.type_display}</p>
+										</div>
+									</div>
+									<Badge 
+										variant={
+											selectedTransaction.is_credit ? "default" : 
+											selectedTransaction.is_debit ? "destructive" : 
+											"secondary"
+										}
+										className="text-xs"
+									>
+										{selectedTransaction.is_credit ? "Crédit" : 
+										 selectedTransaction.is_debit ? "Débit" : "Neutre"}
+									</Badge>
+								</div>
+								<div className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+									{selectedTransaction.formatted_amount}
+								</div>
+							</div>
+
+							{/* Transaction Details Grid */}
+							<div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+								{/* Basic Information */}
+								<div className="space-y-3">
+									<h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+										<CreditCard className="h-4 w-4" />
+										Informations de Base
+									</h4>
+									<div className="space-y-2">
+										<div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+											<span className="text-sm text-gray-600 dark:text-gray-400">UID:</span>
+											<div className="flex items-center gap-2">
+												<span className="font-mono text-xs text-gray-900 dark:text-white">{selectedTransaction.uid}</span>
+												<Button
+													variant="ghost"
+													size="sm"
+													onClick={() => copyToClipboard(selectedTransaction.uid)}
+													className="h-6 w-6 p-0"
+												>
+													<Copy className="h-3 w-3" />
+												</Button>
+											</div>
+										</div>
+										<div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+											<span className="text-sm text-gray-600 dark:text-gray-400">Référence:</span>
+											<div className="flex items-center gap-2">
+												<span className="font-mono text-xs text-gray-900 dark:text-white">{selectedTransaction.reference}</span>
+												<Button
+													variant="ghost"
+													size="sm"
+													onClick={() => copyToClipboard(selectedTransaction.reference)}
+													className="h-6 w-6 p-0"
+												>
+													<Copy className="h-3 w-3" />
+												</Button>
+											</div>
+										</div>
+										<div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+											<span className="text-sm text-gray-600 dark:text-gray-400">Type:</span>
+											<span className="text-sm font-medium text-gray-900 dark:text-white">{selectedTransaction.type_display}</span>
+										</div>
+										<div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+											<span className="text-sm text-gray-600 dark:text-gray-400">Montant:</span>
+											<span className="text-sm font-medium text-gray-900 dark:text-white">{selectedTransaction.formatted_amount}</span>
+										</div>
+									</div>
+								</div>
+
+								{/* Balance Information */}
+								<div className="space-y-3">
+									<h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+										<Wallet className="h-4 w-4" />
+										Informations de Solde
+									</h4>
+									<div className="space-y-2">
+										<div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+											<span className="text-sm text-gray-600 dark:text-gray-400">Solde Avant:</span>
+											<span className="text-sm font-medium text-gray-900 dark:text-white">{selectedTransaction.balance_before} FCFA</span>
+										</div>
+										<div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+											<span className="text-sm text-gray-600 dark:text-gray-400">Solde Après:</span>
+											<span className="text-sm font-medium text-gray-900 dark:text-white">{selectedTransaction.balance_after} FCFA</span>
+										</div>
+										<div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+											<span className="text-sm text-gray-600 dark:text-gray-400">Différence:</span>
+											<span className={`text-sm font-medium ${selectedTransaction.is_credit ? 'text-green-600' : 'text-red-600'}`}>
+												{selectedTransaction.is_credit ? '+' : '-'}{selectedTransaction.amount} FCFA
+											</span>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							{/* Description and Metadata */}
+							<div className="space-y-3">
+								<h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+									<Activity className="h-4 w-4" />
+									Description et Métadonnées
+								</h4>
+								<div className="space-y-2">
+									<div className="py-2 border-b border-gray-200 dark:border-gray-700">
+										<span className="text-sm text-gray-600 dark:text-gray-400 block mb-1">Description:</span>
+										<p className="text-sm text-gray-900 dark:text-white">{selectedTransaction.description || "Aucune description"}</p>
+									</div>
+									<div className="py-2 border-b border-gray-200 dark:border-gray-700">
+										<span className="text-sm text-gray-600 dark:text-gray-400 block mb-1">Date de Création:</span>
+										<p className="text-sm text-gray-900 dark:text-white">
+											{new Date(selectedTransaction.created_at).toLocaleString("fr-FR", {
+												year: 'numeric',
+												month: 'long',
+												day: 'numeric',
+												hour: '2-digit',
+												minute: '2-digit',
+												second: '2-digit'
+											})}
+										</p>
+									</div>
+									{selectedTransaction.metadata && Object.keys(selectedTransaction.metadata).length > 0 && (
+										<div className="py-2">
+											<span className="text-sm text-gray-600 dark:text-gray-400 block mb-1">Métadonnées:</span>
+											<div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
+												<pre className="text-xs text-gray-900 dark:text-white whitespace-pre-wrap">
+													{JSON.stringify(selectedTransaction.metadata, null, 2)}
+												</pre>
+											</div>
+										</div>
+									)}
+								</div>
+							</div>
+						</div>
+					)}
+					<div className="flex justify-end mt-4 md:mt-6">
+						<Button 
+							variant="outline" 
+							onClick={() => setDetailsModalOpen(false)}
+							className="rounded-xl md:rounded-2xl text-sm md:text-base px-4 md:px-6 py-2 md:py-3"
+						>
+							Fermer
 						</Button>
 					</div>
 				</DialogContent>

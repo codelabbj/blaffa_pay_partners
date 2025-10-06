@@ -86,12 +86,13 @@ export default function TransferPage() {
   // Transfer history state
   const [transfers, setTransfers] = useState<Transfer[]>([])
   const [transferStats, setTransferStats] = useState<TransferStats | null>(null)
+  const [transferData, setTransferData] = useState<any>(null)
   const [historyLoading, setHistoryLoading] = useState(false)
   const [historyError, setHistoryError] = useState("")
 
   // Filters for transfer history
   const [statusFilter, setStatusFilter] = useState("all")
-  const [typeFilter, setTypeFilter] = useState("sent")
+  const [typeFilter, setTypeFilter] = useState("all")
   const [minAmount, setMinAmount] = useState("")
   const [maxAmount, setMaxAmount] = useState("")
   const [dateFrom, setDateFrom] = useState("")
@@ -140,9 +141,14 @@ export default function TransferPage() {
   // Fetch transfer statistics
   const fetchTransferStats = async () => {
     try {
-      const endpoint = `${baseUrl.replace(/\/$/, "")}/api/payments/betting/user/transfers/my_transfers`
+      const endpoint = `${baseUrl.replace(/\/$/, "")}/api/payments/betting/user/transfers/my_transfers/`
       const data = await apiFetch(endpoint)
-      setTransferStats(data)
+      // Extract stats from the summary object in the API response
+      if (data.summary) {
+        setTransferStats(data.summary)
+      } else {
+        setTransferStats(data)
+      }
     } catch (err: any) {
       console.error('Failed to fetch transfer stats:', err)
     }
@@ -153,42 +159,74 @@ export default function TransferPage() {
     setHistoryLoading(true)
     setHistoryError("")
     try {
-      const params = new URLSearchParams({
-        page: currentPage.toString(),
-        page_size: itemsPerPage.toString()
-      })
-
-      // Add type filter only if not default
-      if (typeFilter !== "sent") {
-        params.append("type", typeFilter)
-      }
-
-      // Add ordering only if specified
-      if (sortField) {
-        const ordering = `${sortDirection === "desc" ? "-" : ""}${sortField === "date" ? "created_at" : "amount"}`
-        params.append("ordering", ordering)
-      }
-
-      if (statusFilter !== "all") {
-        params.append("status", statusFilter)
-      }
-      if (minAmount) {
-        params.append("min_amount", minAmount)
-      }
-      if (maxAmount) {
-        params.append("max_amount", maxAmount)
-      }
-      if (dateFrom) {
-        params.append("date_from", dateFrom)
-      }
-      if (dateTo) {
-        params.append("date_to", dateTo)
-      }
-
-      const endpoint = `${baseUrl.replace(/\/$/, "")}/api/payments/betting/user/transfers/?${params.toString()}`
+      const endpoint = `${baseUrl.replace(/\/$/, "")}/api/payments/betting/user/transfers/my_transfers/`
       const data = await apiFetch(endpoint)
       
-      setTransfers(data.transfers || [])
+      // Store the raw data for later use
+      setTransferData(data)
+      
+      // Combine sent and received transfers based on filter
+      let allTransfers: Transfer[] = []
+      if (typeFilter === "sent") {
+        allTransfers = data.sent_transfers || []
+      } else if (typeFilter === "received") {
+        allTransfers = data.received_transfers || []
+      } else {
+        // Show both sent and received (for "all" filter)
+        allTransfers = [...(data.sent_transfers || []), ...(data.received_transfers || [])]
+      }
+
+      // Apply client-side filtering and sorting
+      let filteredTransfers: Transfer[] = allTransfers
+
+      // Apply status filter
+      if (statusFilter !== "all") {
+        filteredTransfers = filteredTransfers.filter((transfer: Transfer) => transfer.status === statusFilter)
+      }
+
+      // Apply amount filters
+      if (minAmount) {
+        filteredTransfers = filteredTransfers.filter((transfer: Transfer) => parseFloat(transfer.amount) >= parseFloat(minAmount))
+      }
+      if (maxAmount) {
+        filteredTransfers = filteredTransfers.filter((transfer: Transfer) => parseFloat(transfer.amount) <= parseFloat(maxAmount))
+      }
+
+      // Apply date filters
+      if (dateFrom) {
+        filteredTransfers = filteredTransfers.filter((transfer: Transfer) => 
+          new Date(transfer.created_at) >= new Date(dateFrom)
+        )
+      }
+      if (dateTo) {
+        filteredTransfers = filteredTransfers.filter((transfer: Transfer) => 
+          new Date(transfer.created_at) <= new Date(dateTo)
+        )
+      }
+
+      // Apply sorting
+      if (sortField) {
+        filteredTransfers.sort((a: Transfer, b: Transfer) => {
+          let aValue: number, bValue: number
+          if (sortField === "amount") {
+            aValue = parseFloat(a.amount)
+            bValue = parseFloat(b.amount)
+          } else if (sortField === "date") {
+            aValue = new Date(a.created_at).getTime()
+            bValue = new Date(b.created_at).getTime()
+          } else {
+            return 0
+          }
+          
+          if (sortDirection === "asc") {
+            return aValue - bValue
+          } else {
+            return bValue - aValue
+          }
+        })
+      }
+
+      setTransfers(filteredTransfers)
     } catch (err: any) {
       const errorMessage = extractErrorMessages(err)
       setHistoryError(errorMessage)
@@ -314,17 +352,17 @@ export default function TransferPage() {
             <div className="flex md:hidden items-center justify-center">
               <div className="bg-white/20 backdrop-blur-sm rounded-xl p-3 w-full">
                 <div className="text-lg font-bold text-center">
-                  {transferStats ? `${transferStats.total_sent || 0} transferts` : "0 transferts"}
+                  {transferStats ? `${(transferStats.total_sent || 0) + (transferStats.total_received || 0)} transferts` : "0 transferts"}
                 </div>
-                <div className="text-orange-100 text-xs text-center">Total envoyé</div>
+                <div className="text-orange-100 text-xs text-center">Total des transferts</div>
               </div>
             </div>
             <div className="hidden md:flex items-center space-x-4">
               <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4">
                 <div className="text-2xl font-bold">
-                  {transferStats ? `${transferStats.total_sent || 0} transferts` : "0 transferts"}
+                  {transferStats ? `${(transferStats.total_sent || 0) + (transferStats.total_received || 0)} transferts` : "0 transferts"}
                 </div>
-                <div className="text-orange-100 text-sm">Total envoyé</div>
+                <div className="text-orange-100 text-sm">Total des transferts</div>
               </div>
             </div>
           </div>
@@ -487,7 +525,7 @@ export default function TransferPage() {
                             >
                               <div className="flex items-center justify-between">
                                 <span className="font-medium text-sm">{user.display_name}</span>
-                                {selectedUser && selectedUser.uid === user.uid && (
+                                {selectedUser?.uid === user.uid && (
                                   <Check className="h-4 w-4 text-green-500" />
                                 )}
                               </div>
@@ -596,6 +634,7 @@ export default function TransferPage() {
                   <SelectValue placeholder="Type de transfert" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="all">Tous</SelectItem>
                   <SelectItem value="sent">Envoyés</SelectItem>
                   <SelectItem value="received">Reçus</SelectItem>
                 </SelectContent>
@@ -707,13 +746,14 @@ export default function TransferPage() {
                   <TableHeader>
                     <TableRow className="bg-gray-50 dark:bg-gray-800/50">
                       <TableHead className="font-semibold text-xs md:text-sm py-3 md:py-4 px-3 md:px-6">Référence</TableHead>
+                      <TableHead className="font-semibold text-xs md:text-sm py-3 md:py-4 px-3 md:px-6">Type</TableHead>
                       <TableHead className="font-semibold cursor-pointer text-xs md:text-sm py-3 md:py-4 px-3 md:px-6" onClick={() => handleSort("amount")}>
                         <div className="flex items-center gap-1 md:gap-2">
                           Montant
                           <ArrowUpDown className="h-3 w-3 md:h-4 md:w-4" />
                         </div>
                       </TableHead>
-                      <TableHead className="font-semibold text-xs md:text-sm py-3 md:py-4 px-3 md:px-6 hidden md:table-cell">Destinataire</TableHead>
+                      <TableHead className="font-semibold text-xs md:text-sm py-3 md:py-4 px-3 md:px-6 hidden md:table-cell">Utilisateur</TableHead>
                       <TableHead className="font-semibold cursor-pointer text-xs md:text-sm py-3 md:py-4 px-3 md:px-6 hidden lg:table-cell" onClick={() => handleSort("date")}>
                         <div className="flex items-center gap-1 md:gap-2">
                           Date
@@ -727,7 +767,7 @@ export default function TransferPage() {
                   <TableBody>
                     {transfers.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center py-6 md:py-8">
+                        <TableCell colSpan={7} className="text-center py-6 md:py-8">
                           <div className="text-center">
                             <CreditCard className="h-8 w-8 md:h-12 md:w-12 text-gray-400 mx-auto mb-3 md:mb-4" />
                             <p className="text-sm md:text-base text-gray-500 dark:text-gray-400">Aucun transfert trouvé</p>
@@ -735,56 +775,71 @@ export default function TransferPage() {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      transfers.map((transfer) => (
-                        <TableRow key={transfer.uid} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                          <TableCell className="py-3 md:py-4 px-3 md:px-6">
-                            <div className="flex items-center gap-1 md:gap-2">
-                              <span className="font-mono text-xs md:text-sm">{transfer.reference}</span>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => {
-                                  navigator.clipboard.writeText(transfer.reference)
-                                  toast({ title: "Référence copiée!" })
-                                }}
-                                className="h-5 w-5 md:h-6 md:w-6 p-0"
-                              >
-                                <Copy className="h-2 w-2 md:h-3 md:w-3" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                          <TableCell className="font-semibold py-3 md:py-4 px-3 md:px-6">
-                            <div className="flex flex-col">
-                              <span className="text-sm md:text-base">{parseFloat(transfer.amount).toLocaleString()} FCFA</span>
-                              {transfer.fees && parseFloat(transfer.fees) > 0 && (
-                                <span className="text-xs text-gray-500 dark:text-gray-400">
-                                  Frais: {transfer.fees} FCFA
+                      transfers.map((transfer) => {
+                        // Determine if this is a sent or received transfer
+                        const isReceived = transferData?.received_transfers?.some((t: any) => t.uid === transfer.uid)
+                        const isSent = transferData?.sent_transfers?.some((t: any) => t.uid === transfer.uid)
+                        
+                        return (
+                          <TableRow key={transfer.uid} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                            <TableCell className="py-3 md:py-4 px-3 md:px-6">
+                              <div className="flex items-center gap-1 md:gap-2">
+                                <span className="font-mono text-xs md:text-sm">{transfer.reference}</span>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(transfer.reference)
+                                    toast({ title: "Référence copiée!" })
+                                  }}
+                                  className="h-5 w-5 md:h-6 md:w-6 p-0"
+                                >
+                                  <Copy className="h-2 w-2 md:h-3 md:w-3" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                            <TableCell className="py-3 md:py-4 px-3 md:px-6">
+                              <Badge variant={isReceived ? "default" : "secondary"} className="text-xs">
+                                {isReceived ? "Reçu" : "Envoyé"}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="font-semibold py-3 md:py-4 px-3 md:px-6">
+                              <div className="flex flex-col">
+                                <span className="text-sm md:text-base">{parseFloat(transfer.amount).toLocaleString()} FCFA</span>
+                                {transfer.fees && parseFloat(transfer.fees) > 0 && (
+                                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                                    Frais: {transfer.fees} FCFA
+                                  </span>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell className="py-3 md:py-4 px-3 md:px-6 hidden md:table-cell">
+                              <div className="flex flex-col">
+                                <span className="font-medium text-sm">
+                                  {isReceived ? transfer.sender_name : transfer.receiver_name}
                                 </span>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell className="py-3 md:py-4 px-3 md:px-6 hidden md:table-cell">
-                            <div className="flex flex-col">
-                              <span className="font-medium text-sm">{transfer.receiver_name}</span>
-                              <span className="text-xs text-gray-500 dark:text-gray-400">{transfer.receiver_email}</span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-xs md:text-sm text-gray-500 dark:text-gray-400 py-3 md:py-4 px-3 md:px-6 hidden lg:table-cell">
-                            <div className="flex flex-col">
-                              <span>{new Date(transfer.created_at).toLocaleDateString()}</span>
-                              <span className="text-xs">
-                                {new Date(transfer.created_at).toLocaleTimeString()}
+                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                                  {isReceived ? transfer.sender_email : transfer.receiver_email}
+                                </span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-xs md:text-sm text-gray-500 dark:text-gray-400 py-3 md:py-4 px-3 md:px-6 hidden lg:table-cell">
+                              <div className="flex flex-col">
+                                <span>{new Date(transfer.created_at).toLocaleDateString()}</span>
+                                <span className="text-xs">
+                                  {new Date(transfer.created_at).toLocaleTimeString()}
+                                </span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="py-3 md:py-4 px-3 md:px-6">
+                              <span className="text-sm text-gray-600 dark:text-gray-400">
+                                {transfer.description || "-"}
                               </span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="py-3 md:py-4 px-3 md:px-6">
-                            <span className="text-sm text-gray-600 dark:text-gray-400">
-                              {transfer.description || "-"}
-                            </span>
-                          </TableCell>
-                          <TableCell className="py-3 md:py-4 px-3 md:px-6">{getStatusBadge(transfer.status)}</TableCell>
-                        </TableRow>
-                      ))
+                            </TableCell>
+                            <TableCell className="py-3 md:py-4 px-3 md:px-6">{getStatusBadge(transfer.status)}</TableCell>
+                          </TableRow>
+                        )
+                      })
                     )}
                   </TableBody>
                 </Table>
