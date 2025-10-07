@@ -6,6 +6,7 @@ import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/components/providers/language-provider"
+import { usePermissions } from "@/components/providers/permissions-provider"
 import { BarChart3, LayoutDashboard, CreditCard, LogOut, Menu, X, Zap, ChevronDown, ChevronUp, Globe, Share2, Phone, Monitor, MessageCircle, Bell, Settings, Terminal, User, ChevronDownCircleIcon, BarChart3Icon, Sparkles, Shield, Activity, Send, Gamepad2, TrendingUp, DollarSign } from "lucide-react"
 import { clearTokens } from "@/lib/api"
 
@@ -19,6 +20,7 @@ export function Sidebar() {
   const router = useRouter()
   const pathname = usePathname()
   const { t } = useLanguage()
+  const { hasPermission } = usePermissions()
 
   // Helper to check if a path is active or a child is active
   const isUsersActive = pathname.startsWith("/dashboard/users")
@@ -126,9 +128,11 @@ export function Sidebar() {
             </NavItem>
             
             <SectionHeader icon={Activity}>Gestion des transactions</SectionHeader>
-            <NavItem href="/dashboard/transactions" icon={CreditCard} isActive={pathname === "/dashboard/transactions"}>
-              {t("nav.transactions")}
-            </NavItem>
+            {hasPermission('can_process_ussd_transaction') && (
+              <NavItem href="/dashboard/transactions" icon={CreditCard} isActive={pathname === "/dashboard/transactions"}>
+                {t("nav.transactions")}
+              </NavItem>
+            )}
             <NavItem href="/dashboard/account-transaction" icon={LayoutDashboard} isActive={pathname === "/dashboard/account-transaction"}>
               {t("nav.accountTransaction")}
             </NavItem>
@@ -187,9 +191,11 @@ export function Sidebar() {
             </NavItem>
             
             <SectionHeader icon={Activity}>Gestion des transactions</SectionHeader>
-            <NavItem href="/dashboard/transactions" icon={CreditCard} isActive={pathname === "/dashboard/transactions"}>
-              {t("nav.transactions")}
-            </NavItem>
+            {hasPermission('can_process_ussd_transaction') && (
+              <NavItem href="/dashboard/transactions" icon={CreditCard} isActive={pathname === "/dashboard/transactions"}>
+                {t("nav.transactions")}
+              </NavItem>
+            )}
             <NavItem href="/dashboard/account-transaction" icon={LayoutDashboard} isActive={pathname === "/dashboard/account-transaction"}>
               {t("nav.accountTransaction")}
             </NavItem>

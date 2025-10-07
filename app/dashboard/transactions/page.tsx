@@ -8,8 +8,9 @@ import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useLanguage } from "@/components/providers/language-provider"
+import { usePermissions } from "@/components/providers/permissions-provider"
 import { useApi } from "@/lib/useApi"
-import { Search, ChevronLeft, ChevronRight, ArrowUpDown, Pencil, Trash, Clock, RefreshCw, Plus, Wallet, TrendingUp, TrendingDown, Copy, Activity, CreditCard } from "lucide-react"
+import { Search, ChevronLeft, ChevronRight, ArrowUpDown, Pencil, Trash, Clock, RefreshCw, Plus, Wallet, TrendingUp, TrendingDown, Copy, Activity, CreditCard, Shield } from "lucide-react"
 import {
   Dialog,
   DialogTrigger,
@@ -43,6 +44,37 @@ import { Textarea } from "@/components/ui/textarea"
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || ""
 
 export default function UserTransactionsPage() {
+  const { hasPermission, isLoading: permissionsLoading } = usePermissions()
+  
+  // Check permissions
+  if (!permissionsLoading && !hasPermission('can_process_ussd_transaction')) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-blue-50 to-green-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <div className="max-w-md mx-auto text-center p-8">
+          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl md:rounded-3xl border border-white/20 dark:border-gray-700/50 shadow-xl p-8">
+            <div className="flex items-center justify-center mb-6">
+              <div className="p-4 bg-red-100 dark:bg-red-900/20 rounded-full">
+                <Shield className="h-8 w-8 text-red-600 dark:text-red-400" />
+              </div>
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+              Accès Refusé
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              Vous n'êtes pas autorisé à accéder à cette page. Vous n'avez pas les permissions nécessaires pour gérer les transactions.
+            </p>
+            <Button 
+              onClick={() => window.history.back()}
+              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl"
+            >
+              Retour
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   // Account data state
   const [accountData, setAccountData] = useState<any>(null)
   const [accountLoading, setAccountLoading] = useState(true)
