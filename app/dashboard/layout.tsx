@@ -4,7 +4,7 @@ import type React from "react"
 
 import { Sidebar } from "@/components/layout/sidebar"
 import { Header } from "@/components/layout/header"
-import { WebSocketProvider } from "@/components/providers/websocket-provider"
+// import { WebSocketProvider } from "@/components/providers/websocket-provider"
 import { PermissionsProvider } from "@/components/providers/permissions-provider"
 
 export default function DashboardLayout({
@@ -19,7 +19,7 @@ export default function DashboardLayout({
   }
   return (
     <PermissionsProvider>
-      <WebSocketProvider token={token}>
+      {/* <WebSocketProvider token={token}> */}
         <div className="min-h-screen bg-gradient-to-br from-orange-50 via-blue-50 to-green-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 overflow-x-hidden">
           <Sidebar />
           <div className="lg:pl-80">
@@ -38,7 +38,7 @@ export default function DashboardLayout({
             </main>
           </div>
         </div>
-      </WebSocketProvider>
+      {/* </WebSocketProvider> */}
     </PermissionsProvider>
   )
 }
