@@ -108,11 +108,23 @@ export const useBettingTransactions = () => {
     })
   }
 
+  const cancelTransaction = async (transactionUid: string, reason: string): Promise<TransactionCreateResponse> => {
+    const endpoint = `${baseUrl.replace(/\/$/, "")}/api/payments/betting/user/transactions/${transactionUid}/request_cancellation/`
+    return await apiFetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ reason })
+    })
+  }
+
   return {
     getTransactions,
     verifyUserId,
     createDeposit,
-    createWithdrawal
+    createWithdrawal,
+    cancelTransaction
   }
 }
 

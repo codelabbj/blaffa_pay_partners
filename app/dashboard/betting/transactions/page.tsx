@@ -3,7 +3,7 @@
 // Force dynamic rendering
 export const dynamic = 'force-dynamic'
 
-import { useState, useEffect, useMemo } from "react"
+import React, { useState, useEffect, useMemo } from "react"
 import { useSearchParams } from "next/navigation"
 import { Suspense } from "react"
 import Link from "next/link"
@@ -15,17 +15,27 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useLanguage } from "@/components/providers/language-provider"
 import { useBettingTransactions, useBettingPlatforms } from "@/lib/api/betting"
 import { BettingTransaction, BettingTransactionsResponse } from "@/lib/types/betting"
-import { Search, ChevronLeft, ChevronRight, ArrowUpDown, RefreshCw, Activity, CreditCard, Copy, Eye, Plus, Minus, Filter, Calendar, DollarSign } from "lucide-react"
+import { Search, ChevronLeft, ChevronRight, ArrowUpDown, RefreshCw, Activity, CreditCard, Copy, Eye, Plus, Minus, Filter, Calendar, DollarSign, X } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { ErrorDisplay, extractErrorMessages } from "@/components/ui/error-display"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 
 function BettingTransactionsContent() {
   const searchParams = useSearchParams()
   const { t } = useLanguage()
-  const { getTransactions } = useBettingTransactions()
+  const { getTransactions, cancelTransaction } = useBettingTransactions()
   const { getPlatforms } = useBettingPlatforms()
   const { toast } = useToast()
 
@@ -46,6 +56,16 @@ function BettingTransactionsContent() {
   const [currentPage, setCurrentPage] = useState(1)
   const [sortField, setSortField] = useState<"amount" | "date" | null>(null)
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc")
+
+  // Cancellation dialog state
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
+  const [selectedTransaction, setSelectedTransaction] = useState<BettingTransaction | null>(null)
+  const [cancelReason, setCancelReason] = useState("")
+  const [cancelling, setCancelling] = useState(false)
+
+  // Transaction detail dialog state
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false)
+  const [selectedDetailTransaction, setSelectedDetailTransaction] = useState<BettingTransaction | null>(null)
 
   const itemsPerPage = 10
 
@@ -103,6 +123,81 @@ function BettingTransactionsContent() {
     setCurrentPage(1)
     setSortDirection((prevDir) => (sortField === field ? (prevDir === "desc" ? "asc" : "desc") : "desc"))
     setSortField(field)
+  }
+
+  const canCancelTransaction = (transaction: BettingTransaction): boolean => {
+    // Check if transaction status allows cancellation
+    if (transaction.status === 'cancelled' || transaction.status === 'failed') {
+      return false
+    }
+
+    // Check if cancellation has already been requested
+    if (transaction.cancellation_requested_at !== null) {
+      return false
+    }
+
+    // Check if API explicitly disallows cancellation
+    if (transaction.is_cancellable === false || transaction.can_request_cancellation === false) {
+      return false
+    }
+
+    // Check if transaction is within 25 minutes of creation
+    const createdAt = new Date(transaction.created_at)
+    const now = new Date()
+    const timeDiffInMinutes = (now.getTime() - createdAt.getTime()) / (1000 * 60)
+    
+    if (timeDiffInMinutes > 25) {
+      return false
+    }
+
+    // Transaction is eligible for cancellation
+    return true
+  }
+
+  const handleCancelTransaction = (transaction: BettingTransaction) => {
+    setSelectedTransaction(transaction)
+    setCancelReason("Client changed mind - explicit request")
+    setCancelDialogOpen(true)
+  }
+
+  const handleViewTransactionDetails = (transaction: BettingTransaction) => {
+    setSelectedDetailTransaction(transaction)
+    setDetailDialogOpen(true)
+  }
+
+  const handleConfirmCancel = async () => {
+    if (!selectedTransaction || !cancelReason.trim()) {
+      toast({ 
+        title: "Erreur", 
+        description: "Veuillez fournir une raison pour l'annulation", 
+        variant: "destructive" 
+      })
+      return
+    }
+
+    setCancelling(true)
+    try {
+      await cancelTransaction(selectedTransaction.uid, cancelReason.trim())
+      toast({ 
+        title: "Cancellation Requested", 
+        description: "Your cancellation request has been submitted successfully" 
+      })
+      setCancelDialogOpen(false)
+      setSelectedTransaction(null)
+      setCancelReason("")
+      // Refresh transactions list
+      fetchTransactions()
+    } catch (err: any) {
+      console.error('Cancellation error:', err)
+      const errorMessage = extractErrorMessages(err)
+      toast({ 
+        title: "Cancellation Failed", 
+        description: errorMessage || "Failed to cancel transaction. Please try again.", 
+        variant: "destructive" 
+      })
+    } finally {
+      setCancelling(false)
+    }
   }
 
   const statusMap: Record<string, { label: string; color: string }> = {
@@ -439,71 +534,100 @@ function BettingTransactionsContent() {
                       </TableRow>
                     ) : (
                       transactions.map((transaction) => (
-                        <TableRow key={transaction.uid} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                          <TableCell className="py-3 md:py-4 px-3 md:px-6">
-                            <div className="flex items-center gap-2">
-                              {getTransactionIcon(transaction.transaction_type)}
-                              <span className={cn("text-sm font-medium", getTransactionTypeColor(transaction.transaction_type))}>
-                                {getTransactionTypeLabel(transaction.transaction_type)}
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="py-3 md:py-4 px-3 md:px-6">
-                            <div className="flex items-center gap-1 md:gap-2">
-                              <span className="font-mono text-xs md:text-sm">{transaction.reference}</span>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => {
-                                  navigator.clipboard.writeText(transaction.reference)
-                                  toast({ title: "Référence copiée!" })
-                                }}
-                                className="h-5 w-5 md:h-6 md:w-6 p-0"
-                              >
-                                <Copy className="h-2 w-2 md:h-3 md:w-3" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                          <TableCell className="font-semibold py-3 md:py-4 px-3 md:px-6">
-                            <div className="flex flex-col">
-                              <span className="text-sm md:text-base">{formatAmount(transaction.amount)} FCFA</span>
-                              {transaction.commission_amount && parseFloat(transaction.commission_amount) > 0 && (
-                                <span className="text-xs text-gray-500 dark:text-gray-400">
-                                  Commission: {formatAmount(transaction.commission_amount)} FCFA
+                        <React.Fragment key={transaction.uid}>
+                          <TableRow className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                            <TableCell className="py-3 md:py-4 px-3 md:px-6">
+                              <div className="flex items-center gap-2">
+                                {getTransactionIcon(transaction.transaction_type)}
+                                <span className={cn("text-sm font-medium", getTransactionTypeColor(transaction.transaction_type))}>
+                                  {getTransactionTypeLabel(transaction.transaction_type)}
                                 </span>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell className="py-3 md:py-4 px-3 md:px-6">
-                            <span className="text-sm font-medium text-gray-900 dark:text-white">
-                              {transaction.platform_name}
-                            </span>
-                          </TableCell>
-                          <TableCell className="py-3 md:py-4 px-3 md:px-6">
-                            <span className="font-mono text-xs md:text-sm text-gray-600 dark:text-gray-300">
-                              {transaction.betting_user_id}
-                            </span>
-                          </TableCell>
-                          <TableCell className="text-xs md:text-sm text-gray-500 dark:text-gray-400 py-3 md:py-4 px-3 md:px-6">
-                            <div className="flex flex-col">
-                              <span>{formatDate(transaction.created_at)}</span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="py-3 md:py-4 px-3 md:px-6">{getStatusBadge(transaction.status)}</TableCell>
-                          <TableCell className="py-3 md:py-4 px-3 md:px-6">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0"
-                              onClick={() => {
-                                // TODO: Implement transaction detail view
-                                toast({ title: "Détails de la transaction", description: "Fonctionnalité à venir" })
-                              }}
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
+                              </div>
+                            </TableCell>
+                            <TableCell className="py-3 md:py-4 px-3 md:px-6">
+                              <div className="flex items-center gap-1 md:gap-2">
+                                <span className="font-mono text-xs md:text-sm">{transaction.reference}</span>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(transaction.reference)
+                                    toast({ title: "Référence copiée!" })
+                                  }}
+                                  className="h-5 w-5 md:h-6 md:w-6 p-0"
+                                >
+                                  <Copy className="h-2 w-2 md:h-3 md:w-3" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                            <TableCell className="font-semibold py-3 md:py-4 px-3 md:px-6">
+                              <div className="flex flex-col">
+                                <span className="text-sm md:text-base">{formatAmount(transaction.amount)} FCFA</span>
+                                {transaction.commission_amount && parseFloat(transaction.commission_amount) > 0 && (
+                                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                                    Commission: {formatAmount(transaction.commission_amount)} FCFA
+                                  </span>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell className="py-3 md:py-4 px-3 md:px-6">
+                              <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                {transaction.platform_name}
+                              </span>
+                            </TableCell>
+                            <TableCell className="py-3 md:py-4 px-3 md:px-6">
+                              <span className="font-mono text-xs md:text-sm text-gray-600 dark:text-gray-300">
+                                {transaction.betting_user_id}
+                              </span>
+                            </TableCell>
+                            <TableCell className="text-xs md:text-sm text-gray-500 dark:text-gray-400 py-3 md:py-4 px-3 md:px-6">
+                              <div className="flex flex-col">
+                                <span>{formatDate(transaction.created_at)}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="py-3 md:py-4 px-3 md:px-6">{getStatusBadge(transaction.status)}</TableCell>
+                            <TableCell className="py-3 md:py-4 px-3 md:px-6">
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 w-8 p-0"
+                                  onClick={() => handleViewTransactionDetails(transaction)}
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                          {/* Cancellation Button Row */}
+                          {canCancelTransaction(transaction) && (
+                            <TableRow className="bg-gray-50/50 dark:bg-gray-800/30">
+                              <TableCell colSpan={8} className="py-2 px-3 md:px-6">
+                                <div className="flex justify-end">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-400 dark:text-red-400 dark:hover:bg-red-900/20"
+                                    onClick={() => handleCancelTransaction(transaction)}
+                                    disabled={cancelling && selectedTransaction?.uid === transaction.uid}
+                                  >
+                                    {cancelling && selectedTransaction?.uid === transaction.uid ? (
+                                      <>
+                                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                                        Cancelling...
+                                      </>
+                                    ) : (
+                                      <>
+                                        <X className="h-4 w-4 mr-2" />
+                                        Cancel Transaction
+                                      </>
+                                    )}
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </React.Fragment>
                       ))
                     )}
                   </TableBody>
@@ -549,6 +673,312 @@ function BettingTransactionsContent() {
           )}
         </div>
       </div>
+
+      {/* Cancellation Dialog */}
+      <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Cancel Transaction</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to cancel this transaction? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedTransaction && (
+            <div className="space-y-4">
+              <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                <div className="text-sm space-y-2">
+                  <div><strong>Reference:</strong> {selectedTransaction.reference}</div>
+                  <div><strong>Type:</strong> {getTransactionTypeLabel(selectedTransaction.transaction_type)}</div>
+                  <div><strong>Amount:</strong> {formatAmount(selectedTransaction.amount)} FCFA</div>
+                  <div><strong>Platform:</strong> {selectedTransaction.platform_name}</div>
+                </div>
+              </div>
+              
+              <div>
+                <Label htmlFor="cancelReason" className="text-sm font-medium">
+                  Cancellation Reason *
+                </Label>
+                <Textarea
+                  id="cancelReason"
+                  placeholder="Please explain why you are cancelling this transaction..."
+                  value={cancelReason}
+                  onChange={(e) => setCancelReason(e.target.value)}
+                  className="mt-2"
+                  rows={3}
+                />
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setCancelDialogOpen(false)}
+              disabled={cancelling}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleConfirmCancel}
+              disabled={cancelling || !cancelReason.trim()}
+            >
+              {cancelling ? "Cancelling..." : "Confirm Cancellation"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Transaction Detail Dialog */}
+      <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
+        <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Transaction Details</DialogTitle>
+            <DialogDescription>
+              Complete information about this betting transaction
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedDetailTransaction && (
+            <div className="space-y-6">
+              {/* Basic Information */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-3">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Reference</Label>
+                    <div className="flex items-center gap-2">
+                      <div className="font-mono text-sm bg-gray-50 dark:bg-gray-800 p-2 rounded flex-1">
+                        {selectedDetailTransaction.reference}
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        onClick={() => {
+                          navigator.clipboard.writeText(selectedDetailTransaction.reference)
+                          toast({ title: "Reference copied!" })
+                        }}
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Transaction Type</Label>
+                    <div className="flex items-center gap-2">
+                      {getTransactionIcon(selectedDetailTransaction.transaction_type)}
+                      <span className={cn("text-sm font-medium", getTransactionTypeColor(selectedDetailTransaction.transaction_type))}>
+                        {getTransactionTypeLabel(selectedDetailTransaction.transaction_type)}
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Status</Label>
+                    <div className="mt-1">
+                      {getStatusBadge(selectedDetailTransaction.status)}
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Amount</Label>
+                    <div className="text-lg font-semibold">
+                      {formatAmount(selectedDetailTransaction.amount)} FCFA
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="space-y-3">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Platform</Label>
+                    <div className="text-sm font-medium">
+                      {selectedDetailTransaction.platform_name}
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Betting User ID</Label>
+                    <div className="flex items-center gap-2">
+                      <div className="font-mono text-sm bg-gray-50 dark:bg-gray-800 p-2 rounded flex-1">
+                        {selectedDetailTransaction.betting_user_id}
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        onClick={() => {
+                          navigator.clipboard.writeText(selectedDetailTransaction.betting_user_id)
+                          toast({ title: "Betting User ID copied!" })
+                        }}
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Created At</Label>
+                    <div className="text-sm">
+                      {formatDate(selectedDetailTransaction.created_at)}
+                    </div>
+                  </div>
+                  {selectedDetailTransaction.withdrawal_code && (
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">Withdrawal Code</Label>
+                      <div className="flex items-center gap-2">
+                        <div className="font-mono text-sm bg-gray-50 dark:bg-gray-800 p-2 rounded flex-1">
+                          {selectedDetailTransaction.withdrawal_code}
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                          onClick={() => {
+                            if (selectedDetailTransaction.withdrawal_code) {
+                              navigator.clipboard.writeText(selectedDetailTransaction.withdrawal_code)
+                              toast({ title: "Withdrawal code copied!" })
+                            }
+                          }}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Commission Information */}
+              {selectedDetailTransaction.commission_amount && parseFloat(selectedDetailTransaction.commission_amount) > 0 && (
+                <div className="border-t pt-4">
+                  <h4 className="font-medium mb-3">Commission Information</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">Commission Rate</Label>
+                      <div className="text-sm">
+                        {parseFloat(selectedDetailTransaction.commission_rate) * 100}%
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">Commission Amount</Label>
+                      <div className="text-sm font-semibold">
+                        {formatAmount(selectedDetailTransaction.commission_amount)} FCFA
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">Commission Paid</Label>
+                      <div className="text-sm">
+                        {selectedDetailTransaction.commission_paid ? (
+                          <span className="text-green-600 font-medium">Yes</span>
+                        ) : (
+                          <span className="text-orange-600 font-medium">No</span>
+                        )}
+                      </div>
+                    </div>
+                    {selectedDetailTransaction.commission_paid_at && (
+                      <div>
+                        <Label className="text-sm font-medium text-gray-500">Commission Paid At</Label>
+                        <div className="text-sm">
+                          {formatDate(selectedDetailTransaction.commission_paid_at)}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Cancellation Information */}
+              {(selectedDetailTransaction.cancellation_requested_at || selectedDetailTransaction.cancelled_at) && (
+                <div className="border-t pt-4">
+                  <h4 className="font-medium mb-3">Cancellation Information</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {selectedDetailTransaction.cancellation_requested_at && (
+                      <div>
+                        <Label className="text-sm font-medium text-gray-500">Cancellation Requested At</Label>
+                        <div className="text-sm">
+                          {formatDate(selectedDetailTransaction.cancellation_requested_at)}
+                        </div>
+                      </div>
+                    )}
+                    {selectedDetailTransaction.cancelled_at && (
+                      <div>
+                        <Label className="text-sm font-medium text-gray-500">Cancelled At</Label>
+                        <div className="text-sm">
+                          {formatDate(selectedDetailTransaction.cancelled_at)}
+                        </div>
+                      </div>
+                    )}
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">Partner Refunded</Label>
+                      <div className="text-sm">
+                        {selectedDetailTransaction.partner_refunded ? (
+                          <span className="text-green-600 font-medium">Yes</span>
+                        ) : (
+                          <span className="text-gray-600 font-medium">No</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Balance Information */}
+              <div className="border-t pt-4">
+                <h4 className="font-medium mb-3">Balance Information</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Balance Before</Label>
+                    <div className="text-sm font-semibold">
+                      {formatAmount(selectedDetailTransaction.partner_balance_before)} FCFA
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Balance After</Label>
+                    <div className="text-sm font-semibold">
+                      {formatAmount(selectedDetailTransaction.partner_balance_after)} FCFA
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* External Information */}
+              {selectedDetailTransaction.external_transaction_id && (
+                <div className="border-t pt-4">
+                  <h4 className="font-medium mb-3">External Information</h4>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">External Transaction ID</Label>
+                    <div className="flex items-center gap-2">
+                      <div className="font-mono text-sm bg-gray-50 dark:bg-gray-800 p-2 rounded flex-1">
+                        {selectedDetailTransaction.external_transaction_id}
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        onClick={() => {
+                          if (selectedDetailTransaction.external_transaction_id) {
+                            navigator.clipboard.writeText(selectedDetailTransaction.external_transaction_id)
+                            toast({ title: "External Transaction ID copied!" })
+                          }
+                        }}
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDetailDialogOpen(false)}
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

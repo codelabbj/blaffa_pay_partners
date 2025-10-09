@@ -62,7 +62,7 @@ export interface BettingTransaction {
   platform_name: string
   transaction_type: 'deposit' | 'withdrawal'
   amount: string
-  status: 'pending' | 'processing' | 'success' | 'failed' | 'cancelled'
+  status: 'success' | 'pending' | 'failed' | 'cancelled'
   betting_user_id: string
   withdrawal_code: string | null
   external_transaction_id: string | null
@@ -77,6 +77,8 @@ export interface BettingTransaction {
   partner_refunded: boolean
   partner_balance_before: string
   partner_balance_after: string
+  is_cancellable?: boolean
+  can_request_cancellation?: boolean
 }
 
 export interface BettingTransactionsResponse {
