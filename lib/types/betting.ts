@@ -173,3 +173,29 @@ export interface TransactionCreateResponse {
   message: string
   transaction: BettingTransaction
 }
+
+// External API Types
+export interface ExternalPlatformData {
+  id: string
+  name: string
+  image: string
+  is_active: boolean
+  order: number | null
+  city: string
+  street: string
+  deposit_tuto_content: string
+  deposit_link: string | null
+  withdrawal_tuto_content: string
+  withdrawal_link: string
+  public_name: string
+  minimun_deposit: number
+  max_deposit: number
+  minimun_with: number
+  max_win: number
+  why_withdrawal_fail: string | null
+  enable: boolean
+}
+
+export interface ExternalPlatformsResponse {
+  platforms: ExternalPlatformData[]
+}

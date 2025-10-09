@@ -12,7 +12,9 @@ import {
   DepositFormData,
   WithdrawalFormData,
   UserVerificationResponse,
-  TransactionCreateResponse
+  TransactionCreateResponse,
+  ExternalPlatformData,
+  ExternalPlatformsResponse
 } from "../types/betting"
 
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || ""
@@ -41,11 +43,34 @@ export const useBettingPlatforms = () => {
     return await apiFetch(endpoint)
   }
 
+  const getExternalPlatforms = async (): Promise<ExternalPlatformsResponse> => {
+    const endpoint = "https://api.blaffa.net/blaffa/app_name"
+    const response = await fetch(endpoint)
+    if (!response.ok) {
+      throw new Error(`External API error: ${response.status}`)
+    }
+    const data = await response.json()
+    return { platforms: data }
+  }
+
+  const getExternalPlatformByExternalId = async (externalId: string): Promise<ExternalPlatformData | null> => {
+    try {
+      const externalData = await getExternalPlatforms()
+      const platform = externalData.platforms.find(p => p.id === externalId)
+      return platform || null
+    } catch (error) {
+      console.error('Error fetching external platform data:', error)
+      return null
+    }
+  }
+
   return {
     getPlatforms,
     getPlatformDetail,
     getPlatformsWithPermissions,
-    getPlatformsWithStats
+    getPlatformsWithStats,
+    getExternalPlatforms,
+    getExternalPlatformByExternalId
   }
 }
 

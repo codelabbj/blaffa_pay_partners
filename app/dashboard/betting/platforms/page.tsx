@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useLanguage } from "@/components/providers/language-provider"
 import { useBettingPlatforms } from "@/lib/api/betting"
-import { BettingPlatform, BettingPlatformsWithStatsResponse } from "@/lib/types/betting"
+import { BettingPlatform, BettingPlatformsWithStatsResponse, ExternalPlatformData } from "@/lib/types/betting"
 import { Search, RefreshCw, TrendingUp, TrendingDown, Activity, Shield, Eye, DollarSign, Users, AlertCircle, Plus, Minus, CreditCard } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { ErrorDisplay, extractErrorMessages } from "@/components/ui/error-display"
@@ -20,10 +20,11 @@ import Link from "next/link"
 
 export default function BettingPlatformsPage() {
   const { t } = useLanguage()
-  const { getPlatformsWithStats } = useBettingPlatforms()
+  const { getPlatformsWithStats, getExternalPlatformByExternalId } = useBettingPlatforms()
   const { toast } = useToast()
 
   const [platformsData, setPlatformsData] = useState<BettingPlatformsWithStatsResponse | null>(null)
+  const [externalPlatformsData, setExternalPlatformsData] = useState<Map<string, ExternalPlatformData>>(new Map())
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [searchQuery, setSearchQuery] = useState("")
@@ -34,6 +35,22 @@ export default function BettingPlatformsPage() {
     try {
       const data = await getPlatformsWithStats()
       setPlatformsData(data)
+      
+      // Fetch external platform data for each platform
+      const externalDataMap = new Map<string, ExternalPlatformData>()
+      const externalPromises = data.authorized_platforms.map(async (platform) => {
+        try {
+          const externalData = await getExternalPlatformByExternalId(platform.external_id)
+          if (externalData) {
+            externalDataMap.set(platform.external_id, externalData)
+          }
+        } catch (error) {
+          console.error(`Failed to fetch external data for platform ${platform.name}:`, error)
+        }
+      })
+      
+      await Promise.all(externalPromises)
+      setExternalPlatformsData(externalDataMap)
     } catch (err: any) {
       const errorMessage = extractErrorMessages(err)
       setError(errorMessage)
@@ -288,6 +305,24 @@ export default function BettingPlatformsPage() {
                             <div className="text-sm font-bold text-gray-900 dark:text-white">
                               {platform.my_stats.total_amount.toLocaleString()}
                             </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* External Platform Info */}
+                      {externalPlatformsData.has(platform.external_id) && (
+                        <div className="space-y-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
+                          <div className="flex justify-between text-xs">
+                            <span className="text-blue-600 dark:text-blue-400 font-medium">Ville:</span>
+                            <span className="font-medium text-gray-900 dark:text-white">
+                              {externalPlatformsData.get(platform.external_id)?.city}
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-xs">
+                            <span className="text-blue-600 dark:text-blue-400 font-medium">Rue:</span>
+                            <span className="font-medium text-gray-900 dark:text-white">
+                              {externalPlatformsData.get(platform.external_id)?.street}
+                            </span>
                           </div>
                         </div>
                       )}

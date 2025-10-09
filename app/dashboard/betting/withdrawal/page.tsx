@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useLanguage } from "@/components/providers/language-provider"
 import { useBettingTransactions, useBettingPlatforms } from "@/lib/api/betting"
-import { BettingPlatform, UserVerificationResponse, TransactionCreateResponse } from "@/lib/types/betting"
+import { BettingPlatform, UserVerificationResponse, TransactionCreateResponse, ExternalPlatformData } from "@/lib/types/betting"
 import { ArrowLeft, RefreshCw, Minus, DollarSign, User, Shield, Check, X, AlertCircle, Loader2, Key } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { ErrorDisplay, extractErrorMessages } from "@/components/ui/error-display"
@@ -24,11 +24,12 @@ function BettingWithdrawalContent() {
   const router = useRouter()
   const { t } = useLanguage()
   const { verifyUserId, createWithdrawal } = useBettingTransactions()
-  const { getPlatformDetail, getPlatforms } = useBettingPlatforms()
+  const { getPlatformDetail, getPlatforms, getExternalPlatformByExternalId } = useBettingPlatforms()
   const { toast } = useToast()
 
   const [platform, setPlatform] = useState<BettingPlatform | null>(null)
   const [availablePlatforms, setAvailablePlatforms] = useState<any[]>([])
+  const [externalPlatformsData, setExternalPlatformsData] = useState<Map<string, ExternalPlatformData>>(new Map())
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [submitting, setSubmitting] = useState(false)
@@ -48,6 +49,22 @@ function BettingWithdrawalContent() {
     try {
       const data = await getPlatforms()
       setAvailablePlatforms(data.results || [])
+      
+      // Fetch external platform data for each platform
+      const externalDataMap = new Map<string, ExternalPlatformData>()
+      const externalPromises = (data.results || []).map(async (platform) => {
+        try {
+          const externalData = await getExternalPlatformByExternalId(platform.external_id)
+          if (externalData) {
+            externalDataMap.set(platform.external_id, externalData)
+          }
+        } catch (error) {
+          console.error(`Failed to fetch external data for platform ${platform.name}:`, error)
+        }
+      })
+      
+      await Promise.all(externalPromises)
+      setExternalPlatformsData(externalDataMap)
     } catch (err: any) {
       console.error('Failed to fetch platforms:', err)
     }
@@ -253,6 +270,24 @@ function BettingWithdrawalContent() {
                         </Badge>
                       </div>
                     </div>
+                    {/* External Platform Info */}
+                    {externalPlatformsData.has(platform.external_id) && (
+                      <div className="space-y-1 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-2 mb-3">
+                        <div className="flex justify-between text-xs">
+                          <span className="text-blue-600 dark:text-blue-400 font-medium">Ville:</span>
+                          <span className="font-medium text-gray-900 dark:text-white">
+                            {externalPlatformsData.get(platform.external_id)?.city}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-xs">
+                          <span className="text-blue-600 dark:text-blue-400 font-medium">Rue:</span>
+                          <span className="font-medium text-gray-900 dark:text-white">
+                            {externalPlatformsData.get(platform.external_id)?.street}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-gray-500 dark:text-gray-400">Min:</span>
@@ -310,6 +345,32 @@ function BettingWithdrawalContent() {
             <div className="absolute top-0 right-0 w-16 h-16 md:w-32 md:h-32 bg-white/10 rounded-full blur-2xl"></div>
             <div className="absolute bottom-0 left-0 w-12 h-12 md:w-24 md:h-24 bg-white/10 rounded-full blur-2xl"></div>
           </div>
+
+          {/* External Platform Location Info */}
+          {externalPlatformsData.has(platform.external_id) && (
+            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-2xl md:rounded-3xl border border-blue-200 dark:border-blue-800 p-4 md:p-6">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <h3 className="text-sm md:text-base font-semibold text-blue-900 dark:text-blue-100">
+                  Informations de Localisation
+                </h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-3">
+                  <div className="text-xs text-blue-600 dark:text-blue-400 font-medium mb-1">Ville</div>
+                  <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                    {externalPlatformsData.get(platform.external_id)?.city}
+                  </div>
+                </div>
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-3">
+                  <div className="text-xs text-blue-600 dark:text-blue-400 font-medium mb-1">Rue</div>
+                  <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                    {externalPlatformsData.get(platform.external_id)?.street}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Withdrawal Form */}
           <div className="grid gap-4 md:gap-6 grid-cols-1 lg:grid-cols-2">
