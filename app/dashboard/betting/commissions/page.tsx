@@ -298,7 +298,7 @@ export default function BettingCommissionsPage() {
       )}
 
       {/* Commission by Platform */}
-      {commissionStats && commissionStats.by_platform.length > 0 && (
+      {commissionStats && commissionStats.by_platform && commissionStats.by_platform.length > 0 && (
         <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl md:rounded-3xl border border-white/20 dark:border-gray-700/50 shadow-xl">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -346,7 +346,7 @@ export default function BettingCommissionsPage() {
       )}
 
       {/* Unpaid Commissions */}
-      {unpaidCommissions && unpaidCommissions.transactions.length > 0 && (
+      {unpaidCommissions && unpaidCommissions.transactions && unpaidCommissions.transactions.length > 0 && (
         <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl md:rounded-3xl border border-white/20 dark:border-gray-700/50 shadow-xl">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -420,7 +420,7 @@ export default function BettingCommissionsPage() {
       )}
 
       {/* Payment History */}
-      {paymentHistory && paymentHistory.payments.length > 0 && (
+      {paymentHistory && paymentHistory.payments && paymentHistory.payments.length > 0 && (
         <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl md:rounded-3xl border border-white/20 dark:border-gray-700/50 shadow-xl">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
