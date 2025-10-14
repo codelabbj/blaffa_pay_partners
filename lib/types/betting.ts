@@ -94,6 +94,10 @@ export interface BettingCommissionStats {
   total_commission: string
   paid_commission: string
   unpaid_commission: string
+  payable_commission: string
+  payable_transaction_count: number
+  current_month_commission: string
+  current_month_transaction_count: number
   by_platform: {
     platform__name: string
     count: number

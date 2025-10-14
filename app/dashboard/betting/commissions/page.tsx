@@ -131,6 +131,12 @@ export default function BettingCommissionsPage() {
               </div>
               <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4">
                 <div className="text-2xl font-bold">
+                  {commissionStats ? formatAmount(commissionStats.payable_commission) : "0"} FCFA
+                </div>
+                <div className="text-orange-100 text-sm">À payer</div>
+              </div>
+              <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4">
+                <div className="text-2xl font-bold">
                   {commissionStats ? formatAmount(commissionStats.unpaid_commission) : "0"} FCFA
                 </div>
                 <div className="text-orange-100 text-sm">Non payées</div>
@@ -211,51 +217,118 @@ export default function BettingCommissionsPage() {
 
       {/* Commission Statistics */}
       {commissionStats && (
-        <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl md:rounded-3xl border border-white/20 dark:border-gray-700/50 shadow-xl p-4 md:p-6">
-            <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
-              <div className="p-2 md:p-3 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl md:rounded-2xl">
-                <Activity className="h-5 w-5 md:h-6 md:w-6 text-white" />
+        <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6">
+          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl md:rounded-3xl border border-white/20 dark:border-gray-700/50 shadow-xl p-3 md:p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="p-2 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl flex-shrink-0">
+                <Activity className="h-4 w-4 text-white" />
               </div>
-              <h3 className="text-sm md:text-lg font-bold text-gray-900 dark:text-white">Total Transactions</h3>
+              <h3 className="text-xs md:text-sm font-bold text-gray-900 dark:text-white leading-tight">Total Transactions</h3>
             </div>
-            <div className="text-xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">{commissionStats.total_transactions}</div>
+            <div className="text-lg md:text-xl font-bold text-gray-900 dark:text-white mb-2">{commissionStats.total_transactions}</div>
             <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">Transactions avec commission</p>
           </div>
 
-          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl md:rounded-3xl border border-white/20 dark:border-gray-700/50 shadow-xl p-4 md:p-6">
-            <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
-              <div className="p-2 md:p-3 bg-gradient-to-r from-green-500 to-green-600 rounded-xl md:rounded-2xl">
-                <DollarSign className="h-5 w-5 md:h-6 md:w-6 text-white" />
+          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl md:rounded-3xl border border-white/20 dark:border-gray-700/50 shadow-xl p-3 md:p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="p-2 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex-shrink-0">
+                <DollarSign className="h-4 w-4 text-white" />
               </div>
-              <h3 className="text-sm md:text-lg font-bold text-gray-900 dark:text-white">Total Commissions</h3>
+              <h3 className="text-xs md:text-sm font-bold text-gray-900 dark:text-white leading-tight">Total Commissions</h3>
             </div>
-            <div className="text-xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">{formatAmount(commissionStats.total_commission)} FCFA</div>
+            <div className="text-lg md:text-xl font-bold text-gray-900 dark:text-white mb-2">{formatAmount(commissionStats.total_commission)} FCFA</div>
             <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">Toutes commissions</p>
           </div>
 
-          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl md:rounded-3xl border border-white/20 dark:border-gray-700/50 shadow-xl p-4 md:p-6">
-            <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
-              <div className="p-2 md:p-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl md:rounded-2xl">
-                <CheckCircle className="h-5 w-5 md:h-6 md:w-6 text-white" />
+          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl md:rounded-3xl border border-white/20 dark:border-gray-700/50 shadow-xl p-3 md:p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="p-2 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex-shrink-0">
+                <CheckCircle className="h-4 w-4 text-white" />
               </div>
-              <h3 className="text-sm md:text-lg font-bold text-gray-900 dark:text-white">Commissions Payées</h3>
+              <h3 className="text-xs md:text-sm font-bold text-gray-900 dark:text-white leading-tight">Commissions Payées</h3>
             </div>
-            <div className="text-xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">{formatAmount(commissionStats.paid_commission)} FCFA</div>
+            <div className="text-lg md:text-xl font-bold text-gray-900 dark:text-white mb-2">{formatAmount(commissionStats.paid_commission)} FCFA</div>
             <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">Déjà payées</p>
           </div>
 
-          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl md:rounded-3xl border border-white/20 dark:border-gray-700/50 shadow-xl p-4 md:p-6">
-            <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
-              <div className="p-2 md:p-3 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl md:rounded-2xl">
-                <Clock className="h-5 w-5 md:h-6 md:w-6 text-white" />
+          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl md:rounded-3xl border border-white/20 dark:border-gray-700/50 shadow-xl p-3 md:p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="p-2 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl flex-shrink-0">
+                <Clock className="h-4 w-4 text-white" />
               </div>
-              <h3 className="text-sm md:text-lg font-bold text-gray-900 dark:text-white">Commissions Non Payées</h3>
+              <h3 className="text-xs md:text-sm font-bold text-gray-900 dark:text-white leading-tight">Commissions Non Payées</h3>
             </div>
-            <div className="text-xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">{formatAmount(commissionStats.unpaid_commission)} FCFA</div>
+            <div className="text-lg md:text-xl font-bold text-gray-900 dark:text-white mb-2">{formatAmount(commissionStats.unpaid_commission)} FCFA</div>
             <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">En attente de paiement</p>
           </div>
+
+          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl md:rounded-3xl border border-white/20 dark:border-gray-700/50 shadow-xl p-3 md:p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="p-2 bg-gradient-to-r from-red-500 to-red-600 rounded-xl flex-shrink-0">
+                <CreditCard className="h-4 w-4 text-white" />
+              </div>
+              <h3 className="text-xs md:text-sm font-bold text-gray-900 dark:text-white leading-tight">Commissions À Payer</h3>
+            </div>
+            <div className="text-lg md:text-xl font-bold text-gray-900 dark:text-white mb-2">{formatAmount(commissionStats.payable_commission)} FCFA</div>
+            <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">Montant payable</p>
+          </div>
+
+          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl md:rounded-3xl border border-white/20 dark:border-gray-700/50 shadow-xl p-3 md:p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="p-2 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex-shrink-0">
+                <Calendar className="h-4 w-4 text-white" />
+              </div>
+              <h3 className="text-xs md:text-sm font-bold text-gray-900 dark:text-white leading-tight">Ce Mois</h3>
+            </div>
+            <div className="text-lg md:text-xl font-bold text-gray-900 dark:text-white mb-2">{formatAmount(commissionStats.current_month_commission)} FCFA</div>
+            <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">{commissionStats.current_month_transaction_count} transactions</p>
+          </div>
         </div>
+      )}
+
+      {/* Payable Commission Summary */}
+      {commissionStats && (
+        <Card className="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 backdrop-blur-xl rounded-2xl md:rounded-3xl border border-red-200 dark:border-red-800 shadow-xl">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-red-800 dark:text-red-200">
+              <CreditCard className="h-5 w-5 text-red-600" />
+              Résumé des Commissions Payables
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2">
+              <div className="bg-red-100 dark:bg-red-900/30 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <DollarSign className="h-4 w-4 text-red-600" />
+                  <span className="text-sm font-medium text-red-800 dark:text-red-200">Montant Total Payable</span>
+                </div>
+                <div className="text-2xl font-bold text-red-900 dark:text-red-100">
+                  {formatAmount(commissionStats.payable_commission)} FCFA
+                </div>
+              </div>
+              <div className="bg-orange-100 dark:bg-orange-900/30 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Activity className="h-4 w-4 text-orange-600" />
+                  <span className="text-sm font-medium text-orange-800 dark:text-orange-200">Transactions Payables</span>
+                </div>
+                <div className="text-2xl font-bold text-orange-900 dark:text-orange-100">
+                  {commissionStats.payable_transaction_count}
+                </div>
+              </div>
+            </div>
+            {commissionStats.payable_transaction_count > 0 && (
+              <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                <div className="flex items-center gap-2 mb-1">
+                  <AlertCircle className="h-4 w-4 text-yellow-600" />
+                  <span className="text-sm font-medium text-yellow-800 dark:text-yellow-200">Action Requise</span>
+                </div>
+                <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                  Vous avez {commissionStats.payable_transaction_count} transaction{commissionStats.payable_transaction_count > 1 ? 's' : ''} avec des commissions payables d'un montant total de {formatAmount(commissionStats.payable_commission)} FCFA.
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       )}
 
       {/* Commission Rates */}
