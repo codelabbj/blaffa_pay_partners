@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useLanguage } from "@/components/providers/language-provider"
 import { Search, ChevronLeft, ChevronRight, ArrowUpDown, Copy, Plus, Upload, Wallet, Clock, CheckCircle, XCircle, AlertCircle, RefreshCw, Activity } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog"
 import { ErrorDisplay, extractErrorMessages } from "@/components/ui/error-display"
 import { useApi } from "@/lib/useApi"
@@ -32,7 +32,6 @@ export default function UserTopupPage() {
 	const { t } = useLanguage()
 	const itemsPerPage = 10
 	const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || ""
-	const { toast } = useToast()
 	const apiFetch = useApi();
 	const [detailModalOpen, setDetailModalOpen] = useState(false)
 	const [detailTopup, setDetailTopup] = useState<any | null>(null)
@@ -86,15 +85,15 @@ export default function UserTopupPage() {
 			setTopups([])
 			setTotalCount(0)
 			setTotalPages(1)
-			toast({ title: t("topup.failedToLoad"), description: errorMessage, variant: "destructive" })
+			toast.error(errorMessage)
 		} finally {
 			setLoading(false)
 		}
-	}, [searchTerm, currentPage, itemsPerPage, baseUrl, statusFilter, startDate, endDate, sortField, sortDirection, t, toast, apiFetch])
+	}, [searchTerm, currentPage, itemsPerPage, baseUrl, statusFilter, startDate, endDate, sortField, sortDirection, t, apiFetch])
 
 	useEffect(() => {
 		fetchTopups()
-	}, [searchTerm, currentPage, itemsPerPage, baseUrl, statusFilter, startDate, endDate, sortField, sortDirection, t, toast, apiFetch])
+	}, [fetchTopups])
 
 	const startIndex = (currentPage - 1) * itemsPerPage
 
@@ -130,10 +129,10 @@ export default function UserTopupPage() {
 			// For demo, just find in topups
 			const found = topups.find((t) => t.uid === uid)
 			setDetailTopup(found)
-			toast({ title: t("topup.detailLoaded"), description: t("topup.detailLoadedSuccessfully") })
+			toast.success(t("topup.detailLoadedSuccessfully"))
 		} catch (err: any) {
 			setDetailError(extractErrorMessages(err))
-			toast({ title: t("topup.detailFailed"), description: extractErrorMessages(err), variant: "destructive" })
+			toast.error(extractErrorMessages(err))
 		} finally {
 			setDetailLoading(false)
 		}
@@ -166,7 +165,7 @@ export default function UserTopupPage() {
 				body: formDataPayload
 			})
 			
-			toast({ title: t("topup.success"), description: t("topup.createdSuccessfully") })
+			toast.success(t("topup.createdSuccessfully"))
 			setCreateModalOpen(false)
 			setFormData({
 				amount: "",
@@ -179,7 +178,7 @@ export default function UserTopupPage() {
 		} catch (err: any) {
 			const errorMessage = extractErrorMessages(err)
 			setCreateError(errorMessage)
-			toast({ title: t("topup.createFailed"), description: errorMessage, variant: "destructive" })
+			toast.error(errorMessage)
 		} finally {
 			setCreateLoading(false)
 		}
@@ -429,7 +428,7 @@ export default function UserTopupPage() {
 																size="sm"
 																onClick={() => {
 																	navigator.clipboard.writeText(topup.reference)
-																	toast({ title: t("topup.referenceCopied") || "Reference copied!" })
+																	toast.success(t("topup.referenceCopied") || "Reference copied!")
 																}}
 																className="h-5 w-5 md:h-6 md:w-6 p-0"
 															>
@@ -692,7 +691,7 @@ export default function UserTopupPage() {
 												className="h-7 w-7 md:h-8 md:w-8"
 												onClick={() => {
 													navigator.clipboard.writeText(detailTopup.reference)
-													toast({ title: t("topup.copiedReference") || "Reference copied!" })
+													toast.success(t("topup.copiedReference") || "Reference copied!")
 												}}
 											>
 												<Copy className="h-3 w-3 md:h-4 md:w-4" />

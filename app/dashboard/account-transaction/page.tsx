@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useLanguage } from "@/components/providers/language-provider"
 import { Search, ChevronLeft, ChevronRight, ArrowUpDown, Copy, Plus, TrendingUp, TrendingDown, Wallet, RefreshCw, Activity, CreditCard } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog"
 import { ErrorDisplay, extractErrorMessages } from "@/components/ui/error-display"
 import { useApi } from "@/lib/useApi"
@@ -59,7 +59,6 @@ export default function UserPaymentPage() {
 	const { t } = useLanguage()
 	const itemsPerPage = 10
 	const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || ""
-	const { toast } = useToast()
 	const apiFetch = useApi()
 
 	// Fetch account data
@@ -179,7 +178,7 @@ export default function UserPaymentPage() {
 				method: "POST",
 				body: JSON.stringify(payload)
 			})
-			toast({ title: t("payment.transactionCreated"), description: t("payment.transactionCreatedSuccessfully") })
+			toast.success(t("payment.transactionCreated"), { description: t("payment.transactionCreatedSuccessfully") })
 			setCreateModalOpen(false)
 			setTransactionForm({
 				type: "deposit",

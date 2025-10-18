@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useLanguage } from "@/components/providers/language-provider"
 import { useApi } from "@/lib/useApi"
 import { Search, ChevronLeft, ChevronRight, ArrowUpDown, RefreshCw, Send, Users, TrendingUp, TrendingDown, Copy, Activity, CreditCard, UserSearch, AlertCircle, Check, X } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { ErrorDisplay, extractErrorMessages } from "@/components/ui/error-display"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -63,7 +63,6 @@ interface TransferStats {
 export default function TransferPage() {
   const { t } = useLanguage()
   const apiFetch = useApi()
-  const { toast } = useToast()
 
   // Transfer form state
   const [transferForm, setTransferForm] = useState({
@@ -119,7 +118,7 @@ export default function TransferPage() {
     } catch (err: any) {
       const errorMessage = extractErrorMessages(err)
       setSearchError(errorMessage)
-      toast({ title: "Erreur de recherche", description: errorMessage, variant: "destructive" })
+      toast.error(errorMessage)
     } finally {
       setSearchLoading(false)
     }
@@ -230,7 +229,7 @@ export default function TransferPage() {
     } catch (err: any) {
       const errorMessage = extractErrorMessages(err)
       setHistoryError(errorMessage)
-      toast({ title: "Erreur de chargement", description: errorMessage, variant: "destructive" })
+      toast.error(errorMessage)
     } finally {
       setHistoryLoading(false)
     }
@@ -261,10 +260,7 @@ export default function TransferPage() {
         body: JSON.stringify(payload)
       })
       
-      toast({ 
-        title: "Transfert réussi", 
-        description: data.message || "Transfert effectué avec succès"
-      })
+      toast.success(data.message || "Transfert effectué avec succès")
       
       // Reset form and close modal only on success
       setTransferForm({
@@ -275,7 +271,11 @@ export default function TransferPage() {
       setSelectedUser(null)
       setSearchQuery("")
       setUsers([])
-      setTransferModalOpen(false)
+      
+      // Add a small delay to ensure toast is visible before closing modal
+      setTimeout(() => {
+        setTransferModalOpen(false)
+      }, 1500)
       
       // Refresh data
       await fetchTransferStats()
@@ -283,7 +283,7 @@ export default function TransferPage() {
     } catch (err: any) {
       const errorMessage = extractErrorMessages(err)
       setTransferError(errorMessage)
-      toast({ title: "Erreur de transfert", description: errorMessage, variant: "destructive" })
+      toast.error(errorMessage)
       // Don't close modal on error - keep it open to show the error
     } finally {
       setTransferLoading(false)
@@ -790,7 +790,7 @@ export default function TransferPage() {
                                   size="sm"
                                   onClick={() => {
                                     navigator.clipboard.writeText(transfer.reference)
-                                    toast({ title: "Référence copiée!" })
+                                    toast.success("Référence copiée!")
                                   }}
                                   className="h-5 w-5 md:h-6 md:w-6 p-0"
                                 >

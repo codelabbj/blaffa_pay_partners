@@ -13,7 +13,7 @@ import { useLanguage } from "@/components/providers/language-provider"
 import { useBettingTransactions, useBettingPlatforms } from "@/lib/api/betting"
 import { BettingPlatform, UserVerificationResponse, TransactionCreateResponse, ExternalPlatformData } from "@/lib/types/betting"
 import { ArrowLeft, RefreshCw, Minus, DollarSign, User, Shield, Check, X, AlertCircle, Loader2, Key } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { ErrorDisplay, extractErrorMessages } from "@/components/ui/error-display"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -25,7 +25,6 @@ function BettingWithdrawalContent() {
   const { t } = useLanguage()
   const { verifyUserId, createWithdrawal } = useBettingTransactions()
   const { getPlatformDetail, getPlatforms, getExternalPlatformByExternalId } = useBettingPlatforms()
-  const { toast } = useToast()
 
   const [platform, setPlatform] = useState<BettingPlatform | null>(null)
   const [availablePlatforms, setAvailablePlatforms] = useState<any[]>([])
@@ -86,7 +85,7 @@ function BettingWithdrawalContent() {
     } catch (err: any) {
       const errorMessage = extractErrorMessages(err)
       setError(errorMessage)
-      toast({ title: "Erreur de chargement", description: errorMessage, variant: "destructive" })
+      toast.error(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -124,15 +123,12 @@ function BettingWithdrawalContent() {
       if (result.UserId === 0) {
         setVerificationError("ID utilisateur invalide")
       } else {
-        toast({ 
-          title: "ID vérifié", 
-          description: `Utilisateur: ${result.Name}` 
-        })
+        toast.success(`Utilisateur: ${result.Name}`)
       }
     } catch (err: any) {
       const errorMessage = extractErrorMessages(err)
       setVerificationError(errorMessage)
-      toast({ title: "Erreur de vérification", description: errorMessage, variant: "destructive" })
+      toast.error(errorMessage)
     } finally {
       setVerifying(false)
     }
@@ -142,17 +138,17 @@ function BettingWithdrawalContent() {
     e.preventDefault()
     
     if (!platformUid) {
-      toast({ title: "Erreur", description: "Plateforme non spécifiée", variant: "destructive" })
+      toast.error("Plateforme non spécifiée")
       return
     }
 
     if (!verificationResult || verificationResult.UserId === 0) {
-      toast({ title: "Erreur", description: "Veuillez vérifier l'ID utilisateur", variant: "destructive" })
+      toast.error("Veuillez vérifier l'ID utilisateur")
       return
     }
 
     if (!formData.withdrawal_code.trim()) {
-      toast({ title: "Erreur", description: "Veuillez saisir le code de retrait", variant: "destructive" })
+      toast.error("Veuillez saisir le code de retrait")
       return
     }
 
@@ -164,21 +160,20 @@ function BettingWithdrawalContent() {
         withdrawal_code: formData.withdrawal_code
       })
 
-      toast({ 
-        title: "Retrait créé", 
-        description: result.message || "Retrait effectué avec succès"
-      })
+      toast.success(result.message || "Retrait effectué avec succès")
 
       // Reset form
       setFormData({ betting_user_id: "", withdrawal_code: "" })
       setVerificationResult(null)
       setVerificationError("")
 
-      // Redirect to transactions
-      router.push(`/dashboard/betting/transactions?platform=${platformUid}`)
+      // Add a small delay to ensure toast is visible before redirecting
+      setTimeout(() => {
+        router.push(`/dashboard/betting/transactions?platform=${platformUid}`)
+      }, 1500)
     } catch (err: any) {
       const errorMessage = extractErrorMessages(err)
-      toast({ title: "Erreur de retrait", description: errorMessage, variant: "destructive" })
+      toast.error(errorMessage)
     } finally {
       setSubmitting(false)
     }

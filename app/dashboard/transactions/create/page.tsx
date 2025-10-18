@@ -16,7 +16,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { ErrorDisplay, extractErrorMessages } from "@/components/ui/error-display"
 import { useRouter } from "next/navigation"
 import { Label } from "@/components/ui/label"
@@ -42,7 +42,6 @@ export default function CreateTransactionPage() {
 
   const { t } = useLanguage()
   const apiFetch = useApi()
-  const { toast } = useToast()
   const router = useRouter()
 
   // Fetch networks on component mount
@@ -59,7 +58,7 @@ export default function CreateTransactionPage() {
       } catch (err: any) {
         const errorMessage = extractErrorMessages(err)
         setNetworksError(errorMessage)
-        toast({ title: t("payment.failedToLoadNetworks"), description: errorMessage, variant: "destructive" })
+        toast.error(t("payment.failedToLoadNetworks"), { description: errorMessage })
       } finally {
         setNetworksLoading(false)
       }
@@ -77,6 +76,16 @@ export default function CreateTransactionPage() {
 
   const handleCreateClick = () => {
     setConfirmModalOpen(true)
+  }
+
+  const handleTestToast = () => {
+    console.log("Test toast button clicked")
+    try {
+      toast.success("Test Success!")
+      console.log("Toast called successfully")
+    } catch (error) {
+      console.error("Toast error:", error)
+    }
   }
 
   const handleConfirmTransaction = async () => {
@@ -100,8 +109,7 @@ export default function CreateTransactionPage() {
         body: JSON.stringify(payload)
       })
       
-      toast({ 
-        title: t("payment.transactionCreated"), 
+      toast.success(t("payment.transactionCreated"), { 
         description: t("payment.transactionCreatedSuccessfully") 
       })
       setConfirmModalOpen(false)
@@ -109,10 +117,8 @@ export default function CreateTransactionPage() {
     } catch (err: any) {
       const errorMessage = extractErrorMessages(err)
       setSubmitError(errorMessage)
-      toast({ 
-        title: t("payment.failedToCreateTransaction"), 
-        description: errorMessage, 
-        variant: "destructive" 
+      toast.error(t("payment.failedToCreateTransaction"), { 
+        description: errorMessage 
       })
     } finally {
       setSubmitting(false)
@@ -340,6 +346,17 @@ export default function CreateTransactionPage() {
                     ))}
                   </div>
                 )}
+              </div>
+
+              {/* Test Toast Button */}
+              <div className="pt-4">
+                <Button
+                  onClick={handleTestToast}
+                  variant="outline"
+                  className="w-full rounded-2xl py-3"
+                >
+                  Test Toast Notification
+                </Button>
               </div>
 
               {/* Create Button */}
