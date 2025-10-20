@@ -77,6 +77,7 @@ export interface BettingTransaction {
   partner_refunded: boolean
   partner_balance_before: string
   partner_balance_after: string
+  notes?: string
   is_cancellable?: boolean
   can_request_cancellation?: boolean
 }

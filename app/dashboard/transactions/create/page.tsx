@@ -349,7 +349,7 @@ export default function CreateTransactionPage() {
               </div>
 
               {/* Test Toast Button */}
-              <div className="pt-4">
+              {/* <div className="pt-4">
                 <Button
                   onClick={handleTestToast}
                   variant="outline"
@@ -357,7 +357,7 @@ export default function CreateTransactionPage() {
                 >
                   Test Toast Notification
                 </Button>
-              </div>
+              </div> */}
 
               {/* Create Button */}
               <div className="pt-6">

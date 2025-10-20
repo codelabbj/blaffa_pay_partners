@@ -155,6 +155,19 @@ function BettingDepositContent() {
         amount: formData.amount
       })
 
+      // Check if the transaction was successful but failed
+      if (result.success && result.transaction && result.transaction.status === "failed") {
+        // Extract error message from external_response or notes
+        const errorMessage = result.transaction.external_response?.error || 
+                           result.transaction.notes || 
+                           "La transaction a échoué"
+        
+        toast.error(errorMessage)
+        
+        // Don't reset form or redirect on failure
+        return
+      }
+
       toast.success(result.message || "Dépôt effectué avec succès")
 
       // Reset form
