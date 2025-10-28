@@ -118,11 +118,12 @@ function BettingWithdrawalContent() {
 
     try {
       const result = await verifyUserId(platformUid, formData.betting_user_id)
-      setVerificationResult(result)
       
-      if (result.UserId === 0) {
+      if (result.UserId === 0 || result.CurrencyId !== 27) {
         setVerificationError("ID utilisateur invalide")
+        setVerificationResult(null)
       } else {
+        setVerificationResult(result)
         toast.success(`Utilisateur: ${result.Name}`)
       }
     } catch (err: any) {
