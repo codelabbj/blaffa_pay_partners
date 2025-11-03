@@ -63,8 +63,10 @@ export default function BettingCommissionsPage() {
     fetchData()
   }, [dateFrom, dateTo])
 
-  const formatAmount = (amount: string | number) => {
-    return parseFloat(amount.toString()).toLocaleString()
+  const formatAmount = (amount: string | number | null | undefined) => {
+    if (amount == null) return "0"
+    const num = parseFloat(amount.toString())
+    return isNaN(num) ? "0" : num.toLocaleString()
   }
 
   const formatDate = (dateString: string) => {
