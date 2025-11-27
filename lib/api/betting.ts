@@ -97,8 +97,8 @@ export const useBettingTransactions = () => {
     return await apiFetch(endpoint)
   }
 
-  const verifyUserId = async (platformUid: string, bettingUserId: string): Promise<UserVerificationResponse> => {
-    const endpoint = `${baseUrl.replace(/\/$/, "")}/api/payments/betting/user/transactions/verify_user_id/`
+  const verifyUserId = async (platformUid: string, bettingUserId: string | number): Promise<UserVerificationResponse> => {
+    const endpoint = `${baseUrl.replace(/\/$/, "")}/api/payments/betting/user/transactions/mobcash/verify-player/`
     return await apiFetch(endpoint, {
       method: "POST",
       headers: {
@@ -106,30 +106,38 @@ export const useBettingTransactions = () => {
       },
       body: JSON.stringify({
         platform_uid: platformUid,
-        betting_user_id: bettingUserId
+        betting_user_id: typeof bettingUserId === "number" ? bettingUserId : Number(bettingUserId)
       })
     })
   }
 
   const createDeposit = async (data: DepositFormData): Promise<TransactionCreateResponse> => {
-    const endpoint = `${baseUrl.replace(/\/$/, "")}/api/payments/betting/user/transactions/create_deposit/`
+    const endpoint = `${baseUrl.replace(/\/$/, "")}/api/payments/betting/user/transactions/mobcash/deposit/`
     return await apiFetch(endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(data)
+      body: JSON.stringify({
+        platform_uid: data.platform_uid,
+        betting_user_id: Number(data.betting_user_id),
+        amount: Number(data.amount)
+      })
     })
   }
 
   const createWithdrawal = async (data: WithdrawalFormData): Promise<TransactionCreateResponse> => {
-    const endpoint = `${baseUrl.replace(/\/$/, "")}/api/payments/betting/user/transactions/create_withdrawal/`
+    const endpoint = `${baseUrl.replace(/\/$/, "")}/api/payments/betting/user/transactions/mobcash/withdrawal/`
     return await apiFetch(endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(data)
+      body: JSON.stringify({
+        platform_uid: data.platform_uid,
+        betting_user_id: Number(data.betting_user_id),
+        withdrawal_code: data.withdrawal_code
+      })
     })
   }
 

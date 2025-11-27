@@ -118,13 +118,18 @@ function BettingDepositContent() {
 
     try {
       const result = await verifyUserId(platformUid, formData.betting_user_id)
-      
-      if (result.UserId === 0 || result.CurrencyId !== 27) {
+
+      if (
+        !result.success ||
+        !result.user ||
+        result.user.user_id === 0 ||
+        result.user.currency_id !== 27
+      ) {
         setVerificationError("ID utilisateur invalide")
         setVerificationResult(null)
       } else {
         setVerificationResult(result)
-        toast.success(`Utilisateur: ${result.Name}`)
+        toast.success(`Utilisateur: ${result.user.name}`)
       }
     } catch (err: any) {
       const errorMessage = extractErrorMessages(err)
@@ -143,7 +148,7 @@ function BettingDepositContent() {
       return
     }
 
-    if (!verificationResult || verificationResult.UserId === 0) {
+    if (!verificationResult?.user || verificationResult.user.user_id === 0) {
       toast.error("Veuillez vérifier l'ID utilisateur")
       return
     }
@@ -196,8 +201,8 @@ function BettingDepositContent() {
     return formData.betting_user_id.trim() && 
            formData.amount.trim() && 
            parseFloat(formData.amount) > 0 &&
-           verificationResult && 
-           verificationResult.UserId > 0
+           verificationResult?.user && 
+           verificationResult.user.user_id > 0
   }
 
   const isAmountValid = () => {
@@ -431,12 +436,12 @@ function BettingDepositContent() {
                     </div>
                     
                     {/* Verification Result */}
-                    {verificationResult && verificationResult.UserId > 0 && (
+                    {verificationResult?.user && verificationResult.user.user_id > 0 && (
                       <div className="mt-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
                         <div className="flex items-center gap-2">
                           <Check className="h-4 w-4 text-green-600" />
                           <span className="text-sm text-green-800 dark:text-green-200">
-                            Utilisateur vérifié: {verificationResult.Name}
+                            Utilisateur vérifié: {verificationResult.user.name}
                           </span>
                         </div>
                       </div>
@@ -538,7 +543,7 @@ function BettingDepositContent() {
                   </div>
                 </div>
 
-                {verificationResult && verificationResult.UserId > 0 && (
+                {verificationResult?.user && verificationResult.user.user_id > 0 && (
                   <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                     <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
                       <div className="flex items-center gap-2 mb-2">
@@ -546,9 +551,9 @@ function BettingDepositContent() {
                         <span className="text-sm font-medium text-green-800 dark:text-green-200">Utilisateur Vérifié</span>
                       </div>
                       <div className="text-xs text-green-700 dark:text-green-300 space-y-1">
-                        <p><strong>Nom:</strong> {verificationResult.Name}</p>
-                        <p><strong>ID:</strong> {verificationResult.UserId}</p>
-                        <p><strong>Devise:</strong> {verificationResult.CurrencyId}</p>
+                        <p><strong>Nom:</strong> {verificationResult.user.name}</p>
+                        <p><strong>ID:</strong> {verificationResult.user.user_id}</p>
+                        <p><strong>Devise:</strong> {verificationResult.user.currency_id}</p>
                       </div>
                     </div>
                   </div>

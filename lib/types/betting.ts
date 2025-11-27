@@ -168,9 +168,12 @@ export interface WithdrawalFormData {
 }
 
 export interface UserVerificationResponse {
-  UserId: number
-  Name: string
-  CurrencyId: number
+  success: boolean
+  user: {
+    user_id: number
+    name: string
+    currency_id: number
+  } | null
 }
 
 export interface TransactionCreateResponse {
