@@ -335,6 +335,18 @@ export default function BulkPaymentPage() {
     const renderListView = () => {
         return (
             <div className="space-y-8 animate-in fade-in duration-500">
+                {!isLoadingNetworks && networks.length === 0 && (
+                    <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-4 flex items-start gap-3 animate-in slide-in-from-top-2 duration-300">
+                        <AlertCircle className="h-5 w-5 text-destructive mt-0.5" />
+                        <div>
+                            <h4 className="font-bold text-destructive text-sm leading-none mb-1">{t("bulkPayment.correctionRequired") || "Attention"}</h4>
+                            <p className="text-xs text-destructive/80 font-medium">
+                                {t("bulkPayment.notAuthorized")}
+                            </p>
+                        </div>
+                    </div>
+                )}
+
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b pb-6 gap-4">
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight text-foreground">{t("bulkPayment.title")}</h1>
@@ -349,6 +361,7 @@ export default function BulkPaymentPage() {
                             <Download className="mr-2 h-4 w-4" /> {t("bulkPayment.downloadSample")}
                         </Button>
                         <Button
+                            disabled={!isLoadingNetworks && networks.length === 0}
                             onClick={() => {
                                 setRows([])
                                 addNewRow(5)
