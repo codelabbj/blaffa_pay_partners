@@ -19,6 +19,7 @@ const pageNames: Record<string, string> = {
   "/dashboard/transactions": "transactions.title",
   "/dashboard/account-transaction": "nav.accountTransaction",
   "/dashboard/topup": "nav.topup",
+  "/dashboard/bulk-payment": "nav.bulkPayment",
 }
 
 interface UserProfile {
@@ -102,7 +103,7 @@ export function Header() {
               Live
             </Badge> */}
           </div>
-          
+
           {/* Right Section - Actions */}
           <div className="flex items-center space-x-0.5 sm:space-x-1 md:space-x-2 lg:space-x-4">
             {/* Mobile Search Button */}
