@@ -82,7 +82,7 @@ interface PaymentRow {
 
 const ITEMS_PER_PAGE = 10
 
-type ViewState = 'list' | 'create' | 'details'
+type ViewState = 'list' | 'create' | 'details' | 'summary' | 'transactions'
 
 export default function BulkPaymentPage() {
     const { t } = useLanguage()
@@ -182,14 +182,29 @@ export default function BulkPaymentPage() {
         fetchBatches(defaults)
     }
 
-    const fetchBatchDetails = async (batch: any) => {
+    const fetchBatchSummary = async (batch: any) => {
         setSelectedBatch(batch)
         setIsLoadingBatchDetails(true)
-        setActiveView('details')
+        setActiveView('summary')
         try {
             const endpoint = `${baseUrl.replace(/\/$/, "")}/api/payments/user/transactions/bulk-deposit/${batch.uid}/`
             const data = await apiFetch(endpoint)
-            const details = data.transactions || data.results || (Array.isArray(data) ? data : [])
+            setSelectedBatch(data)
+        } catch (err) {
+            toast.error(t("common.failedToLoad"))
+        } finally {
+            setIsLoadingBatchDetails(false)
+        }
+    }
+
+    const fetchBatchTransactionsList = async (batch: any) => {
+        setSelectedBatch(batch)
+        setIsLoadingBatchDetails(true)
+        setActiveView('transactions')
+        try {
+            const endpoint = `${baseUrl.replace(/\/$/, "")}/api/payments/user/transactions/bulk-deposit/${batch.uid}/transactions/`
+            const data = await apiFetch(endpoint)
+            const details = data.results || (Array.isArray(data) ? data : [])
             setBatchDetails(details)
         } catch (err) {
             toast.error(t("common.failedToLoad"))
@@ -451,9 +466,9 @@ export default function BulkPaymentPage() {
                             <TableHeader className="bg-muted/30">
                                 <TableRow className="hover:bg-transparent">
                                     <TableHead className="px-6 py-4 h-12 font-semibold text-[11px] uppercase tracking-wider text-muted-foreground">{t("bulkPayment.date")}</TableHead>
-                                    <TableHead className="px-6 py-4 h-12 font-semibold text-[11px] uppercase tracking-wider text-muted-foreground">{t("bulkPayment.recipient")}</TableHead>
+                                    <TableHead className="px-6 py-4 h-12 font-semibold text-[11px] uppercase tracking-wider text-muted-foreground">{t("bulkPayment.totalCount")}</TableHead>
                                     <TableHead className="px-6 py-4 h-12 font-semibold text-[11px] uppercase tracking-wider text-muted-foreground">{t("bulkPayment.amount")}</TableHead>
-                                    <TableHead className="px-6 py-4 h-12 font-semibold text-[11px] uppercase tracking-wider text-muted-foreground">{t("bulkPayment.network")}</TableHead>
+                                    <TableHead className="px-6 py-4 h-12 font-semibold text-[11px] uppercase tracking-wider text-muted-foreground">{t("bulkPayment.progress")}</TableHead>
                                     <TableHead className="px-6 py-4 h-12 font-semibold text-[11px] uppercase tracking-wider text-muted-foreground text-center">{t("bulkPayment.status")}</TableHead>
                                     <TableHead className="px-6 py-4 h-12 font-semibold text-[11px] uppercase tracking-wider text-muted-foreground text-right">{t("bulkPayment.actions")}</TableHead>
                                 </TableRow>
@@ -482,27 +497,33 @@ export default function BulkPaymentPage() {
                                     <TableRow key={tx.uid} className="hover:bg-muted/20 border-b border-border last:border-0 group transition-all">
                                         <TableCell className="px-6 py-4">
                                             <div className="flex flex-col">
-                                                <span className="font-semibold text-foreground">{new Date(tx.created_at).toLocaleDateString()}</span>
-                                                <span className="text-[10px] text-muted-foreground font-mono uppercase tracking-tighter">{tx.reference || tx.uid.slice(0, 8)}</span>
+                                                <span className="font-semibold text-foreground">{new Date(tx.created_at).toLocaleString()}</span>
+                                                <span className="text-[10px] text-muted-foreground font-mono uppercase tracking-tighter">{tx.uid.slice(0, 8)}</span>
                                             </div>
                                         </TableCell>
                                         <TableCell className="px-6 py-4">
                                             <div className="flex flex-col">
-                                                <span className="font-medium text-foreground">{tx.recipient_phone}</span>
-                                                {tx.recipient_name && <span className="text-[10px] text-muted-foreground">{tx.recipient_name}</span>}
+                                                <span className="font-bold text-sm text-foreground">{tx.total_count} {t("bulkPayment.transactions")}</span>
+                                                <div className="flex gap-2 mt-1">
+                                                    <span className="text-[10px] font-medium text-emerald-600">{tx.succeeded_count} {t("bulkPayment.success")}</span>
+                                                    <span className="text-[10px] font-medium text-rose-600">{tx.failed_count} {t("bulkPayment.failed")}</span>
+                                                </div>
                                             </div>
                                         </TableCell>
                                         <TableCell className="px-6 py-4">
-                                            <span className="font-bold text-base">{tx.formatted_amount || `${parseFloat(tx.amount).toLocaleString()} FCFA`}</span>
+                                            <span className="font-bold text-base text-primary">{parseFloat(tx.total_amount).toLocaleString()} FCFA</span>
                                         </TableCell>
                                         <TableCell className="px-6 py-4">
-                                            <div className="flex items-center gap-2">
-                                                {tx.network?.image ? (
-                                                    <img src={tx.network.image} className="w-5 h-5 rounded-sm" alt="" />
-                                                ) : (
-                                                    <div className="w-5 h-5 bg-muted rounded-sm" />
-                                                )}
-                                                <span className="text-sm font-medium">{tx.network?.nom || tx.network_name || t("common.unknown")}</span>
+                                            <div className="w-24 space-y-1">
+                                                <div className="flex justify-between text-[9px] font-bold text-muted-foreground uppercase">
+                                                    <span>{tx.progress_percent || 0}%</span>
+                                                </div>
+                                                <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                                                    <div
+                                                        className="h-full bg-primary transition-all duration-500"
+                                                        style={{ width: `${tx.progress_percent || 0}%` }}
+                                                    />
+                                                </div>
                                             </div>
                                         </TableCell>
                                         <TableCell className="px-6 py-4 text-center">
@@ -516,12 +537,11 @@ export default function BulkPaymentPage() {
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end" className="w-48">
-                                                    <DropdownMenuItem onClick={() => {
-                                                        setSelectedBatch(tx)
-                                                        setBatchDetails([tx])
-                                                        setActiveView('details')
-                                                    }} className="text-xs font-medium cursor-pointer">
-                                                        <Eye className="mr-2 h-4 w-4" /> {t("common.viewDetails") || "View Details"}
+                                                    <DropdownMenuItem onClick={() => fetchBatchSummary(tx)} className="text-xs font-medium cursor-pointer">
+                                                        <Info className="mr-2 h-4 w-4" /> {t("bulkPayment.details") || "Détails"}
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => fetchBatchTransactionsList(tx)} className="text-xs font-medium cursor-pointer">
+                                                        <FileText className="mr-2 h-4 w-4" /> {t("bulkPayment.transactions") || "Transactions"}
                                                     </DropdownMenuItem>
                                                     {tx.can_retry && (
                                                         <DropdownMenuItem className="text-xs font-medium cursor-pointer text-blue-600">
@@ -760,13 +780,10 @@ export default function BulkPaymentPage() {
         )
     }
 
-    const renderDetailsView = () => {
-        if (!selectedBatch) return null
 
-        const failedCount = selectedBatch.failed_count || 0
-        const successRate = selectedBatch.transaction_count > 0
-            ? ((selectedBatch.transaction_count - failedCount) / selectedBatch.transaction_count * 100).toFixed(1)
-            : "0"
+
+    const renderSummaryView = () => {
+        if (!selectedBatch) return null
 
         return (
             <div className="space-y-8 animate-in fade-in duration-500">
@@ -776,7 +793,124 @@ export default function BulkPaymentPage() {
                             <ArrowLeft className="h-4 w-4 mr-2" /> {t("bulkPayment.back")}
                         </Button>
                         <div className="flex items-center gap-2">
-                            <h2 className="text-xl font-bold tracking-tight">{t("bulkPayment.ledgerTitle")}</h2>
+                            <h2 className="text-xl font-bold tracking-tight">{t("bulkPayment.details")}</h2>
+                            <Badge variant="outline" className="font-mono text-[10px] text-muted-foreground uppercase">{selectedBatch.uid.slice(0, 12)}</Badge>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <Card className="border-border shadow-none">
+                        <CardContent className="p-4">
+                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">{t("bulkPayment.totalCount")}</p>
+                            <p className="text-2xl font-bold">{selectedBatch.total_count}</p>
+                        </CardContent>
+                    </Card>
+                    <Card className="border-border shadow-none border-l-4 border-l-emerald-500">
+                        <CardContent className="p-4">
+                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">{t("bulkPayment.succeededCount")}</p>
+                            <p className="text-2xl font-bold text-emerald-600">{selectedBatch.succeeded_count}</p>
+                        </CardContent>
+                    </Card>
+                    <Card className="border-border shadow-none border-l-4 border-l-rose-500">
+                        <CardContent className="p-4">
+                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">{t("bulkPayment.failedCount")}</p>
+                            <p className="text-2xl font-bold text-rose-600">{selectedBatch.failed_count}</p>
+                        </CardContent>
+                    </Card>
+                    <Card className="border-border shadow-none">
+                        <CardContent className="p-4">
+                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">{t("bulkPayment.totalAmount")}</p>
+                            <p className="text-2xl font-bold text-primary">{parseFloat(selectedBatch.total_amount).toLocaleString()} <span className="text-xs font-normal">FCFA</span></p>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <Card className="border-border shadow-none">
+                        <CardContent className="p-6">
+                            <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-4">{t("bulkPayment.details")}</h3>
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-muted-foreground">{t("bulkPayment.uid")}</span>
+                                    <span className="font-mono font-medium">{selectedBatch.uid}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-muted-foreground">{t("bulkPayment.batchDate")}</span>
+                                    <span className="font-medium">{new Date(selectedBatch.created_at).toLocaleString()}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-muted-foreground">{t("bulkPayment.status")}</span>
+                                    <StatusBadge status={selectedBatch.status} />
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-border shadow-none">
+                        <CardContent className="p-6">
+                            <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-4">{t("bulkPayment.progress")}</h3>
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-sm text-muted-foreground">{t("bulkPayment.progress")}</span>
+                                    <span className="text-sm font-bold">{selectedBatch.progress_percent}%</span>
+                                </div>
+                                <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                                    <div className="h-full bg-primary" style={{ width: `${selectedBatch.progress_percent}%` }} />
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-sm text-muted-foreground">{t("bulkPayment.volume")}</span>
+                                    <span className="text-sm font-medium">{selectedBatch.processed_count} / {selectedBatch.total_count}</span>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-border shadow-none bg-rose-50/5">
+                        <CardContent className="p-6">
+                            <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-4 font-bold text-rose-600">{t("bulkPayment.performance")}</h3>
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-muted-foreground">{t("bulkPayment.startedAt")}</span>
+                                    <span className="font-medium">{selectedBatch.started_at ? new Date(selectedBatch.started_at).toLocaleTimeString() : "-"}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-muted-foreground">{t("bulkPayment.completedAt")}</span>
+                                    <span className="font-medium">{selectedBatch.completed_at ? new Date(selectedBatch.completed_at).toLocaleTimeString() : "-"}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-muted-foreground">{t("bulkPayment.isFinished")}</span>
+                                    <span className="font-medium">{selectedBatch.is_finished ? t("common.yes") : t("common.no")}</span>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                <div className="flex justify-center pt-4">
+                    <Button
+                        onClick={() => fetchBatchTransactionsList(selectedBatch)}
+                        className="rounded-xl h-12 px-8 font-bold gap-2"
+                    >
+                        <List className="h-5 w-5" /> {t("bulkPayment.viewTransactions")}
+                    </Button>
+                </div>
+            </div>
+        )
+    }
+
+    const renderTransactionsView = () => {
+        if (!selectedBatch) return null
+
+        return (
+            <div className="space-y-8 animate-in fade-in duration-500">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                        <Button variant="ghost" size="sm" onClick={() => setActiveView('summary')} className="rounded-md h-9 px-3 hover:bg-muted w-fit">
+                            <ArrowLeft className="h-4 w-4 mr-2" /> {t("bulkPayment.back")}
+                        </Button>
+                        <div className="flex items-center gap-2">
+                            <h2 className="text-xl font-bold tracking-tight">{t("bulkPayment.transactions")}</h2>
                             <Badge variant="outline" className="font-mono text-[10px] text-muted-foreground uppercase">{selectedBatch.uid.slice(0, 12)}</Badge>
                         </div>
                     </div>
@@ -785,81 +919,33 @@ export default function BulkPaymentPage() {
                     </Button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <Card className="border-border shadow-none">
-                        <CardContent className="p-6">
-                            <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-4">{t("bulkPayment.details") || "Transaction Details"}</h3>
-                            <div className="space-y-4">
-                                <div className="flex justify-between items-center">
-                                    <span className="text-sm text-muted-foreground">{t("bulkPayment.reference")}</span>
-                                    <span className="text-sm font-mono font-medium">{selectedBatch.reference}</span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-sm text-muted-foreground">{t("bulkPayment.processedBy") || "Processed By"}</span>
-                                    <span className="text-sm font-medium">{selectedBatch.processed_by_name || "-"}</span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-sm text-muted-foreground">{t("bulkPayment.completedAt") || "Completed At"}</span>
-                                    <span className="text-sm font-medium">{selectedBatch.completed_at ? new Date(selectedBatch.completed_at).toLocaleString() : "-"}</span>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="border-border shadow-none">
-                        <CardContent className="p-6">
-                            <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-4">{t("bulkPayment.performance") || "Performance"}</h3>
-                            <div className="space-y-4">
-                                <div className="flex justify-between items-center">
-                                    <span className="text-sm text-muted-foreground">{t("bulkPayment.retries") || "Retries"}</span>
-                                    <span className="text-sm font-medium">{selectedBatch.retry_count} / {selectedBatch.max_retries}</span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-sm text-muted-foreground">{t("bulkPayment.priority") || "Priority"}</span>
-                                    <span className="text-sm font-medium">{selectedBatch.priority}</span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-sm text-muted-foreground">{t("bulkPayment.duration") || "Duration"}</span>
-                                    <span className="text-sm font-medium">{selectedBatch.processing_duration || "-"}</span>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="border-border shadow-none bg-rose-50/10">
-                        <CardContent className="p-6">
-                            <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-4 font-bold">{t("bulkPayment.errorDetails") || "Error Info"}</h3>
-                            <div className="space-y-2">
-                                <p className="text-sm text-muted-foreground">{t("bulkPayment.errorMessage") || "Message"}</p>
-                                <p className="text-xs font-medium text-destructive bg-destructive/5 p-2 rounded border border-destructive/10 min-h-[50px] flex items-center">
-                                    {selectedBatch.error_message || t("bulkPayment.noError") || "No error details available"}
-                                </p>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-
                 <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
                     <div className="overflow-x-auto">
-                        <Table className="min-w-[900px]">
+                        <Table className="min-w-[1000px]">
                             <TableHeader className="bg-muted/30">
                                 <TableRow className="hover:bg-transparent">
                                     <TableHead className="px-6 py-4 h-12 font-semibold text-[11px] uppercase tracking-wider text-muted-foreground">{t("bulkPayment.recipient")}</TableHead>
                                     <TableHead className="px-6 py-4 h-12 font-semibold text-[11px] uppercase tracking-wider text-muted-foreground">{t("bulkPayment.amount")}</TableHead>
                                     <TableHead className="px-6 py-4 h-12 font-semibold text-[11px] uppercase tracking-wider text-muted-foreground">{t("bulkPayment.network")}</TableHead>
                                     <TableHead className="px-6 py-4 h-12 font-semibold text-[11px] uppercase tracking-wider text-muted-foreground">{t("bulkPayment.reference")}</TableHead>
+                                    <TableHead className="px-6 py-4 h-12 font-semibold text-[11px] uppercase tracking-wider text-muted-foreground">{t("bulkPayment.description")}</TableHead>
                                     <TableHead className="px-6 py-4 h-12 font-semibold text-[11px] uppercase tracking-wider text-muted-foreground text-center">{t("bulkPayment.status")}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {isLoadingBatchDetails ? (
-                                    <TableRow><TableCell colSpan={5} className="h-64 text-center"><RefreshCw className="h-6 w-6 animate-spin mx-auto text-muted-foreground/30" /></TableCell></TableRow>
+                                    <TableRow><TableCell colSpan={6} className="h-64 text-center"><RefreshCw className="h-6 w-6 animate-spin mx-auto text-muted-foreground/30" /></TableCell></TableRow>
                                 ) : batchDetails.length === 0 ? (
-                                    <TableRow><TableCell colSpan={5} className="h-64 text-center text-muted-foreground">{t("bulkPayment.emptyLedger")}</TableCell></TableRow>
+                                    <TableRow><TableCell colSpan={6} className="h-64 text-center text-muted-foreground">{t("bulkPayment.emptyLedger")}</TableCell></TableRow>
                                 ) : batchDetails.map((tx: any) => (
                                     <TableRow key={tx.uid} className="hover:bg-muted/10 border-b border-border last:border-0 transition-colors">
-                                        <TableCell className="px-6 py-4 font-medium">{tx.recipient_phone}</TableCell>
-                                        <TableCell className="px-6 py-4 font-bold text-base">{parseFloat(tx.amount).toLocaleString()} FCFA</TableCell>
+                                        <TableCell className="px-6 py-4 font-medium">
+                                            <div className="flex flex-col">
+                                                <span className="font-bold">{tx.recipient_phone}</span>
+                                                {tx.recipient_name && <span className="text-[10px] text-muted-foreground">{tx.recipient_name}</span>}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="px-6 py-4 font-bold text-base text-primary">{tx.formatted_amount || `${parseFloat(tx.amount).toLocaleString()} FCFA`}</TableCell>
                                         <TableCell className="px-6 py-4">
                                             <div className="flex items-center gap-2">
                                                 {tx.network?.image || tx.network?.logo ? (
@@ -871,13 +957,16 @@ export default function BulkPaymentPage() {
                                                 ) : (
                                                     <div className="w-5 h-5 bg-muted rounded-sm" />
                                                 )}
-                                                <span className="text-sm font-medium">{tx.network?.nom || tx.network_name || tx.network}</span>
+                                                <span className="text-sm font-medium">{tx.network?.nom || tx.network_name || tx.network?.code || t("common.unknown")}</span>
                                             </div>
                                         </TableCell>
                                         <TableCell className="px-6 py-4">
-                                            <span className="font-mono text-[10px] px-1.5 py-0.5 bg-muted rounded border font-medium text-muted-foreground">
-                                                {tx.reference || tx.uid.slice(0, 10)}
+                                            <span className="font-mono text-[9px] px-1.5 py-0.5 bg-muted rounded border font-medium text-muted-foreground block truncate max-w-[150px]">
+                                                {tx.reference}
                                             </span>
+                                        </TableCell>
+                                        <TableCell className="px-6 py-4 text-xs italic text-muted-foreground truncate max-w-[150px]">
+                                            {tx.objet || "-"}
                                         </TableCell>
                                         <TableCell className="px-6 py-4 text-center">
                                             <StatusBadge status={tx.status} />
@@ -890,12 +979,8 @@ export default function BulkPaymentPage() {
 
                     <div className="p-4 border-t border-border flex items-center justify-between bg-muted/5">
                         <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                            {t("bulkPayment.showing")} 1-{batchDetails.length} {t("bulkPayment.of")} {selectedBatch.transaction_count} {t("bulkPayment.records")}
+                            {t("bulkPayment.showing")} 1-{batchDetails.length} {t("bulkPayment.of")} {selectedBatch.total_count} {t("bulkPayment.records")}
                         </p>
-                        <div className="flex gap-1">
-                            <Button variant="outline" size="icon" className="h-8 w-8 rounded-md border-border"><ChevronLeft className="h-4 w-4" /></Button>
-                            <Button variant="outline" size="icon" className="h-8 w-8 rounded-md border-border"><ChevronRight className="h-4 w-4" /></Button>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -906,7 +991,10 @@ export default function BulkPaymentPage() {
         <div className="max-w-7xl mx-auto py-10 px-4 md:px-0">
             {activeView === 'list' && renderListView()}
             {activeView === 'create' && renderCreateView()}
-            {activeView === 'details' && renderDetailsView()}
+            {activeView === 'summary' && renderSummaryView()}
+            {activeView === 'transactions' && renderTransactionsView()}
+            {/* Backward compatibility for any direct 'details' sets */}
+            {activeView === 'details' && renderSummaryView()}
 
             <Dialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
                 <DialogContent className="sm:max-w-md rounded-2xl border-border">
