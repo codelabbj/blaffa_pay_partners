@@ -117,7 +117,7 @@ export function SignInForm() {
             {t("auth.subtitle")}
           </p>
         </div>
-        
+
         <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl border border-white/20 dark:border-gray-700/50 shadow-xl p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
@@ -173,9 +173,9 @@ export function SignInForm() {
                   {t("auth.rememberMe")}
                 </Label>
               </div>
-              {/* <Button variant="link" className="px-0 text-sm" disabled={loading}>
+              <Button type="button" variant="link" className="px-0 text-sm" disabled={loading} onClick={() => router.push('/forgot-password')}>
                 {t("auth.forgotPassword")}
-              </Button> */}
+              </Button>
             </div>
             {error && (
               <ErrorDisplay
@@ -185,9 +185,9 @@ export function SignInForm() {
                 className="mt-2"
               />
             )}
-            <Button 
-              type="submit" 
-              className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-2xl h-12 text-lg font-semibold shadow-lg shadow-orange-500/25" 
+            <Button
+              type="submit"
+              className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-2xl h-12 text-lg font-semibold shadow-lg shadow-orange-500/25"
               disabled={loading}
             >
               {loading ? (
@@ -199,9 +199,9 @@ export function SignInForm() {
                 t("auth.signIn")
               )}
             </Button>
-                      </form>
-          </div>
+          </form>
         </div>
       </div>
+    </div>
   )
 }

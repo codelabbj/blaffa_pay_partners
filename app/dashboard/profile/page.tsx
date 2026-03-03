@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { Loader2, Edit, Save, X, User, Shield, Mail, Phone, Calendar, CheckCircle, AlertCircle } from 'lucide-react';
-
+import { UpdatePasswordForm } from '@/components/auth/update-password-form';
 interface UserProfile {
   uid: string;
   email: string;
@@ -203,7 +203,7 @@ export default function ProfilePage() {
               </div>
             </div>
             {!editing ? (
-              <Button 
+              <Button
                 onClick={() => setEditing(true)}
                 className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl md:rounded-2xl w-full lg:w-auto"
               >
@@ -212,15 +212,15 @@ export default function ProfilePage() {
               </Button>
             ) : (
               <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={handleCancel}
                   className="rounded-xl md:rounded-2xl border-2 w-full sm:w-auto"
                 >
                   <X className="h-4 w-4 mr-2" />
                   Annuler
                 </Button>
-                <Button 
+                <Button
                   onClick={handleSubmit}
                   disabled={loading}
                   className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-xl md:rounded-2xl w-full sm:w-auto"
@@ -393,6 +393,24 @@ export default function ProfilePage() {
               </div>
             </div>
           </form>
+        </div>
+      </div>
+
+      {/* Security Section */}
+      <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl md:rounded-3xl border border-white/20 dark:border-gray-700/50 shadow-xl overflow-hidden">
+        <div className="p-4 md:p-8 border-b border-gray-200/50 dark:border-gray-700/50">
+          <div className="flex items-center gap-2 md:gap-3">
+            <div className="p-2 md:p-3 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl md:rounded-2xl">
+              <Shield className="h-5 w-5 md:h-6 md:w-6 text-white" />
+            </div>
+            <div>
+              <h2 className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white">Sécurité du Compte</h2>
+              <p className="text-sm md:text-base text-gray-500 dark:text-gray-400">Gérez votre mot de passe et vos paramètres de sécurité</p>
+            </div>
+          </div>
+        </div>
+        <div className="p-4 md:p-8">
+          <UpdatePasswordForm />
         </div>
       </div>
     </div>
