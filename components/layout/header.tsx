@@ -8,7 +8,7 @@ import { useLanguage } from "@/components/providers/language-provider"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
-import { Bell, Search, Settings, Menu, X } from "lucide-react"
+import { Bell, Search, Settings, Menu, X, Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { useApi } from "@/lib/useApi"
@@ -142,6 +142,23 @@ export function Header() {
               <ThemeToggle />
             </div>
 
+            {/* Download App Button */}
+            <a 
+              href="/blaffapaypartner-v1.1.1 (2).apk" 
+              download 
+              className="hidden sm:block"
+              title={t("nav.downloadApp")}
+            >
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="rounded-xl border-orange-500/20 hover:border-orange-500/50 hover:bg-orange-50 dark:hover:bg-orange-950/20 text-orange-600 dark:text-orange-400 h-9 md:h-10 px-3 md:px-4"
+              >
+                <Download className="h-4 w-4 md:mr-2" />
+                <span className="hidden md:inline">{t("nav.downloadApp")}</span>
+              </Button>
+            </a>
+
             {/* Language Switcher */}
             <div className="bg-gray-100 dark:bg-gray-800 rounded-lg md:rounded-xl p-0.5 md:p-1">
               <LanguageSwitcher />
@@ -245,6 +262,12 @@ export function Header() {
                     <Button variant="ghost" className="w-full justify-start rounded-xl h-12">
                       <Settings className="h-5 w-5 mr-3" />
                       Paramètres
+                    </Button>
+                    <Button variant="ghost" className="w-full justify-start rounded-xl h-12" asChild>
+                      <a href="/blaffapaypartner-v1.1.1 (2).apk" download>
+                        <Download className="h-5 w-5 mr-3" />
+                        {t("nav.downloadApp")}
+                      </a>
                     </Button>
                     <Button variant="ghost" className="w-full justify-start rounded-xl h-12">
                       <Avatar className="h-5 w-5 mr-3" />

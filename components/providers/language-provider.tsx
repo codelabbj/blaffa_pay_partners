@@ -56,7 +56,8 @@ const translations = {
     "nav.partner": "Partners",
     "nav.accountTransaction": "Account Balance History",
     "nav.topup": "Top Up",
-    "nav.bulkPayment": "Paiement de masse",
+    "nav.bulkPayment": "Bulk Payment",
+    "nav.downloadApp": "Download App",
 
     // Dashboard
     "dashboard": "Dashboard",
@@ -873,6 +874,7 @@ const translations = {
     "nav.accountTransaction": "Historique du solde du compte",
     "nav.topup": "Recharger",
     "nav.bulkPayment": "Paiement de masse",
+    "nav.downloadApp": "Télécharger l'App",
 
     // API Keys
     "apiKeys.title": "Clés API",
