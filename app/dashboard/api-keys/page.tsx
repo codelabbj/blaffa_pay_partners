@@ -38,6 +38,7 @@ export default function ApiKeysPage() {
     const [data, setData] = useState<ApiKeyResponse | null>(null)
     const [error, setError] = useState<string | null>(null)
     const [isNew, setIsNew] = useState(false)
+    const [showKey, setShowKey] = useState(false)
     const [showSecret, setShowSecret] = useState(false)
     const [copiedKey, setCopiedKey] = useState(false)
     const [copiedSecret, setCopiedSecret] = useState(false)
@@ -46,6 +47,7 @@ export default function ApiKeysPage() {
         setLoading(true)
         setError(null)
         setIsNew(false)
+        setShowKey(false)
         setShowSecret(false)
 
         try {
@@ -220,9 +222,18 @@ export default function ApiKeysPage() {
                             <div className="flex gap-2">
                                 <Input
                                     readOnly
+                                    type={showKey ? "text" : "password"}
                                     value={data.api_key}
                                     className="flex-1 rounded-xl border-2 font-mono text-sm bg-gray-50 dark:bg-gray-800/50 focus:border-orange-500 focus:ring-orange-500/20"
                                 />
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => setShowKey((v) => !v)}
+                                    className="rounded-xl border-2 h-10 w-10 flex-shrink-0 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-600 transition-colors"
+                                >
+                                    {showKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                </Button>
                                 <Button
                                     variant="outline"
                                     size="icon"
@@ -240,7 +251,7 @@ export default function ApiKeysPage() {
                             <div className="flex gap-2">
                                 <Input
                                     readOnly
-                                    type={isNew || showSecret ? "text" : "password"}
+                                    type={showSecret ? "text" : "password"}
                                     value={data.api_secret}
                                     className="flex-1 rounded-xl border-2 font-mono text-sm bg-gray-50 dark:bg-gray-800/50 focus:border-orange-500 focus:ring-orange-500/20"
                                 />
@@ -250,7 +261,7 @@ export default function ApiKeysPage() {
                                     onClick={() => setShowSecret((v) => !v)}
                                     className="rounded-xl border-2 h-10 w-10 flex-shrink-0 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-600 transition-colors"
                                 >
-                                    {showSecret || isNew ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                    {showSecret ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                                 </Button>
                                 <Button
                                     variant="outline"
