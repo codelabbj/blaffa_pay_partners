@@ -121,7 +121,7 @@ GET /api/auth/users/search/?search={query}
 | POST | `/api/payments/user/account/transactions/` | Create account transaction (alternative) |
 
 ### Permission Required
-- `can_process_ussd_transaction` - Must have this permission
+
 
 ### Network Response
 ```json

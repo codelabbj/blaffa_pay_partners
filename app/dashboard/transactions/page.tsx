@@ -46,6 +46,7 @@ const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || ""
 export default function UserTransactionsPage() {
   const { hasPermission, isLoading: permissionsLoading } = usePermissions()
 
+  /*
   // Check permissions
   if (!permissionsLoading && !hasPermission('can_process_ussd_transaction')) {
     return (
@@ -74,6 +75,7 @@ export default function UserTransactionsPage() {
       </div>
     )
   }
+  */
 
   // Account data state
   const [accountData, setAccountData] = useState<any>(null)

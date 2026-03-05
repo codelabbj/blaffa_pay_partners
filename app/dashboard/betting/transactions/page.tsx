@@ -301,22 +301,22 @@ function BettingTransactionsContent() {
               <Filter className="h-5 w-5 md:h-6 md:w-6 text-white" />
             </div>
             <div>
-              <h2 className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white">Filtres</h2>
-              <p className="text-sm md:text-base text-gray-500 dark:text-gray-400">Filtrez vos transactions</p>
+              <h2 className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white uppercase tracking-tight">{t("common.filter") || "Filtres"}</h2>
+              <p className="text-sm md:text-base text-gray-500 dark:text-gray-400">Manage your transaction view</p>
             </div>
           </div>
 
           <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div>
-                <Label htmlFor="status" className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
-                  Statut
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="status" className="text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  {t("transactions.status") || "Statut"}
                 </Label>
                 <Select value={statusFilter} onValueChange={(value) => {
                   setStatusFilter(value)
                   setCurrentPage(1)
                 }}>
-                  <SelectTrigger className="rounded-xl md:rounded-2xl border-2 h-10 md:h-12">
+                  <SelectTrigger className="rounded-xl md:rounded-2xl border-2 h-10 md:h-12 bg-white/50 dark:bg-gray-800/50">
                     <SelectValue placeholder="Tous les statuts" />
                   </SelectTrigger>
                   <SelectContent>
@@ -330,15 +330,15 @@ function BettingTransactionsContent() {
                 </Select>
               </div>
 
-              <div>
-                <Label htmlFor="type" className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
-                  Type
+              <div className="space-y-2">
+                <Label htmlFor="type" className="text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  {t("transactions.type") || "Type"}
                 </Label>
                 <Select value={typeFilter} onValueChange={(value) => {
                   setTypeFilter(value)
                   setCurrentPage(1)
                 }}>
-                  <SelectTrigger className="rounded-xl md:rounded-2xl border-2 h-10 md:h-12">
+                  <SelectTrigger className="rounded-xl md:rounded-2xl border-2 h-10 md:h-12 bg-white/50 dark:bg-gray-800/50">
                     <SelectValue placeholder="Tous les types" />
                   </SelectTrigger>
                   <SelectContent>
@@ -349,15 +349,15 @@ function BettingTransactionsContent() {
                 </Select>
               </div>
 
-              <div>
-                <Label htmlFor="platform" className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
-                  Plateforme
+              <div className="space-y-2">
+                <Label htmlFor="platform" className="text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  {t("transactions.network") || "Plateforme"}
                 </Label>
                 <Select value={platformFilter} onValueChange={(value) => {
                   setPlatformFilter(value)
                   setCurrentPage(1)
                 }}>
-                  <SelectTrigger className="rounded-xl md:rounded-2xl border-2 h-10 md:h-12">
+                  <SelectTrigger className="rounded-xl md:rounded-2xl border-2 h-10 md:h-12 bg-white/50 dark:bg-gray-800/50">
                     <SelectValue placeholder="Toutes les plateformes" />
                   </SelectTrigger>
                   <SelectContent>
@@ -371,9 +371,9 @@ function BettingTransactionsContent() {
                 </Select>
               </div>
 
-              <div>
-                <Label htmlFor="search" className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
-                  Recherche
+              <div className="space-y-2">
+                <Label htmlFor="search" className="text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  {t("common.search") || "Recherche"}
                 </Label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -383,16 +383,16 @@ function BettingTransactionsContent() {
                     placeholder="Référence, ID utilisateur..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="h-10 md:h-12 rounded-xl md:rounded-2xl border-2 focus:border-orange-500 focus:ring-orange-500/20 text-sm md:text-base pl-10"
+                    className="h-10 md:h-12 rounded-xl md:rounded-2xl border-2 focus:border-orange-500 focus:ring-orange-500/20 text-sm md:text-base pl-10 bg-white/50 dark:bg-gray-800/50"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="dateFrom" className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
-                  Date de début
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="dateFrom" className="text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  {t("bulkPayment.dateFrom") || "Date de début"}
                 </Label>
                 <Input
                   id="dateFrom"
@@ -402,12 +402,12 @@ function BettingTransactionsContent() {
                     setDateFrom(e.target.value)
                     setCurrentPage(1)
                   }}
-                  className="h-10 md:h-12 rounded-xl md:rounded-2xl border-2 text-sm md:text-base"
+                  className="h-10 md:h-12 rounded-xl md:rounded-2xl border-2 text-sm md:text-base bg-white/50 dark:bg-gray-800/50"
                 />
               </div>
-              <div>
-                <Label htmlFor="dateTo" className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
-                  Date de fin
+              <div className="space-y-2">
+                <Label htmlFor="dateTo" className="text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  {t("bulkPayment.dateTo") || "Date de fin"}
                 </Label>
                 <Input
                   id="dateTo"
@@ -417,12 +417,12 @@ function BettingTransactionsContent() {
                     setDateTo(e.target.value)
                     setCurrentPage(1)
                   }}
-                  className="h-10 md:h-12 rounded-xl md:rounded-2xl border-2 text-sm md:text-base"
+                  className="h-10 md:h-12 rounded-xl md:rounded-2xl border-2 text-sm md:text-base bg-white/50 dark:bg-gray-800/50"
                 />
               </div>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-3 pt-2">
               <Button
                 variant="outline"
                 size="sm"
@@ -435,7 +435,7 @@ function BettingTransactionsContent() {
                   setDateTo("")
                   setCurrentPage(1)
                 }}
-                className="rounded-xl border-2 h-10 text-sm px-4"
+                className="rounded-xl md:rounded-2xl border-2 h-10 md:h-12 text-sm px-4 md:px-6 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
                 Effacer les filtres
               </Button>
@@ -444,31 +444,32 @@ function BettingTransactionsContent() {
                 size="sm"
                 onClick={fetchTransactions}
                 disabled={loading}
-                className="rounded-xl border-2 h-10 text-sm px-4"
+                className="rounded-xl md:rounded-2xl border-2 h-10 md:h-12 text-sm px-4 md:px-6 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
                 <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-                Actualiser
+                {t("common.refresh") || "Actualiser"}
               </Button>
-              <Link href="/dashboard/betting/deposit">
-                <Button
-                  size="sm"
-                  disabled={!hasPermission('can_process_mobcash')}
-                  className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-xl h-10 text-sm px-4 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Nouveau Dépôt
-                </Button>
-              </Link>
-              <Link href="/dashboard/betting/withdrawal">
-                <Button
-                  size="sm"
-                  disabled={!hasPermission('can_process_mobcash')}
-                  className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-xl h-10 text-sm px-4 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Minus className="h-4 w-4 mr-2" />
-                  Nouveau Retrait
-                </Button>
-              </Link>
+              <div className="hidden sm:block flex-1" />
+              <div className="flex gap-2 w-full sm:w-auto">
+                <Link href="/dashboard/betting/deposit" className="flex-1 sm:flex-none">
+                  <Button
+                    className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-xl md:rounded-2xl h-10 md:h-12 text-sm px-4 md:px-6 shadow-lg shadow-green-500/20"
+                    disabled={!hasPermission('can_process_mobcash')}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Nouveau Dépôt
+                  </Button>
+                </Link>
+                <Link href="/dashboard/betting/withdrawal" className="flex-1 sm:flex-none">
+                  <Button
+                    className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-xl md:rounded-2xl h-10 md:h-12 text-sm px-4 md:px-6 shadow-lg shadow-red-500/20"
+                    disabled={!hasPermission('can_process_mobcash')}
+                  >
+                    <Minus className="h-4 w-4 mr-2" />
+                    Nouveau Retrait
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
@@ -483,9 +484,9 @@ function BettingTransactionsContent() {
                 <Activity className="h-5 w-5 md:h-6 md:w-6 text-white" />
               </div>
               <div>
-                <h2 className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white">Transactions</h2>
+                <h2 className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white uppercase tracking-tight">{t("transactions.title") || "Transactions"}</h2>
                 <p className="text-sm md:text-base text-gray-500 dark:text-gray-400">
-                  {totalCount} transaction{totalCount > 1 ? 's' : ''} trouvée{totalCount > 1 ? 's' : ''}
+                  {totalCount} transaction{totalCount > 1 ? 's' : ''} {t("bulkPayment.of") || "found"}
                 </p>
               </div>
             </div>
@@ -501,141 +502,214 @@ function BettingTransactionsContent() {
           ) : error ? (
             <ErrorDisplay error={error} variant="full" />
           ) : (
-            <div className="bg-white/50 dark:bg-gray-800/50 rounded-xl md:rounded-2xl border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-gray-50 dark:bg-gray-800/50">
-                      <TableHead className="font-semibold text-xs md:text-sm py-3 md:py-4 px-3 md:px-6">Type</TableHead>
-                      <TableHead className="font-semibold text-xs md:text-sm py-3 md:py-4 px-3 md:px-6">Référence</TableHead>
-                      <TableHead className="font-semibold cursor-pointer text-xs md:text-sm py-3 md:py-4 px-3 md:px-6" onClick={() => handleSort("amount")}>
-                        <div className="flex items-center gap-1 md:gap-2">
-                          Montant
-                          <ArrowUpDown className="h-3 w-3 md:h-4 md:w-4" />
-                        </div>
-                      </TableHead>
-                      <TableHead className="font-semibold text-xs md:text-sm py-3 md:py-4 px-3 md:px-6">Plateforme</TableHead>
-                      <TableHead className="font-semibold text-xs md:text-sm py-3 md:py-4 px-3 md:px-6">ID Utilisateur</TableHead>
-                      <TableHead className="font-semibold cursor-pointer text-xs md:text-sm py-3 md:py-4 px-3 md:px-6" onClick={() => handleSort("date")}>
-                        <div className="flex items-center gap-1 md:gap-2">
-                          Date
-                          <ArrowUpDown className="h-3 w-3 md:h-4 md:w-4" />
-                        </div>
-                      </TableHead>
-                      <TableHead className="font-semibold text-xs md:text-sm py-3 md:py-4 px-3 md:px-6">Statut</TableHead>
-                      <TableHead className="font-semibold text-xs md:text-sm py-3 md:py-4 px-3 md:px-6">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {transactions.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={8} className="text-center py-6 md:py-8">
-                          <div className="text-center">
-                            <CreditCard className="h-8 w-8 md:h-12 md:w-12 text-gray-400 mx-auto mb-3 md:mb-4" />
-                            <p className="text-sm md:text-base text-gray-500 dark:text-gray-400">Aucune transaction trouvée</p>
+            <div className="space-y-4">
+              {/* Desktop Table View */}
+              <div className="hidden lg:block bg-white/50 dark:bg-gray-800/50 rounded-xl md:rounded-2xl border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-gray-50 dark:bg-gray-800/50">
+                        <TableHead className="font-semibold text-xs md:text-sm py-3 md:py-4 px-3 md:px-6">Type</TableHead>
+                        <TableHead className="font-semibold text-xs md:text-sm py-3 md:py-4 px-3 md:px-6">Référence</TableHead>
+                        <TableHead className="font-semibold cursor-pointer text-xs md:text-sm py-3 md:py-4 px-3 md:px-6" onClick={() => handleSort("amount")}>
+                          <div className="flex items-center gap-1 md:gap-2">
+                            Montant
+                            <ArrowUpDown className="h-3 w-3 md:h-4 md:w-4" />
                           </div>
-                        </TableCell>
+                        </TableHead>
+                        <TableHead className="font-semibold text-xs md:text-sm py-3 md:py-4 px-3 md:px-6">Plateforme</TableHead>
+                        <TableHead className="font-semibold text-xs md:text-sm py-3 md:py-4 px-3 md:px-6">ID Utilisateur</TableHead>
+                        <TableHead className="font-semibold cursor-pointer text-xs md:text-sm py-3 md:py-4 px-3 md:px-6" onClick={() => handleSort("date")}>
+                          <div className="flex items-center gap-1 md:gap-2">
+                            Date
+                            <ArrowUpDown className="h-3 w-3 md:h-4 md:w-4" />
+                          </div>
+                        </TableHead>
+                        <TableHead className="font-semibold text-xs md:text-sm py-3 md:py-4 px-3 md:px-6">Statut</TableHead>
+                        <TableHead className="font-semibold text-xs md:text-sm py-3 md:py-4 px-3 md:px-6 text-right">Actions</TableHead>
                       </TableRow>
-                    ) : (
-                      transactions.map((transaction) => (
-                        <React.Fragment key={transaction.uid}>
-                          <TableRow className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                            <TableCell className="py-3 md:py-4 px-3 md:px-6">
-                              <div className="flex items-center gap-2">
-                                {getTransactionIcon(transaction.transaction_type)}
-                                <span className={cn("text-sm font-medium", getTransactionTypeColor(transaction.transaction_type))}>
-                                  {getTransactionTypeLabel(transaction.transaction_type)}
-                                </span>
-                              </div>
-                            </TableCell>
-                            <TableCell className="py-3 md:py-4 px-3 md:px-6">
-                              <div className="flex items-center gap-1 md:gap-2">
-                                <span className="font-mono text-xs md:text-sm">{transaction.reference}</span>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => {
-                                    navigator.clipboard.writeText(transaction.reference)
-                                    toast({ title: "Référence copiée!" })
-                                  }}
-                                  className="h-5 w-5 md:h-6 md:w-6 p-0"
-                                >
-                                  <Copy className="h-2 w-2 md:h-3 md:w-3" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                            <TableCell className="font-semibold py-3 md:py-4 px-3 md:px-6">
-                              <div className="flex flex-col">
-                                <span className="text-sm md:text-base">{formatAmount(transaction.amount)} FCFA</span>
-                                {transaction.commission_amount && parseFloat(transaction.commission_amount) > 0 && (
-                                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                                    Commission: {formatAmount(transaction.commission_amount)} FCFA
+                    </TableHeader>
+                    <TableBody>
+                      {transactions.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={8} className="text-center py-6 md:py-8">
+                            <div className="text-center">
+                              <CreditCard className="h-8 w-8 md:h-12 md:w-12 text-gray-400 mx-auto mb-3 md:mb-4" />
+                              <p className="text-sm md:text-base text-gray-500 dark:text-gray-400">Aucune transaction trouvée</p>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        transactions.map((transaction) => (
+                          <React.Fragment key={transaction.uid}>
+                            <TableRow className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                              <TableCell className="py-3 md:py-4 px-3 md:px-6">
+                                <div className="flex items-center gap-2">
+                                  {getTransactionIcon(transaction.transaction_type)}
+                                  <span className={cn("text-sm font-medium", getTransactionTypeColor(transaction.transaction_type))}>
+                                    {getTransactionTypeLabel(transaction.transaction_type)}
                                   </span>
-                                )}
-                              </div>
-                            </TableCell>
-                            <TableCell className="py-3 md:py-4 px-3 md:px-6">
-                              <span className="text-sm font-medium text-gray-900 dark:text-white">
-                                {transaction.platform_name}
-                              </span>
-                            </TableCell>
-                            <TableCell className="py-3 md:py-4 px-3 md:px-6">
-                              <span className="font-mono text-xs md:text-sm text-gray-600 dark:text-gray-300">
-                                {transaction.betting_user_id}
-                              </span>
-                            </TableCell>
-                            <TableCell className="text-xs md:text-sm text-gray-500 dark:text-gray-400 py-3 md:py-4 px-3 md:px-6">
-                              <div className="flex flex-col">
-                                <span>{formatDate(transaction.created_at)}</span>
-                              </div>
-                            </TableCell>
-                            <TableCell className="py-3 md:py-4 px-3 md:px-6">{getStatusBadge(transaction.status)}</TableCell>
-                            <TableCell className="py-3 md:py-4 px-3 md:px-6">
-                              <div className="flex items-center gap-2">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-8 w-8 p-0"
-                                  onClick={() => handleViewTransactionDetails(transaction)}
-                                >
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                          {/* Cancellation Button Row */}
-                          {canCancelTransaction(transaction) && (
-                            <TableRow className="bg-gray-50/50 dark:bg-gray-800/30">
-                              <TableCell colSpan={8} className="py-2 px-3 md:px-6">
-                                <div className="flex justify-end">
+                                </div>
+                              </TableCell>
+                              <TableCell className="py-3 md:py-4 px-3 md:px-6">
+                                <div className="flex items-center gap-1 md:gap-2">
+                                  <span className="font-mono text-xs md:text-sm">{transaction.reference}</span>
                                   <Button
-                                    variant="outline"
+                                    variant="ghost"
                                     size="sm"
-                                    className="border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-400 dark:text-red-400 dark:hover:bg-red-900/20"
-                                    onClick={() => handleCancelTransaction(transaction)}
-                                    disabled={cancelling && selectedTransaction?.uid === transaction.uid}
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(transaction.reference)
+                                      toast({ title: "Référence copiée!" })
+                                    }}
+                                    className="h-5 w-5 md:h-6 md:w-6 p-0"
                                   >
-                                    {cancelling && selectedTransaction?.uid === transaction.uid ? (
-                                      <>
-                                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                                        Cancelling...
-                                      </>
-                                    ) : (
-                                      <>
-                                        <X className="h-4 w-4 mr-2" />
-                                        Cancel Transaction
-                                      </>
-                                    )}
+                                    <Copy className="h-2 w-2 md:h-3 md:w-3" />
                                   </Button>
                                 </div>
                               </TableCell>
+                              <TableCell className="font-semibold py-3 md:py-4 px-3 md:px-6">
+                                <div className="flex flex-col">
+                                  <span className="text-sm md:text-base">{formatAmount(transaction.amount)} FCFA</span>
+                                  {transaction.commission_amount && parseFloat(transaction.commission_amount) > 0 && (
+                                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                                      {formatAmount(transaction.commission_amount)} FCFA
+                                    </span>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell className="py-3 md:py-4 px-3 md:px-6">
+                                <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                  {transaction.platform_name}
+                                </span>
+                              </TableCell>
+                              <TableCell className="py-3 md:py-4 px-3 md:px-6">
+                                <span className="font-mono text-xs md:text-sm text-gray-600 dark:text-gray-300">
+                                  {transaction.betting_user_id}
+                                </span>
+                              </TableCell>
+                              <TableCell className="text-xs md:text-sm text-gray-500 dark:text-gray-400 py-3 md:py-4 px-3 md:px-6">
+                                <div className="flex flex-col">
+                                  <span>{formatDate(transaction.created_at)}</span>
+                                </div>
+                              </TableCell>
+                              <TableCell className="py-3 md:py-4 px-3 md:px-6">{getStatusBadge(transaction.status)}</TableCell>
+                              <TableCell className="py-3 md:py-4 px-3 md:px-6 text-right">
+                                <div className="flex items-center justify-end gap-2">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 w-8 p-0"
+                                    onClick={() => handleViewTransactionDetails(transaction)}
+                                  >
+                                    <Eye className="h-4 w-4" />
+                                  </Button>
+                                  {canCancelTransaction(transaction) && (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                      onClick={() => handleCancelTransaction(transaction)}
+                                      disabled={cancelling && selectedTransaction?.uid === transaction.uid}
+                                    >
+                                      <X className="h-4 w-4" />
+                                    </Button>
+                                  )}
+                                </div>
+                              </TableCell>
                             </TableRow>
-                          )}
-                        </React.Fragment>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
+                          </React.Fragment>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+
+              {/* Mobile Card View */}
+              <div className="lg:hidden space-y-4">
+                {transactions.length === 0 ? (
+                  <div className="bg-white/50 dark:bg-gray-800/50 rounded-xl p-8 border border-gray-200/50 dark:border-gray-700/50 text-center">
+                    <CreditCard className="h-10 w-10 text-gray-400 mx-auto mb-3" />
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Aucune transaction trouvée</p>
+                  </div>
+                ) : (
+                  transactions.map((transaction) => {
+                    const isCancelling = cancelling && selectedTransaction?.uid === transaction.uid;
+                    return (
+                      <div
+                        key={transaction.uid}
+                        className="bg-white/50 dark:bg-gray-800/50 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 p-4 shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
+                        onClick={() => handleViewTransactionDetails(transaction)}
+                      >
+                        <div className="flex justify-between items-start mb-3">
+                          <div className="flex items-center gap-2">
+                            <div className={cn(
+                              "p-2 rounded-xl bg-opacity-10 dark:bg-opacity-20",
+                              transaction.transaction_type === 'deposit' ? "bg-green-500 text-green-600" : "bg-red-500 text-red-600"
+                            )}>
+                              {getTransactionIcon(transaction.transaction_type)}
+                            </div>
+                            <div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wider">
+                                {getTransactionTypeLabel(transaction.transaction_type)}
+                              </div>
+                              <div className="font-mono text-xs text-gray-400 truncate max-w-[120px]">
+                                {transaction.reference}
+                              </div>
+                            </div>
+                          </div>
+                          {getStatusBadge(transaction.status)}
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4 mb-3">
+                          <div>
+                            <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-0.5">Montant</div>
+                            <div className="font-bold text-gray-900 dark:text-white text-base">
+                              {formatAmount(transaction.amount)} FCFA
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-0.5">Plateforme</div>
+                            <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                              {transaction.platform_name}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700/50">
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            {formatDate(transaction.created_at)}
+                          </div>
+                          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0"
+                              onClick={() => handleViewTransactionDetails(transaction)}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            {canCancelTransaction(transaction) && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                onClick={() => handleCancelTransaction(transaction)}
+                                disabled={isCancelling}
+                              >
+                                {isCancelling ? (
+                                  <RefreshCw className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <X className="h-4 w-4" />
+                                )}
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </div>
           )}

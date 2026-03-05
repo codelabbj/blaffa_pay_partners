@@ -490,18 +490,12 @@ if (externalData) {
 USSD (Unstructured Supplementary Service Data) transactions allow users to process mobile money transactions via USSD codes. This system requires special permissions.
 
 ### Permission Required
-**`can_process_ussd_transaction`** - Users must have this permission to:
+
 - View transaction pages
 - Create USSD transactions
 - Access transaction management features
 
-**Permission Check:**
-```typescript
-const { hasPermission } = usePermissions()
-if (!hasPermission('can_process_ussd_transaction')) {
-  // Show access denied
-}
-```
+
 
 ### 1. Get Mobile Payment Networks
 **Endpoint:** `GET /api/payments/networks/`
@@ -652,7 +646,7 @@ if (!hasPermission('can_process_ussd_transaction')) {
 ## USSD Transaction Implementation Notes
 
 ### 1. Permission-Based Access
-- All USSD transaction features require `can_process_ussd_transaction` permission
+
 - Permission is loaded from user data in localStorage
 - Permission check is performed in components before rendering
 
@@ -662,7 +656,7 @@ if (!hasPermission('can_process_ussd_transaction')) {
 - Network UID is required for transaction creation
 
 ### 3. Transaction Creation Flow
-1. **Permission Check**: Verify user has `can_process_ussd_transaction`
+1. **Permission Check**: Verify user is authenticated
 2. **Network Fetch**: Load available networks
 3. **Form Fill**: User enters transaction details
 4. **Validation**: Ensure amount > 0, phone valid, network selected

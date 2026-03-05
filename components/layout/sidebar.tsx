@@ -128,9 +128,11 @@ export function Sidebar() {
             </NavItem>
 
             <SectionHeader icon={Activity}>Gestion des transactions</SectionHeader>
+            {/* {hasPermission('can_process_ussd_transaction') && ( */}
             <NavItem href="/dashboard/transactions" icon={CreditCard} isActive={pathname === "/dashboard/transactions"}>
               {t("nav.transactions")}
             </NavItem>
+            {/* )} */}
             <NavItem href="/dashboard/account-transaction" icon={LayoutDashboard} isActive={pathname === "/dashboard/account-transaction"}>
               {t("nav.accountTransaction")}
             </NavItem>
@@ -195,9 +197,11 @@ export function Sidebar() {
             </NavItem>
 
             <SectionHeader icon={Activity}>Gestion des transactions</SectionHeader>
+            {/* {hasPermission('can_process_ussd_transaction') && ( */}
             <NavItem href="/dashboard/transactions" icon={CreditCard} isActive={pathname === "/dashboard/transactions"}>
               {t("nav.transactions")}
             </NavItem>
+            {/* )} */}
             <NavItem href="/dashboard/account-transaction" icon={LayoutDashboard} isActive={pathname === "/dashboard/account-transaction"}>
               {t("nav.accountTransaction")}
             </NavItem>
