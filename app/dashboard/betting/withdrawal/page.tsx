@@ -18,6 +18,7 @@ import { ErrorDisplay, extractErrorMessages } from "@/components/ui/error-displa
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
+import { usePermissions } from "@/components/providers/permissions-provider"
 
 function BettingWithdrawalContent() {
   const searchParams = useSearchParams()
@@ -42,13 +43,44 @@ function BettingWithdrawalContent() {
     withdrawal_code: ""
   })
 
+  const { hasPermission, isLoading: permissionsLoading } = usePermissions()
+
+  // Check permissions
+  if (!permissionsLoading && !hasPermission('can_process_mobcash')) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-blue-50 to-green-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <div className="max-w-md mx-auto text-center p-8">
+          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl md:rounded-3xl border border-white/20 dark:border-gray-700/50 shadow-xl p-8">
+            <div className="flex items-center justify-center mb-6">
+              <div className="p-4 bg-red-100 dark:bg-red-900/20 rounded-full">
+                <Shield className="h-8 w-8 text-red-600 dark:text-red-400" />
+              </div>
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+              Accès Refusé
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              Vous n'êtes pas autorisé à créer ce type de transaction.
+            </p>
+            <Button
+              onClick={() => router.push('/dashboard')}
+              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl"
+            >
+              Retour à l'accueil
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   const platformUid = searchParams.get('platform')
 
   const fetchAvailablePlatforms = async () => {
     try {
       const data = await getPlatforms()
       setAvailablePlatforms(data.results || [])
-      
+
       // Fetch external platform data for each platform
       const externalDataMap = new Map<string, ExternalPlatformData>()
       const externalPromises = (data.results || []).map(async (platform) => {
@@ -61,7 +93,7 @@ function BettingWithdrawalContent() {
           console.error(`Failed to fetch external data for platform ${platform.name}:`, error)
         }
       })
-      
+
       await Promise.all(externalPromises)
       setExternalPlatformsData(externalDataMap)
     } catch (err: any) {
@@ -142,7 +174,7 @@ function BettingWithdrawalContent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!platformUid) {
       toast.error("Plateforme non spécifiée")
       return
@@ -169,12 +201,12 @@ function BettingWithdrawalContent() {
       // Check if the transaction was successful but failed
       if (result.success && result.transaction && result.transaction.status === "failed") {
         // Extract error message from external_response or notes
-        const errorMessage = result.transaction.external_response?.error || 
-                           result.transaction.notes || 
-                           "La transaction a échoué"
-        
+        const errorMessage = result.transaction.external_response?.error ||
+          result.transaction.notes ||
+          "La transaction a échoué"
+
         toast.error(errorMessage)
-        
+
         // Don't reset form or redirect on failure
         return
       }
@@ -203,10 +235,10 @@ function BettingWithdrawalContent() {
   }
 
   const isFormValid = () => {
-    return formData.betting_user_id.trim() && 
-           formData.withdrawal_code.trim() &&
-           verificationResult?.user && 
-           verificationResult.user.user_id > 0
+    return formData.betting_user_id.trim() &&
+      formData.withdrawal_code.trim() &&
+      verificationResult?.user &&
+      verificationResult.user.user_id > 0
   }
 
   return (
@@ -234,7 +266,7 @@ function BettingWithdrawalContent() {
 
       {loading ? (
         <div className="text-center py-8 md:py-12">
-              <div className="animate-spin rounded-full h-10 w-10 md:h-12 md:w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-10 w-10 md:h-12 md:w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
           <p className="text-sm md:text-base text-gray-500 dark:text-gray-400">Chargement...</p>
         </div>
       ) : error ? (
@@ -249,7 +281,7 @@ function BettingWithdrawalContent() {
               Choisissez la plateforme sur laquelle vous souhaitez effectuer un retrait
             </p>
           </div>
-          
+
           {availablePlatforms.length === 0 ? (
             <div className="text-center py-8">
               <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -259,66 +291,66 @@ function BettingWithdrawalContent() {
             <div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
               {availablePlatforms
                 .map((platform) => (
-                <Card
-                  key={platform.uid}
-                  className="cursor-pointer hover:shadow-lg transition-shadow duration-200 bg-white dark:bg-gray-800 rounded-xl md:rounded-2xl border border-gray-200 dark:border-gray-700"
-                  onClick={() => handlePlatformSelect(platform.uid)}
-                >
-                  <CardContent className="p-4 md:p-6">
-                    <div className="flex items-center gap-4 mb-4">
-                      {platform.logo ? (
-                        <img
-                          src={platform.logo}
-                          alt={platform.name}
-                          className="w-12 h-12 rounded-xl object-cover"
-                        />
-                      ) : (
-                        <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-xl flex items-center justify-center">
-                          <Shield className="h-6 w-6 text-orange-600" />
+                  <Card
+                    key={platform.uid}
+                    className="cursor-pointer hover:shadow-lg transition-shadow duration-200 bg-white dark:bg-gray-800 rounded-xl md:rounded-2xl border border-gray-200 dark:border-gray-700"
+                    onClick={() => handlePlatformSelect(platform.uid)}
+                  >
+                    <CardContent className="p-4 md:p-6">
+                      <div className="flex items-center gap-4 mb-4">
+                        {platform.logo ? (
+                          <img
+                            src={platform.logo}
+                            alt={platform.name}
+                            className="w-12 h-12 rounded-xl object-cover"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-xl flex items-center justify-center">
+                            <Shield className="h-6 w-6 text-orange-600" />
+                          </div>
+                        )}
+                        <div>
+                          <h3 className="font-bold text-gray-900 dark:text-white">{platform.name}</h3>
+                          <Badge className="bg-red-100 text-white dark:bg-red-900 dark:text-white text-xs">
+                            Retrait autorisé
+                          </Badge>
+                        </div>
+                      </div>
+                      {/* External Platform Info */}
+                      {externalPlatformsData.has(platform.external_id) && (
+                        <div className="space-y-1 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-2 mb-3">
+                          <div className="flex justify-between text-xs">
+                            <span className="text-blue-600 dark:text-blue-400 font-medium">Ville:</span>
+                            <span className="font-medium text-gray-900 dark:text-white">
+                              {externalPlatformsData.get(platform.external_id)?.city}
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-xs">
+                            <span className="text-blue-600 dark:text-blue-400 font-medium">Rue:</span>
+                            <span className="font-medium text-gray-900 dark:text-white">
+                              {externalPlatformsData.get(platform.external_id)?.street}
+                            </span>
+                          </div>
                         </div>
                       )}
-                      <div>
-                        <h3 className="font-bold text-gray-900 dark:text-white">{platform.name}</h3>
-                        <Badge className="bg-red-100 text-white dark:bg-red-900 dark:text-white text-xs">
-                          Retrait autorisé
-                        </Badge>
-                      </div>
-                    </div>
-                    {/* External Platform Info */}
-                    {externalPlatformsData.has(platform.external_id) && (
-                      <div className="space-y-1 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-2 mb-3">
-                        <div className="flex justify-between text-xs">
-                          <span className="text-blue-600 dark:text-blue-400 font-medium">Ville:</span>
-                          <span className="font-medium text-gray-900 dark:text-white">
-                            {externalPlatformsData.get(platform.external_id)?.city}
-                          </span>
-                        </div>
-                        <div className="flex justify-between text-xs">
-                          <span className="text-blue-600 dark:text-blue-400 font-medium">Rue:</span>
-                          <span className="font-medium text-gray-900 dark:text-white">
-                            {externalPlatformsData.get(platform.external_id)?.street}
-                          </span>
-                        </div>
-                      </div>
-                    )}
 
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-500 dark:text-gray-400">Min:</span>
-                        <span className="font-medium text-gray-900 dark:text-white">
-                          {platform.min_withdrawal_amount} FCFA
-                        </span>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-500 dark:text-gray-400">Min:</span>
+                          <span className="font-medium text-gray-900 dark:text-white">
+                            {platform.min_withdrawal_amount} FCFA
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500 dark:text-gray-400">Max:</span>
+                          <span className="font-medium text-gray-900 dark:text-white">
+                            {platform.max_withdrawal_amount} FCFA
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-500 dark:text-gray-400">Max:</span>
-                        <span className="font-medium text-gray-900 dark:text-white">
-                          {platform.max_withdrawal_amount} FCFA
-                        </span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                ))}
             </div>
           )}
         </div>
@@ -410,7 +442,7 @@ function BettingWithdrawalContent() {
                         placeholder="Saisissez l'ID utilisateur"
                         value={formData.betting_user_id}
                         onChange={(e) => {
-                          setFormData({...formData, betting_user_id: e.target.value})
+                          setFormData({ ...formData, betting_user_id: e.target.value })
                           setVerificationResult(null)
                           setVerificationError("")
                         }}
@@ -430,7 +462,7 @@ function BettingWithdrawalContent() {
                         )}
                       </Button>
                     </div>
-                    
+
                     {/* Verification Result */}
                     {verificationResult?.user && verificationResult.user.user_id > 0 && (
                       <div className="mt-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
@@ -442,7 +474,7 @@ function BettingWithdrawalContent() {
                         </div>
                       </div>
                     )}
-                    
+
                     {verificationError && (
                       <div className="mt-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
                         <div className="flex items-center gap-2">
@@ -465,7 +497,7 @@ function BettingWithdrawalContent() {
                       type="text"
                       placeholder="Saisissez le code de retrait"
                       value={formData.withdrawal_code}
-                      onChange={(e) => setFormData({...formData, withdrawal_code: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, withdrawal_code: e.target.value })}
                       className="rounded-xl border-2 focus:border-orange-500 focus:ring-orange-500/20"
                       required
                     />

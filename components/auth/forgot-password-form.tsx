@@ -9,17 +9,14 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Loader2, ArrowLeft } from "lucide-react"
 import { useAuthPasswords } from "@/lib/api/auth-passwords"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { useLanguage } from "@/components/providers/language-provider"
-import { extractErrorMessages } from "@/components/ui/error-display"
-import Link from "next/link"
 
 export function ForgotPasswordForm() {
     const [identifier, setIdentifier] = useState("")
     const [loading, setLoading] = useState(false)
 
     const { initiatePasswordReset } = useAuthPasswords()
-    const { toast } = useToast()
     const { t } = useLanguage()
     const router = useRouter()
 
@@ -28,18 +25,15 @@ export function ForgotPasswordForm() {
         setLoading(true)
         try {
             await initiatePasswordReset(identifier)
-            toast({
-                title: "Code de réinitialisation envoyé",
-                description: "Vérifiez vos emails ou SMS pour obtenir le code de réinitialisation.",
-            })
+            toast.success("Code de réinitialisation envoyé. Vérifiez vos emails ou SMS.")
             router.push(`/reset-password?identifier=${encodeURIComponent(identifier)}`)
         } catch (err: any) {
-            const errorMessage = extractErrorMessages(err) || "Impossible d'initier la réinitialisation."
-            toast({
-                title: "Erreur",
-                description: errorMessage,
-                variant: "destructive",
-            })
+            const errorMessage =
+                err?.detail ||
+                err?.identifier?.[0] ||
+                err?.message ||
+                "Impossible d'initier la réinitialisation."
+            toast.error(errorMessage)
         } finally {
             setLoading(false)
         }
@@ -48,6 +42,16 @@ export function ForgotPasswordForm() {
     return (
         <Card className="w-full max-w-md mx-auto shadow-2xl border-white/20 dark:border-gray-700/50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl">
             <CardHeader className="space-y-3">
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => router.push("/")}
+                    className="flex items-center gap-2 text-gray-500 hover:text-orange-500 w-fit -ml-2"
+                >
+                    <ArrowLeft className="h-4 w-4" />
+                    Retour à la connexion
+                </Button>
                 <CardTitle className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent text-center">
                     Mot de passe oublié ?
                 </CardTitle>
@@ -85,12 +89,6 @@ export function ForgotPasswordForm() {
                     </Button>
                 </form>
             </CardContent>
-            <CardFooter className="flex justify-center flex-col items-center">
-                <Link href="/" className="text-sm text-gray-500 hover:text-orange-500 transition-colors flex items-center">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Retour à la connexion
-                </Link>
-            </CardFooter>
         </Card>
     )
 }

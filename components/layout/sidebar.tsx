@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/components/providers/language-provider"
 import { usePermissions } from "@/components/providers/permissions-provider"
-import { BarChart3, LayoutDashboard, CreditCard, LogOut, Menu, X, Zap, ChevronDown, ChevronUp, Globe, Share2, Phone, Monitor, MessageCircle, Bell, Settings, Terminal, User, ChevronDownCircleIcon, BarChart3Icon, Sparkles, Shield, Activity, Send, Gamepad2, TrendingUp, DollarSign, FileSpreadsheet } from "lucide-react"
+import { BarChart3, LayoutDashboard, CreditCard, LogOut, Menu, X, Zap, ChevronDown, ChevronUp, Globe, Share2, Phone, Monitor, MessageCircle, Bell, Settings, Terminal, User, ChevronDownCircleIcon, BarChart3Icon, Sparkles, Shield, Activity, Send, Gamepad2, TrendingUp, DollarSign, FileSpreadsheet, KeyRound } from "lucide-react"
 import { clearTokens } from "@/lib/api"
 
 export function Sidebar() {
@@ -128,11 +128,9 @@ export function Sidebar() {
             </NavItem>
 
             <SectionHeader icon={Activity}>Gestion des transactions</SectionHeader>
-            {hasPermission('can_process_ussd_transaction') && (
-              <NavItem href="/dashboard/transactions" icon={CreditCard} isActive={pathname === "/dashboard/transactions"}>
-                {t("nav.transactions")}
-              </NavItem>
-            )}
+            <NavItem href="/dashboard/transactions" icon={CreditCard} isActive={pathname === "/dashboard/transactions"}>
+              {t("nav.transactions")}
+            </NavItem>
             <NavItem href="/dashboard/account-transaction" icon={LayoutDashboard} isActive={pathname === "/dashboard/account-transaction"}>
               {t("nav.accountTransaction")}
             </NavItem>
@@ -144,6 +142,9 @@ export function Sidebar() {
             </NavItem>
             <NavItem href="/dashboard/bulk-payment" icon={FileSpreadsheet} isActive={pathname === "/dashboard/bulk-payment"}>
               {t("nav.bulkPayment")}
+            </NavItem>
+            <NavItem href="/dashboard/api-keys" icon={KeyRound} isActive={pathname === "/dashboard/api-keys"}>
+              API Keys
             </NavItem>
 
             <SectionHeader icon={Gamepad2}>Plateformes de Paris</SectionHeader>
@@ -194,11 +195,9 @@ export function Sidebar() {
             </NavItem>
 
             <SectionHeader icon={Activity}>Gestion des transactions</SectionHeader>
-            {hasPermission('can_process_ussd_transaction') && (
-              <NavItem href="/dashboard/transactions" icon={CreditCard} isActive={pathname === "/dashboard/transactions"}>
-                {t("nav.transactions")}
-              </NavItem>
-            )}
+            <NavItem href="/dashboard/transactions" icon={CreditCard} isActive={pathname === "/dashboard/transactions"}>
+              {t("nav.transactions")}
+            </NavItem>
             <NavItem href="/dashboard/account-transaction" icon={LayoutDashboard} isActive={pathname === "/dashboard/account-transaction"}>
               {t("nav.accountTransaction")}
             </NavItem>
@@ -210,6 +209,9 @@ export function Sidebar() {
             </NavItem>
             <NavItem href="/dashboard/bulk-payment" icon={FileSpreadsheet} isActive={pathname === "/dashboard/bulk-payment"}>
               {t("nav.bulkPayment")}
+            </NavItem>
+            <NavItem href="/dashboard/api-keys" icon={KeyRound} isActive={pathname === "/dashboard/api-keys"}>
+              API Keys
             </NavItem>
 
             <SectionHeader icon={Gamepad2}>Plateformes de Paris</SectionHeader>

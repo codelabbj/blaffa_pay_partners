@@ -4,6 +4,9 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 
 interface UserPermissions {
   can_process_ussd_transaction: boolean
+  can_process_momo: boolean
+  can_process_mobcash: boolean
+  can_process_bulk_payment: boolean
 }
 
 interface PermissionsContextType {
@@ -26,7 +29,10 @@ export function PermissionsProvider({ children }: { children: React.ReactNode })
         if (userData) {
           const user = JSON.parse(userData)
           setPermissions({
-            can_process_ussd_transaction: user.can_process_ussd_transaction || false
+            can_process_ussd_transaction: user.can_process_ussd_transaction !== false,
+            can_process_momo: user.can_process_momo !== false,
+            can_process_mobcash: user.can_process_mobcash !== false,
+            can_process_bulk_payment: user.can_process_bulk_payment !== false,
           })
         }
       } catch (error) {

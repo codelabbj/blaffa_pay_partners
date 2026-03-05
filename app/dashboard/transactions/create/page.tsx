@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useLanguage } from "@/components/providers/language-provider"
 import { useApi } from "@/lib/useApi"
-import { ArrowLeft, Wallet, TrendingUp, TrendingDown, Check, RefreshCw, CreditCard, Phone, Network, DollarSign } from "lucide-react"
+import { ArrowLeft, Wallet, TrendingUp, TrendingDown, Check, RefreshCw, CreditCard, Phone, Network, DollarSign, Shield } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -21,6 +21,7 @@ import { ErrorDisplay, extractErrorMessages } from "@/components/ui/error-displa
 import { useRouter } from "next/navigation"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { usePermissions } from "@/components/providers/permissions-provider"
 
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || ""
 
@@ -28,14 +29,14 @@ export default function CreateTransactionPage() {
   const [networks, setNetworks] = useState<any[]>([])
   const [networksLoading, setNetworksLoading] = useState(true)
   const [networksError, setNetworksError] = useState("")
-  
+
   const [transactionForm, setTransactionForm] = useState({
     type: "" as "deposit" | "withdrawal" | "",
     amount: "",
     recipient_phone: "",
     network: "" as any,
   })
-  
+
   const [confirmModalOpen, setConfirmModalOpen] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState("")
@@ -43,6 +44,36 @@ export default function CreateTransactionPage() {
   const { t } = useLanguage()
   const apiFetch = useApi()
   const router = useRouter()
+  const { hasPermission, isLoading: permissionsLoading } = usePermissions()
+
+  // Check permissions
+  if (!permissionsLoading && !hasPermission('can_process_momo')) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-blue-50 to-green-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <div className="max-w-md mx-auto text-center p-8">
+          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl md:rounded-3xl border border-white/20 dark:border-gray-700/50 shadow-xl p-8">
+            <div className="flex items-center justify-center mb-6">
+              <div className="p-4 bg-red-100 dark:bg-red-900/20 rounded-full">
+                <Shield className="h-8 w-8 text-red-600 dark:text-red-400" />
+              </div>
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+              Accès Refusé
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              Vous n'êtes pas autorisé à créer ce type de transaction.
+            </p>
+            <Button
+              onClick={() => router.push('/dashboard')}
+              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl"
+            >
+              Retour à l'accueil
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   // Fetch networks on component mount
   useEffect(() => {
@@ -108,17 +139,17 @@ export default function CreateTransactionPage() {
         },
         body: JSON.stringify(payload)
       })
-      
-      toast.success(t("payment.transactionCreated"), { 
-        description: t("payment.transactionCreatedSuccessfully") 
+
+      toast.success(t("payment.transactionCreated"), {
+        description: t("payment.transactionCreatedSuccessfully")
       })
       setConfirmModalOpen(false)
       router.push("/dashboard/transactions")
     } catch (err: any) {
       const errorMessage = extractErrorMessages(err)
       setSubmitError(errorMessage)
-      toast.error(t("payment.failedToCreateTransaction"), { 
-        description: errorMessage 
+      toast.error(t("payment.failedToCreateTransaction"), {
+        description: errorMessage
       })
     } finally {
       setSubmitting(false)
@@ -126,11 +157,11 @@ export default function CreateTransactionPage() {
   }
 
   const isFormValid = () => {
-    return transactionForm.type && 
-           transactionForm.amount && 
-           parseFloat(transactionForm.amount) > 0 && 
-           transactionForm.recipient_phone && 
-           transactionForm.network
+    return transactionForm.type &&
+      transactionForm.amount &&
+      parseFloat(transactionForm.amount) > 0 &&
+      transactionForm.recipient_phone &&
+      transactionForm.network
   }
 
   return (
@@ -142,9 +173,9 @@ export default function CreateTransactionPage() {
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => router.back()}
                   className="text-white hover:bg-white/20 rounded-2xl"
                 >
@@ -183,12 +214,11 @@ export default function CreateTransactionPage() {
         </div>
         <div className="p-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div 
-              className={`relative overflow-hidden rounded-3xl border-2 cursor-pointer transition-all duration-300 ${
-                transactionForm.type === "deposit" 
-                  ? "border-orange-500 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20" 
-                  : "border-gray-200 dark:border-gray-700 hover:border-orange-300 dark:hover:border-orange-600"
-              }`}
+            <div
+              className={`relative overflow-hidden rounded-3xl border-2 cursor-pointer transition-all duration-300 ${transactionForm.type === "deposit"
+                ? "border-orange-500 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20"
+                : "border-gray-200 dark:border-gray-700 hover:border-orange-300 dark:hover:border-orange-600"
+                }`}
               onClick={() => handleTransactionTypeSelect("deposit")}
             >
               <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full blur-2xl"></div>
@@ -214,12 +244,11 @@ export default function CreateTransactionPage() {
               </div>
             </div>
 
-            <div 
-              className={`relative overflow-hidden rounded-3xl border-2 cursor-pointer transition-all duration-300 ${
-                transactionForm.type === "withdrawal" 
-                  ? "border-green-500 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20" 
-                  : "border-gray-200 dark:border-gray-700 hover:border-green-300 dark:hover:border-green-600"
-              }`}
+            <div
+              className={`relative overflow-hidden rounded-3xl border-2 cursor-pointer transition-all duration-300 ${transactionForm.type === "withdrawal"
+                ? "border-green-500 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20"
+                : "border-gray-200 dark:border-gray-700 hover:border-green-300 dark:hover:border-green-600"
+                }`}
               onClick={() => handleTransactionTypeSelect("withdrawal")}
             >
               <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/10 rounded-full blur-2xl"></div>
@@ -321,11 +350,10 @@ export default function CreateTransactionPage() {
                     {networks.map((network) => (
                       <div
                         key={network.uid}
-                        className={`relative overflow-hidden rounded-2xl border-2 cursor-pointer transition-all duration-300 ${
-                          transactionForm.network?.uid === network.uid
-                            ? "border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20"
-                            : "border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600"
-                        }`}
+                        className={`relative overflow-hidden rounded-2xl border-2 cursor-pointer transition-all duration-300 ${transactionForm.network?.uid === network.uid
+                          ? "border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20"
+                          : "border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600"
+                          }`}
                         onClick={() => handleNetworkSelect(network)}
                       >
                         <div className="p-6">
@@ -384,7 +412,7 @@ export default function CreateTransactionPage() {
               Vérifiez les détails de votre transaction avant de la créer
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-6">
             <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700">
               <h4 className="font-semibold text-gray-900 dark:text-white mb-4">Détails de la Transaction</h4>
@@ -418,14 +446,14 @@ export default function CreateTransactionPage() {
           </div>
 
           <DialogFooter className="flex gap-3">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => setConfirmModalOpen(false)}
               className="rounded-2xl"
             >
               Annuler
             </Button>
-            <Button 
+            <Button
               onClick={handleConfirmTransaction}
               disabled={submitting}
               className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-2xl"

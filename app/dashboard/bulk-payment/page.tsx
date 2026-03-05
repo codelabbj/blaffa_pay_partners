@@ -22,6 +22,7 @@ import {
     LayoutGrid,
     FileText,
     ShieldCheck,
+    Shield,
     Download,
     MoreVertical,
     List,
@@ -69,6 +70,7 @@ import {
 } from "@/components/ui/select"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { usePermissions } from "@/components/providers/permissions-provider"
 
 interface PaymentRow {
     id: string
@@ -89,6 +91,7 @@ export default function BulkPaymentPage() {
     const apiFetch = useApi()
     const router = useRouter()
     const fileInputRef = useRef<HTMLInputElement>(null)
+    const { hasPermission, isLoading: permissionsLoading } = usePermissions()
 
     const [activeView, setActiveView] = useState<ViewState>('list')
     const [networks, setNetworks] = useState<any[]>([])
@@ -376,14 +379,14 @@ export default function BulkPaymentPage() {
                             <Download className="mr-2 h-4 w-4" /> {t("bulkPayment.downloadSample")}
                         </Button>
                         <Button
-                            disabled={!isLoadingNetworks && networks.length === 0}
+                            disabled={!isLoadingNetworks && (networks.length === 0 || (!permissionsLoading && !hasPermission('can_process_bulk_payment')))}
                             onClick={() => {
                                 setRows([])
                                 addNewRow(5)
                                 setCurrentPage(1)
                                 setActiveView('create')
                             }}
-                            className="rounded-lg h-10 px-5 font-semibold transition-all w-full sm:w-auto"
+                            className="rounded-lg h-10 px-5 font-semibold transition-all w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <Plus className="mr-2 h-4 w-4" /> {t("bulkPayment.newBatch")}
                         </Button>
@@ -591,6 +594,30 @@ export default function BulkPaymentPage() {
     }
 
     const renderCreateView = () => {
+        if (!isLoadingNetworks && !permissionsLoading && !hasPermission('can_process_bulk_payment')) {
+            return (
+                <div className="flex items-center justify-center p-8 bg-gradient-to-br from-orange-50 via-blue-50 to-green-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 rounded-3xl min-h-[500px]">
+                    <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl md:rounded-3xl border border-white/20 dark:border-gray-700/50 shadow-xl p-8 max-w-md w-full text-center">
+                        <div className="flex justify-center mb-6">
+                            <div className="p-4 bg-red-100 dark:bg-red-900/20 rounded-full">
+                                <Shield className="h-8 w-8 text-red-600 dark:text-red-400" />
+                            </div>
+                        </div>
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Accès Refusé</h2>
+                        <p className="text-gray-600 dark:text-gray-400 mb-6">
+                            Vous n'avez pas la permission de créer des paiements de masse.
+                        </p>
+                        <Button
+                            onClick={() => setActiveView('list')}
+                            className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl"
+                        >
+                            <ArrowLeft className="h-4 w-4 mr-2" /> Retour à la liste
+                        </Button>
+                    </div>
+                </div>
+            )
+        }
+
         const stats = {
             count: rows.length,
             amount: rows.reduce((s, r) => s + (Number(r.amount) || 0), 0)

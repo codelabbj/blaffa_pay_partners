@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
+import { usePermissions } from "@/components/providers/permissions-provider"
 import {
   Dialog,
   DialogContent,
@@ -38,6 +39,7 @@ function BettingTransactionsContent() {
   const { getTransactions, cancelTransaction } = useBettingTransactions()
   const { getPlatforms } = useBettingPlatforms()
   const { toast } = useToast()
+  const { hasPermission } = usePermissions()
 
   // State
   const [transactions, setTransactions] = useState<BettingTransaction[]>([])
@@ -145,7 +147,7 @@ function BettingTransactionsContent() {
     const createdAt = new Date(transaction.created_at)
     const now = new Date()
     const timeDiffInMinutes = (now.getTime() - createdAt.getTime()) / (1000 * 60)
-    
+
     if (timeDiffInMinutes > 25) {
       return false
     }
@@ -167,10 +169,10 @@ function BettingTransactionsContent() {
 
   const handleConfirmCancel = async () => {
     if (!selectedTransaction || !cancelReason.trim()) {
-      toast({ 
-        title: "Erreur", 
-        description: "Veuillez fournir une raison pour l'annulation", 
-        variant: "destructive" 
+      toast({
+        title: "Erreur",
+        description: "Veuillez fournir une raison pour l'annulation",
+        variant: "destructive"
       })
       return
     }
@@ -178,9 +180,9 @@ function BettingTransactionsContent() {
     setCancelling(true)
     try {
       await cancelTransaction(selectedTransaction.uid, cancelReason.trim())
-      toast({ 
-        title: "Cancellation Requested", 
-        description: "Your cancellation request has been submitted successfully" 
+      toast({
+        title: "Cancellation Requested",
+        description: "Your cancellation request has been submitted successfully"
       })
       setCancelDialogOpen(false)
       setSelectedTransaction(null)
@@ -190,10 +192,10 @@ function BettingTransactionsContent() {
     } catch (err: any) {
       console.error('Cancellation error:', err)
       const errorMessage = extractErrorMessages(err)
-      toast({ 
-        title: "Cancellation Failed", 
-        description: errorMessage || "Failed to cancel transaction. Please try again.", 
-        variant: "destructive" 
+      toast({
+        title: "Cancellation Failed",
+        description: errorMessage || "Failed to cancel transaction. Please try again.",
+        variant: "destructive"
       })
     } finally {
       setCancelling(false)
@@ -424,15 +426,15 @@ function BettingTransactionsContent() {
               <Button
                 variant="outline"
                 size="sm"
-              onClick={() => {
-                setStatusFilter("all")
-                setTypeFilter("all")
-                setPlatformFilter("all")
-                setSearchQuery("")
-                setDateFrom("")
-                setDateTo("")
-                setCurrentPage(1)
-              }}
+                onClick={() => {
+                  setStatusFilter("all")
+                  setTypeFilter("all")
+                  setPlatformFilter("all")
+                  setSearchQuery("")
+                  setDateFrom("")
+                  setDateTo("")
+                  setCurrentPage(1)
+                }}
                 className="rounded-xl border-2 h-10 text-sm px-4"
               >
                 Effacer les filtres
@@ -450,7 +452,8 @@ function BettingTransactionsContent() {
               <Link href="/dashboard/betting/deposit">
                 <Button
                   size="sm"
-                  className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-xl h-10 text-sm px-4"
+                  disabled={!hasPermission('can_process_mobcash')}
+                  className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-xl h-10 text-sm px-4 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Nouveau Dépôt
@@ -459,7 +462,8 @@ function BettingTransactionsContent() {
               <Link href="/dashboard/betting/withdrawal">
                 <Button
                   size="sm"
-                  className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-xl h-10 text-sm px-4"
+                  disabled={!hasPermission('can_process_mobcash')}
+                  className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-xl h-10 text-sm px-4 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Minus className="h-4 w-4 mr-2" />
                   Nouveau Retrait
@@ -683,7 +687,7 @@ function BettingTransactionsContent() {
               Are you sure you want to cancel this transaction? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          
+
           {selectedTransaction && (
             <div className="space-y-4">
               <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
@@ -694,7 +698,7 @@ function BettingTransactionsContent() {
                   <div><strong>Platform:</strong> {selectedTransaction.platform_name}</div>
                 </div>
               </div>
-              
+
               <div>
                 <Label htmlFor="cancelReason" className="text-sm font-medium">
                   Cancellation Reason *
@@ -739,7 +743,7 @@ function BettingTransactionsContent() {
               Complete information about this betting transaction
             </DialogDescription>
           </DialogHeader>
-          
+
           {selectedDetailTransaction && (
             <div className="space-y-6">
               {/* Basic Information */}
@@ -786,7 +790,7 @@ function BettingTransactionsContent() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="space-y-3">
                   <div>
                     <Label className="text-sm font-medium text-gray-500">Platform</Label>

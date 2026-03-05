@@ -19,7 +19,7 @@ export const useAuthPasswords = () => {
 
     // Initiate Password Reset (Logged-Out User)
     const initiatePasswordReset = async (identifier: string) => {
-        const endpoint = `${baseUrl.replace(/\/$/, "")}/api/auth/password-reset/initiate/`
+        const endpoint = `${baseUrl.replace(/\/$/, "")}/api/auth/password-reset/`
         // Using standard fetch since this is an unauthenticated endpoint and useApi might try to attach/refresh tokens
         const response = await fetch(endpoint, {
             method: "POST",
@@ -31,7 +31,8 @@ export const useAuthPasswords = () => {
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}))
-            throw new Error(errorData.detail || "Failed to initiate password reset")
+            // Throw the raw error object so all field-level errors are accessible in the catch block
+            throw errorData
         }
 
         return await response.json()
@@ -51,7 +52,8 @@ export const useAuthPasswords = () => {
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}))
-            throw new Error(errorData.detail || "Failed to confirm password reset")
+            // Throw the raw error object so all field-level errors are accessible in the catch block
+            throw errorData
         }
 
         return await response.json()

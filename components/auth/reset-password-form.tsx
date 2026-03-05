@@ -6,11 +6,10 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
-import { Eye, EyeOff, Loader2 } from "lucide-react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Eye, EyeOff, Loader2, ArrowLeft } from "lucide-react"
 import { useAuthPasswords } from "@/lib/api/auth-passwords"
-import { useToast } from "@/hooks/use-toast"
-import { extractErrorMessages } from "@/components/ui/error-display"
+import { toast } from "sonner"
 
 export function ResetPasswordForm() {
     const [code, setCode] = useState("")
@@ -22,7 +21,6 @@ export function ResetPasswordForm() {
     const [identifier, setIdentifier] = useState("")
 
     const { confirmPasswordReset } = useAuthPasswords()
-    const { toast } = useToast()
     const router = useRouter()
     const searchParams = useSearchParams()
 
@@ -37,47 +35,30 @@ export function ResetPasswordForm() {
         e.preventDefault()
 
         if (newPassword !== confirmPassword) {
-            toast({
-                title: "Erreur",
-                description: "Les mots de passe ne correspondent pas.",
-                variant: "destructive",
-            })
-            return
-        }
-
-        if (newPassword.length < 8) {
-            toast({
-                title: "Erreur",
-                description: "Le mot de passe doit contenir au moins 8 caractères.",
-                variant: "destructive",
-            })
+            toast.error("Les mots de passe ne correspondent pas.")
             return
         }
 
         if (!identifier) {
-            toast({
-                title: "Erreur",
-                description: "Identifiant manquant. Veuillez recommencer la procédure.",
-                variant: "destructive",
-            })
+            toast.error("Identifiant manquant. Veuillez recommencer la procédure.")
             return
         }
 
         setLoading(true)
         try {
-            await confirmPasswordReset(identifier, code, newPassword)
-            toast({
-                title: "Succès",
-                description: "Votre mot de passe a été réinitialisé. Vous pouvez maintenant vous connecter.",
-            })
+            const response = await confirmPasswordReset(identifier, code, newPassword)
+            const successMessage = response?.message || "Votre mot de passe a été réinitialisé. Vous pouvez maintenant vous connecter."
+            toast.success(successMessage)
             router.push("/")
         } catch (err: any) {
-            const errorMessage = extractErrorMessages(err) || "Impossible de réinitialiser le mot de passe. Le code est peut-être expiré."
-            toast({
-                title: "Erreur",
-                description: errorMessage,
-                variant: "destructive",
-            })
+            const errorMessage =
+                err?.detail ||
+                err?.code?.[0] ||
+                err?.new_password?.[0] ||
+                err?.non_field_errors?.[0] ||
+                err?.message ||
+                "Impossible de réinitialiser le mot de passe. Le code est peut-être expiré."
+            toast.error(errorMessage)
         } finally {
             setLoading(false)
         }
@@ -86,6 +67,16 @@ export function ResetPasswordForm() {
     return (
         <Card className="w-full max-w-md mx-auto shadow-2xl border-white/20 dark:border-gray-700/50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl">
             <CardHeader className="space-y-3">
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => router.push("/forgot-password")}
+                    className="flex items-center gap-2 text-gray-500 hover:text-orange-500 w-fit -ml-2"
+                >
+                    <ArrowLeft className="h-4 w-4" />
+                    Retour
+                </Button>
                 <CardTitle className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent text-center">
                     Réinitialisation
                 </CardTitle>
@@ -102,7 +93,6 @@ export function ResetPasswordForm() {
                             type="text"
                             value={code}
                             onChange={(e) => setCode(e.target.value)}
-                            placeholder="ex: 123456"
                             required
                             className="h-12 rounded-xl text-center text-lg tracking-widest"
                             maxLength={6}

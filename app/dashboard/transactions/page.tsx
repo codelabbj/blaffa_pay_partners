@@ -45,7 +45,7 @@ const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || ""
 
 export default function UserTransactionsPage() {
   const { hasPermission, isLoading: permissionsLoading } = usePermissions()
-  
+
   // Check permissions
   if (!permissionsLoading && !hasPermission('can_process_ussd_transaction')) {
     return (
@@ -63,7 +63,7 @@ export default function UserTransactionsPage() {
             <p className="text-gray-600 dark:text-gray-400 mb-6">
               Vous n'êtes pas autorisé à accéder à cette page. Vous n'avez pas les permissions nécessaires pour gérer les transactions.
             </p>
-            <Button 
+            <Button
               onClick={() => window.history.back()}
               className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl"
             >
@@ -97,7 +97,7 @@ export default function UserTransactionsPage() {
   // Networks state
   const [networks, setNetworks] = useState<any[]>([])
   const [networksLoading, setNetworksLoading] = useState(false)
-  
+
   // Transaction creation state
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [createLoading, setCreateLoading] = useState(false)
@@ -198,10 +198,10 @@ export default function UserTransactionsPage() {
 
       const endpoint = `${baseUrl}api/payments/user/transactions/?${params.toString()}`;
       const data = await apiFetch(endpoint)
-      
+
       setTransactions(data.results || [])
       setTotalCount(data.count || 0)
-      
+
     } catch (err: any) {
       const errorMessage = extractErrorMessages(err) || t("transactions.failedToLoad") || "Failed to load transactions"
       setError(errorMessage)
@@ -218,7 +218,7 @@ export default function UserTransactionsPage() {
     }
   }
 
-  
+
 
   // Manual refresh function
   const handleRefresh = async () => {
@@ -264,9 +264,9 @@ export default function UserTransactionsPage() {
         },
         body: JSON.stringify(payload)
       })
-      
-      toast({ 
-        title: t("payment.success"), 
+
+      toast({
+        title: t("payment.success"),
         description: t(`payment.${transactionForm.type}CreatedSuccessfully`) || `${transactionForm.type} created successfully!`
       })
       setCreateModalOpen(false)
@@ -434,10 +434,10 @@ export default function UserTransactionsPage() {
                 <p className="text-sm md:text-base text-gray-500 dark:text-gray-400">{t("payment.accountDetails") || "Detailed account information"}</p>
               </div>
             </div>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={refreshAccountData} 
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={refreshAccountData}
               disabled={accountLoading}
               className="rounded-xl md:rounded-2xl border-2 hover:bg-orange-50 dark:hover:bg-orange-900/20 w-full sm:w-auto"
             >
@@ -445,7 +445,7 @@ export default function UserTransactionsPage() {
               {t("common.refresh") || "Refresh"}
             </Button>
           </div>
-          
+
           {accountLoading ? (
             <div className="p-8 md:p-12 text-center">
               <div className="animate-spin rounded-full h-10 w-10 md:h-12 md:w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
@@ -568,9 +568,9 @@ export default function UserTransactionsPage() {
               </div>
             </div>
             <div className="flex flex-col sm:flex-row gap-2">
-              <Button 
-                onClick={handleRefresh} 
-                variant="outline" 
+              <Button
+                onClick={handleRefresh}
+                variant="outline"
                 size="sm"
                 disabled={refreshing}
                 className="rounded-xl md:rounded-2xl border-2 hover:bg-orange-50 dark:hover:bg-orange-900/20 w-full sm:w-auto"
@@ -578,15 +578,16 @@ export default function UserTransactionsPage() {
                 <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
                 {t("common.refresh") || "Refresh"}
               </Button>
-            
-              <Button 
+
+              <Button
                 onClick={() => router.push('/dashboard/transactions/create')}
-                className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl md:rounded-2xl w-full sm:w-auto"
+                disabled={!hasPermission('can_process_momo')}
+                className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl md:rounded-2xl w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 {t("payment.newTransaction") || "New Transaction"}
               </Button>
-            </div> 
+            </div>
           </div>
         </div>
 
@@ -640,7 +641,7 @@ export default function UserTransactionsPage() {
                 </Select>
               </div>
             </div>
-            
+
             {/* Date Filters */}
             <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
               <div className="flex-1">
@@ -856,7 +857,7 @@ export default function UserTransactionsPage() {
       </div>
 
       {/* Create Transaction Modal */}
-      <Dialog open={createModalOpen} onOpenChange={(open) => { 
+      <Dialog open={createModalOpen} onOpenChange={(open) => {
         if (!open) {
           setCreateModalOpen(false)
           setCreateError("")
@@ -873,7 +874,7 @@ export default function UserTransactionsPage() {
           <DialogHeader>
             <DialogTitle className="text-lg md:text-2xl font-bold">{t("payment.newTransaction") || "Create New Transaction"}</DialogTitle>
           </DialogHeader>
-          
+
           {createError && (
             <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl md:rounded-2xl p-3 md:p-4">
               <p className="text-red-600 dark:text-red-400 text-xs md:text-sm">{createError}</p>
@@ -884,9 +885,9 @@ export default function UserTransactionsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
               <div>
                 <Label htmlFor="type" className="text-xs md:text-sm">{t("payment.transactionType") || "Transaction Type"} *</Label>
-                <Select 
-                  value={transactionForm.type} 
-                  onValueChange={(value: "deposit" | "withdraw") => setTransactionForm({...transactionForm, type: value})}
+                <Select
+                  value={transactionForm.type}
+                  onValueChange={(value: "deposit" | "withdraw") => setTransactionForm({ ...transactionForm, type: value })}
                 >
                   <SelectTrigger className="rounded-xl md:rounded-2xl border-2 h-10 md:h-12">
                     <SelectValue />
@@ -904,14 +905,14 @@ export default function UserTransactionsPage() {
                   type="number"
                   placeholder="0"
                   value={transactionForm.amount}
-                  onChange={(e) => setTransactionForm({...transactionForm, amount: e.target.value})}
+                  onChange={(e) => setTransactionForm({ ...transactionForm, amount: e.target.value })}
                   className="rounded-xl md:rounded-2xl border-2 h-10 md:h-12 text-sm md:text-base"
                   required
                   min="1"
                 />
               </div>
             </div>
-            
+
             <div>
               <Label htmlFor="recipient_phone" className="text-xs md:text-sm">{t("payment.recipientPhone") || "Recipient Phone"} *</Label>
               <Input
@@ -919,17 +920,17 @@ export default function UserTransactionsPage() {
                 type="tel"
                 placeholder="+225 0700000000"
                 value={transactionForm.recipient_phone}
-                onChange={(e) => setTransactionForm({...transactionForm, recipient_phone: e.target.value})}
+                onChange={(e) => setTransactionForm({ ...transactionForm, recipient_phone: e.target.value })}
                 className="rounded-xl md:rounded-2xl border-2 h-10 md:h-12 text-sm md:text-base"
                 required
               />
             </div>
-            
+
             <div>
               <Label htmlFor="network" className="text-xs md:text-sm">{t("payment.network") || "Network"} *</Label>
-              <Select 
-                value={transactionForm.network} 
-                onValueChange={(value) => setTransactionForm({...transactionForm, network: value})}
+              <Select
+                value={transactionForm.network}
+                onValueChange={(value) => setTransactionForm({ ...transactionForm, network: value })}
                 disabled={networksLoading}
               >
                 <SelectTrigger className="rounded-xl md:rounded-2xl border-2 h-10 md:h-12">
@@ -944,14 +945,14 @@ export default function UserTransactionsPage() {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div>
               <Label htmlFor="objet" className="text-xs md:text-sm">{t("payment.description") || "Description"}</Label>
               <Textarea
                 id="objet"
                 placeholder="Enter transaction description..."
                 value={transactionForm.objet}
-                onChange={(e) => setTransactionForm({...transactionForm, objet: e.target.value})}
+                onChange={(e) => setTransactionForm({ ...transactionForm, objet: e.target.value })}
                 className="rounded-xl md:rounded-2xl border-2 text-sm md:text-base"
                 rows={3}
               />
@@ -960,16 +961,16 @@ export default function UserTransactionsPage() {
 
           <div className="flex flex-col sm:flex-row justify-end gap-3 mt-4 md:mt-6">
             <DialogClose asChild>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 disabled={createLoading}
                 className="rounded-xl md:rounded-2xl w-full sm:w-auto text-sm md:text-base px-4 md:px-6 py-2 md:py-3"
               >
                 {t("common.cancel") || "Cancel"}
               </Button>
             </DialogClose>
-            <Button 
-              onClick={handleCreateTransaction} 
+            <Button
+              onClick={handleCreateTransaction}
               disabled={createLoading || !transactionForm.amount || !transactionForm.recipient_phone || !transactionForm.network}
               className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl md:rounded-2xl w-full sm:w-auto text-sm md:text-base px-4 md:px-6 py-2 md:py-3"
             >
