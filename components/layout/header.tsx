@@ -1,17 +1,15 @@
 "use client"
 
-import { useState, useEffect } from "react"
 import { usePathname } from "next/navigation"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { LanguageSwitcher } from "@/components/ui/language-switcher"
 import { useLanguage } from "@/components/providers/language-provider"
+import { usePermissions } from "@/components/providers/permissions-provider"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Badge } from "@/components/ui/badge"
-import { Bell, Search, Settings, Menu, X, Download } from "lucide-react"
+import { Bell, Search, Settings, Menu, Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { useApi } from "@/lib/useApi"
 
 const pageNames: Record<string, string> = {
   "/dashboard": "dashboard.title",
@@ -22,50 +20,11 @@ const pageNames: Record<string, string> = {
   "/dashboard/bulk-payment": "nav.bulkPayment",
 }
 
-interface UserProfile {
-  uid: string;
-  email: string;
-  phone: string;
-  first_name: string;
-  last_name: string;
-  display_name: string;
-  is_active: boolean;
-  email_verified: boolean;
-  phone_verified: boolean;
-  is_verified: boolean;
-  contact_method: string;
-  created_at: string;
-  updated_at: string;
-}
-
 export function Header() {
   const pathname = usePathname()
   const { t } = useLanguage()
-  const [isSearchOpen, setIsSearchOpen] = useState(false)
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
-  const [profileLoading, setProfileLoading] = useState(true)
-  const apiFetch = useApi()
-
+  const { user: userProfile, isLoading: profileLoading } = usePermissions()
   const pageTitle = pageNames[pathname] || "dashboard.title"
-
-  // Fetch user profile
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || ""
-        const endpoint = `${baseUrl}api/auth/profile/`
-        const data = await apiFetch(endpoint)
-        setUserProfile(data)
-      } catch (error) {
-        console.error('Error fetching user profile:', error)
-        // Keep default values if API fails
-      } finally {
-        setProfileLoading(false)
-      }
-    }
-
-    fetchUserProfile()
-  }, [apiFetch])
 
   // Helper function to get user initials
   const getUserInitials = () => {
@@ -88,13 +47,13 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-white/20 dark:border-gray-700/50 shadow-lg">
+    <header className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-14 md:h-16 justify-between items-center">
           {/* Left Section - Title and Status */}
           <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-4 min-w-0 flex-1">
             <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-3 min-w-0">
-              <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-green-500 rounded-full animate-pulse flex-shrink-0"></div>
+              <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-green-500 rounded-full flex-shrink-0"></div>
               <h1 className="text-sm sm:text-lg md:text-xl font-bold bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent truncate">
                 {t(pageTitle)}
               </h1>
@@ -184,7 +143,7 @@ export function Header() {
                   </div>
                 </div>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/50">
+              <DropdownMenuContent align="end" className="w-56 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
                 <DropdownMenuItem className="rounded-lg">
                   <a href="/dashboard/profile" className="flex items-center w-full">
                     <Avatar className="h-8 w-8 mr-3">
@@ -209,7 +168,7 @@ export function Header() {
                   <Menu className="h-3 w-3" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-80 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-l border-white/20 dark:border-gray-700/50">
+              <SheetContent side="right" className="w-80 bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-800">
                 <div className="flex flex-col h-full">
                   {/* Mobile Header */}
                   <div className="flex items-center justify-between mb-6">

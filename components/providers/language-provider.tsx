@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { createContext, useContext, useEffect, useState } from "react"
+import { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react"
 
 type Language = "en" | "fr"
 
@@ -1678,13 +1678,12 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
   }, [])
 
   // Custom setLanguage function that persists to localStorage
-  const handleSetLanguage = (newLanguage: Language) => {
+  const handleSetLanguage = useCallback((newLanguage: Language) => {
     setLanguage(newLanguage)
     localStorage.setItem('language', newLanguage)
-  }
+  }, [])
 
-  const t = (key: string, params?: Record<string, any>): string => {
-    // Use default language during SSR to prevent hydration mismatch
+  const t = useCallback((key: string, params?: Record<string, any>): string => {
     const currentLanguage = isClient ? language : "fr"
     let text = translations[currentLanguage][key as keyof (typeof translations)["en"]] || key
     if (params) {
@@ -1693,13 +1692,13 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
       })
     }
     return text
-  }
+  }, [isClient, language])
 
-  const value = {
+  const value = useMemo(() => ({
     language,
     setLanguage: handleSetLanguage,
     t,
-  }
+  }), [language, handleSetLanguage, t])
 
   return <LanguageProviderContext.Provider value={value}>{children}</LanguageProviderContext.Provider>
 }

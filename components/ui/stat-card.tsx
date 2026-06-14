@@ -8,7 +8,7 @@ type StatCardProps = {
 }
 
 export const StatCard: React.FC<StatCardProps> = ({ title, value, icon: Icon, trend }) => (
-  <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl border border-white/30 dark:border-gray-700/50 shadow-xl hover:shadow-2xl transition-all duration-300 p-8 flex flex-col space-y-4">
+  <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm p-6 md:p-8 flex flex-col space-y-4">
     <div className="flex items-center space-x-3">
       <div className="p-3 rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-600 shadow-lg">
         <Icon className="h-6 w-6 text-white" />

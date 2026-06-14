@@ -1,84 +1,43 @@
 "use client"
 
-import { useState, Fragment } from "react"
+import { useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/components/providers/language-provider"
-import { usePermissions } from "@/components/providers/permissions-provider"
-import { BarChart3, LayoutDashboard, CreditCard, LogOut, Menu, X, Zap, ChevronDown, ChevronUp, Globe, Share2, Phone, Monitor, MessageCircle, Bell, Settings, Terminal, User, ChevronDownCircleIcon, BarChart3Icon, Sparkles, Shield, Activity, Send, Gamepad2, TrendingUp, DollarSign, FileSpreadsheet, KeyRound } from "lucide-react"
+import { BarChart3, LayoutDashboard, CreditCard, LogOut, Menu, X, Zap, Sparkles, Shield, Activity, Send, Gamepad2, DollarSign, FileSpreadsheet, KeyRound } from "lucide-react"
 import { clearTokens } from "@/lib/api"
 
-export function Sidebar() {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [usersDropdownOpen, setUsersDropdownOpen] = useState(false)
-  const [countryDropdownOpen, setCountryDropdownOpen] = useState(false)
-  const [networkDropdownOpen, setNetworkDropdownOpen] = useState(false)
-  const [devicesDropdownOpen, setDevicesDropdownOpen] = useState(false)
-  const [networkConfigDropdownOpen, setNetworkConfigDropdownOpen] = useState(false)
-  const router = useRouter()
-  const pathname = usePathname()
-  const { t } = useLanguage()
-  const { hasPermission } = usePermissions()
-
-  // Helper to check if a path is active or a child is active
-  const isUsersActive = pathname.startsWith("/dashboard/users")
-  const isRegisterActive = pathname === "/dashboard/users/register"
-  const isListActive = pathname === "/dashboard/users/list"
-
-  // Active logic for new dropdowns
-  const isCountryActive = pathname.startsWith("/dashboard/country")
-  const isCountryListActive = pathname === "/dashboard/country/list"
-  const isCountryCreateActive = pathname === "/dashboard/country/create"
-
-  const isNetworkActive = pathname.startsWith("/dashboard/network")
-  const isNetworkListActive = pathname === "/dashboard/network/list"
-  const isNetworkCreateActive = pathname === "/dashboard/network/create"
-
-  const isDevicesActive = pathname.startsWith("/dashboard/devices")
-  const isDevicesListActive = pathname === "/dashboard/devices/list"
-
-  const isNetworkConfigActive = pathname.startsWith("/dashboard/network-config")
-  const isNetworkConfigListActive = pathname === "/dashboard/network-config/list"
-  const isNetworkConfigCreateActive = pathname === "/dashboard/network-config/create"
-
-  // Betting navigation active logic
-  const isBettingActive = pathname.startsWith("/dashboard/betting")
-  const isBettingPlatformsActive = pathname.startsWith("/dashboard/betting/platforms")
-  const isBettingTransactionsActive = pathname.startsWith("/dashboard/betting/transactions")
-  const isBettingCommissionsActive = pathname.startsWith("/dashboard/betting/commissions")
-
-  const handleLogout = () => {
-    clearTokens();
-    if (typeof document !== 'undefined') {
-      document.cookie = 'accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; secure; samesite=strict';
-    }
-    localStorage.removeItem("isAuthenticated");
-    router.push("/");
-  }
-
-  // Helper for section headers
-  const SectionHeader = ({ children, icon: Icon }: { children: React.ReactNode, icon?: any }) => (
+function SectionHeader({ children, icon: Icon }: { children: React.ReactNode, icon?: any }) {
+  return (
     <div className="flex items-center gap-2 mt-8 mb-4 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
       {Icon && <Icon className="h-3 w-3" />}
       {children}
     </div>
   )
+}
 
-  const NavItem = ({ href, icon: Icon, children, isActive }: { href: string, icon: any, children: React.ReactNode, isActive: boolean }) => (
+function NavItem({ href, icon: Icon, children, isActive, onNavigate }: {
+  href: string
+  icon: any
+  children: React.ReactNode
+  isActive: boolean
+  onNavigate?: () => void
+}) {
+  return (
     <Link
       href={href}
       className={cn(
-        "group relative flex items-center gap-4 px-6 py-4 text-sm font-medium rounded-2xl transition-all duration-300 hover:scale-105",
+        "group relative flex items-center gap-4 px-6 py-4 text-sm font-medium rounded-2xl transition-colors duration-200",
         isActive
-          ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/25"
-          : "text-gray-700 hover:bg-white/50 hover:text-orange-600 dark:text-gray-300 dark:hover:bg-gray-800/50 dark:hover:text-white"
+          ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md"
+          : "text-gray-700 hover:bg-gray-100 hover:text-orange-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"
       )}
-      onClick={() => setSidebarOpen(false)}
+      onClick={onNavigate}
     >
       <div className={cn(
-        "flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-300",
+        "flex items-center justify-center w-10 h-10 rounded-xl transition-colors duration-200",
         isActive
           ? "bg-white/20 text-white"
           : "bg-gray-100 text-gray-600 group-hover:bg-orange-100 group-hover:text-orange-600 dark:bg-gray-800 dark:text-gray-400 dark:group-hover:bg-gray-700 dark:group-hover:text-white"
@@ -86,168 +45,145 @@ export function Sidebar() {
         <Icon className="h-5 w-5" />
       </div>
       <span className="flex-1">{children}</span>
-      {isActive && (
-        <div className="absolute right-2 w-2 h-2 bg-white rounded-full animate-pulse"></div>
-      )}
     </Link>
   )
+}
+
+function SidebarContent({
+  titleSize = "lg",
+  onNavigate,
+  onLogout,
+}: {
+  titleSize?: "lg" | "xl"
+  onNavigate?: () => void
+  onLogout: () => void
+}) {
+  const pathname = usePathname()
+  const { t } = useLanguage()
+
+  const isBettingPlatformsActive = pathname.startsWith("/dashboard/betting/platforms")
+  const isBettingTransactionsActive = pathname.startsWith("/dashboard/betting/transactions")
+  const isBettingCommissionsActive = pathname.startsWith("/dashboard/betting/commissions")
 
   return (
     <>
-      {/* Mobile sidebar */}
-      <div className={cn(
-        "fixed inset-0 z-50 lg:hidden transition-all duration-300",
-        sidebarOpen ? "block" : "hidden"
-      )}>
-        <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
-          onClick={() => setSidebarOpen(false)}
-        />
-        <div className="fixed inset-y-0 left-0 flex w-80 flex-col bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-r border-white/20 dark:border-gray-700/50 h-full shadow-2xl transition-transform duration-300">
-          <div className="flex h-20 items-center justify-between px-6 border-b border-white/20 dark:border-gray-700/50">
-            <div className="flex items-center space-x-3">
-              <div className="relative">
-                <img src="/logo.png" alt="Blaffa Pay Logo" className="h-12 w-12 rounded-xl shadow-lg" />
-                <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
-              </div>
-              <div>
-                <span className="text-lg font-bold bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
-                  Blaffa Pay
-                </span>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Partenaires</p>
-              </div>
-            </div>
-            <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(false)} className="rounded-xl">
-              <X className="h-5 w-5" />
-            </Button>
+      <div className="flex h-20 items-center px-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center space-x-3">
+          <div className="relative">
+            <img src="/logo.png" alt="Blaffa Pay Logo" className="h-12 w-12 rounded-xl shadow-sm" />
+            <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white" />
           </div>
-          <nav className="flex-1 space-y-2 px-4 py-6 overflow-y-auto min-h-0">
-            <SectionHeader icon={Sparkles}>Générale</SectionHeader>
-            <NavItem href="/dashboard" icon={BarChart3} isActive={pathname === "/dashboard"}>
-              {t("nav.dashboard")}
-            </NavItem>
-
-            <SectionHeader icon={Activity}>Gestion des transactions</SectionHeader>
-            {/* {hasPermission('can_process_ussd_transaction') && ( */}
-            <NavItem href="/dashboard/transactions" icon={CreditCard} isActive={pathname === "/dashboard/transactions"}>
-              {t("nav.transactions")}
-            </NavItem>
-            {/* )} */}
-            <NavItem href="/dashboard/account-transaction" icon={LayoutDashboard} isActive={pathname === "/dashboard/account-transaction"}>
-              {t("nav.accountTransaction")}
-            </NavItem>
-            <NavItem href="/dashboard/topup" icon={Zap} isActive={pathname === "/dashboard/topup"}>
-              {t("nav.topup")}
-            </NavItem>
-            <NavItem href="/dashboard/transfer" icon={Send} isActive={pathname === "/dashboard/transfer"}>
-              Transfert UV
-            </NavItem>
-            <NavItem href="/dashboard/bulk-payment" icon={FileSpreadsheet} isActive={pathname === "/dashboard/bulk-payment"}>
-              {t("nav.bulkPayment")}
-            </NavItem>
-            <NavItem href="/dashboard/api-keys" icon={KeyRound} isActive={pathname === "/dashboard/api-keys"}>
-              API Keys
-            </NavItem>
-
-            <SectionHeader icon={Gamepad2}>Plateformes de Paris</SectionHeader>
-            <NavItem href="/dashboard/betting/platforms" icon={Shield} isActive={isBettingPlatformsActive}>
-              Plateformes
-            </NavItem>
-            <NavItem href="/dashboard/betting/transactions" icon={Activity} isActive={isBettingTransactionsActive}>
-              Transactions
-            </NavItem>
-            <NavItem href="/dashboard/betting/commissions" icon={DollarSign} isActive={isBettingCommissionsActive}>
-              Commissions
-            </NavItem>
-          </nav>
-          <div className="p-6 border-t border-white/20 dark:border-gray-700/50">
-            <Button
-              variant="ghost"
-              className="w-full justify-start rounded-2xl hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
-              onClick={handleLogout}
-            >
-              <LogOut className="mr-3 h-5 w-5" />
-              {t("nav.logout")}
-            </Button>
+          <div>
+            <span className={cn(
+              "font-bold bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent",
+              titleSize === "xl" ? "text-xl" : "text-lg"
+            )}>
+              Blaffa Pay
+            </span>
+            <p className={cn("text-gray-500 dark:text-gray-400", titleSize === "xl" ? "text-sm" : "text-xs")}>
+              Partenaires
+            </p>
           </div>
         </div>
       </div>
+      <nav className="flex-1 space-y-2 px-4 py-6 overflow-y-auto min-h-0">
+        <SectionHeader icon={Sparkles}>Générale</SectionHeader>
+        <NavItem href="/dashboard" icon={BarChart3} isActive={pathname === "/dashboard"} onNavigate={onNavigate}>
+          {t("nav.dashboard")}
+        </NavItem>
 
-      {/* Desktop sidebar */}
+        <SectionHeader icon={Activity}>Gestion des transactions</SectionHeader>
+        <NavItem href="/dashboard/transactions" icon={CreditCard} isActive={pathname === "/dashboard/transactions"} onNavigate={onNavigate}>
+          {t("nav.transactions")}
+        </NavItem>
+        <NavItem href="/dashboard/account-transaction" icon={LayoutDashboard} isActive={pathname === "/dashboard/account-transaction"} onNavigate={onNavigate}>
+          {t("nav.accountTransaction")}
+        </NavItem>
+        <NavItem href="/dashboard/topup" icon={Zap} isActive={pathname === "/dashboard/topup"} onNavigate={onNavigate}>
+          {t("nav.topup")}
+        </NavItem>
+        <NavItem href="/dashboard/transfer" icon={Send} isActive={pathname === "/dashboard/transfer"} onNavigate={onNavigate}>
+          Transfert UV
+        </NavItem>
+        <NavItem href="/dashboard/bulk-payment" icon={FileSpreadsheet} isActive={pathname === "/dashboard/bulk-payment"} onNavigate={onNavigate}>
+          {t("nav.bulkPayment")}
+        </NavItem>
+        <NavItem href="/dashboard/api-keys" icon={KeyRound} isActive={pathname === "/dashboard/api-keys"} onNavigate={onNavigate}>
+          API Keys
+        </NavItem>
+
+        <SectionHeader icon={Gamepad2}>Plateformes de Paris</SectionHeader>
+        <NavItem href="/dashboard/betting/platforms" icon={Shield} isActive={isBettingPlatformsActive} onNavigate={onNavigate}>
+          Plateformes
+        </NavItem>
+        <NavItem href="/dashboard/betting/transactions" icon={Activity} isActive={isBettingTransactionsActive} onNavigate={onNavigate}>
+          Transactions
+        </NavItem>
+        <NavItem href="/dashboard/betting/commissions" icon={DollarSign} isActive={isBettingCommissionsActive} onNavigate={onNavigate}>
+          Commissions
+        </NavItem>
+      </nav>
+      <div className="p-6 border-t border-gray-200 dark:border-gray-700">
+        <Button
+          variant="ghost"
+          className="w-full justify-start rounded-2xl hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
+          onClick={onLogout}
+        >
+          <LogOut className="mr-3 h-5 w-5" />
+          {t("nav.logout")}
+        </Button>
+      </div>
+    </>
+  )
+}
+
+export function Sidebar() {
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const router = useRouter()
+
+  const handleLogout = () => {
+    clearTokens()
+    if (typeof document !== 'undefined') {
+      document.cookie = 'accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; secure; samesite=strict'
+    }
+    localStorage.removeItem("isAuthenticated")
+    router.push("/")
+  }
+
+  return (
+    <>
+      {sidebarOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <div
+            className="fixed inset-0 bg-black/50"
+            onClick={() => setSidebarOpen(false)}
+          />
+          <div className="fixed inset-y-0 left-0 flex w-80 flex-col bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 h-full shadow-lg">
+            <div className="absolute top-5 right-4 z-10">
+              <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(false)} className="rounded-xl">
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+            <SidebarContent
+              titleSize="lg"
+              onNavigate={() => setSidebarOpen(false)}
+              onLogout={handleLogout}
+            />
+          </div>
+        </div>
+      )}
+
       <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-80 lg:flex-col">
-        <div className="flex flex-col flex-grow bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-r border-white/20 dark:border-gray-700/50 h-full min-h-0 shadow-2xl">
-          <div className="flex h-20 items-center px-6 border-b border-white/20 dark:border-gray-700/50">
-            <div className="flex items-center space-x-3">
-              <div className="relative">
-                <img src="/logo.png" alt="Blaffa Pay Logo" className="h-12 w-12 rounded-xl shadow-lg" />
-                <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white animate-pulse"></div>
-              </div>
-              <div>
-                <span className="text-xl font-bold bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
-                  Blaffa Pay
-                </span>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Partenaires</p>
-              </div>
-            </div>
-          </div>
-          <nav className="flex-1 space-y-2 px-4 py-6 overflow-y-auto min-h-0">
-            <SectionHeader icon={Sparkles}>Générale</SectionHeader>
-            <NavItem href="/dashboard" icon={BarChart3} isActive={pathname === "/dashboard"}>
-              {t("nav.dashboard")}
-            </NavItem>
-
-            <SectionHeader icon={Activity}>Gestion des transactions</SectionHeader>
-            {/* {hasPermission('can_process_ussd_transaction') && ( */}
-            <NavItem href="/dashboard/transactions" icon={CreditCard} isActive={pathname === "/dashboard/transactions"}>
-              {t("nav.transactions")}
-            </NavItem>
-            {/* )} */}
-            <NavItem href="/dashboard/account-transaction" icon={LayoutDashboard} isActive={pathname === "/dashboard/account-transaction"}>
-              {t("nav.accountTransaction")}
-            </NavItem>
-            <NavItem href="/dashboard/topup" icon={Zap} isActive={pathname === "/dashboard/topup"}>
-              {t("nav.topup")}
-            </NavItem>
-            <NavItem href="/dashboard/transfer" icon={Send} isActive={pathname === "/dashboard/transfer"}>
-              Transfert UV
-            </NavItem>
-            <NavItem href="/dashboard/bulk-payment" icon={FileSpreadsheet} isActive={pathname === "/dashboard/bulk-payment"}>
-              {t("nav.bulkPayment")}
-            </NavItem>
-            <NavItem href="/dashboard/api-keys" icon={KeyRound} isActive={pathname === "/dashboard/api-keys"}>
-              API Keys
-            </NavItem>
-
-            <SectionHeader icon={Gamepad2}>Plateformes de Paris</SectionHeader>
-            <NavItem href="/dashboard/betting/platforms" icon={Shield} isActive={isBettingPlatformsActive}>
-              Plateformes
-            </NavItem>
-            <NavItem href="/dashboard/betting/transactions" icon={Activity} isActive={isBettingTransactionsActive}>
-              Transactions
-            </NavItem>
-            <NavItem href="/dashboard/betting/commissions" icon={DollarSign} isActive={isBettingCommissionsActive}>
-              Commissions
-            </NavItem>
-          </nav>
-          <div className="p-6 border-t border-white/20 dark:border-gray-700/50">
-            <Button
-              variant="ghost"
-              className="w-full justify-start rounded-2xl hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
-              onClick={handleLogout}
-            >
-              <LogOut className="mr-3 h-5 w-5" />
-              {t("nav.logout")}
-            </Button>
-          </div>
+        <div className="flex flex-col flex-grow bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 h-full min-h-0 shadow-sm">
+          <SidebarContent titleSize="xl" onLogout={handleLogout} />
         </div>
       </div>
 
-      {/* Mobile menu button */}
       <div className="lg:hidden">
         <Button
           variant="ghost"
           size="icon"
-          className="fixed top-6 left-6 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 rounded-2xl shadow-lg"
+          className="fixed top-6 left-6 z-40 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm"
           onClick={() => setSidebarOpen(true)}
         >
           <Menu className="h-5 w-5" />

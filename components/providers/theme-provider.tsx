@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { createContext, useContext, useEffect, useState } from "react"
+import { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react"
 
 type Theme = "dark" | "light"
 
@@ -40,15 +40,15 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   }, [theme])
 
   // Custom setTheme function that persists to localStorage
-  const handleSetTheme = (newTheme: Theme) => {
+  const handleSetTheme = useCallback((newTheme: Theme) => {
     setTheme(newTheme)
     localStorage.setItem('theme', newTheme)
-  }
+  }, [])
 
-  const value = {
+  const value = useMemo(() => ({
     theme,
     setTheme: handleSetTheme,
-  }
+  }), [theme, handleSetTheme])
 
   return <ThemeProviderContext.Provider value={value}>{children}</ThemeProviderContext.Provider>
 }
